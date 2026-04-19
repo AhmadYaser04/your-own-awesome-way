@@ -2,76 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
-/* AUT design system — navy + gold, Arabic typography */
+/* AUT design system — based on official logo: deep navy, sky blue, sand cream, gold accent */
 
 @layer base {
   :root {
-    --background: 40 33% 98%;
-    --foreground: 220 45% 12%;
+    --background: 40 30% 97%;
+    --foreground: 215 60% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 45% 12%;
+    --card-foreground: 215 60% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 45% 12%;
+    --popover-foreground: 215 60% 12%;
 
-    /* Navy blue */
-    --primary: 220 60% 18%;
-    --primary-foreground: 40 33% 98%;
+    /* Logo deep navy */
+    --primary: 215 65% 18%;
+    --primary-foreground: 40 33% 97%;
+    --primary-glow: 210 70% 40%;
 
-    /* Gold */
-    --secondary: 38 80% 50%;
-    --secondary-foreground: 220 60% 12%;
+    /* Logo sky blue (water element in crest) */
+    --secondary: 200 85% 55%;
+    --secondary-foreground: 215 65% 12%;
 
-    --muted: 220 15% 94%;
-    --muted-foreground: 220 12% 42%;
+    --muted: 215 20% 94%;
+    --muted-foreground: 215 15% 38%;
 
-    /* Teal accent */
-    --accent: 175 65% 35%;
-    --accent-foreground: 40 33% 98%;
+    /* Sand / cream accent (building stone in crest) */
+    --accent: 38 60% 88%;
+    --accent-foreground: 215 65% 18%;
+
+    --gold: 42 75% 52%;
+    --gold-foreground: 215 65% 12%;
 
     --success: 145 55% 40%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 220 60% 18%;
+    --border: 215 20% 88%;
+    --input: 215 20% 90%;
+    --ring: 215 65% 18%;
 
-    --radius: 0.75rem;
+    --radius: 0.85rem;
+
+    --gradient-hero: linear-gradient(135deg, hsl(215 65% 18%) 0%, hsl(210 70% 30%) 50%, hsl(200 70% 40%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(40 30% 97%));
+    --shadow-elegant: 0 12px 40px -12px hsl(215 65% 18% / 0.25);
+    --shadow-glow: 0 0 60px hsl(200 85% 55% / 0.25);
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-foreground: 215 30% 26%;
+    --sidebar-primary: 215 65% 18%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 215 20% 94%;
+    --sidebar-accent-foreground: 215 65% 18%;
+    --sidebar-border: 215 20% 88%;
+    --sidebar-ring: 200 85% 55%;
   }
 
   .dark {
-    --background: 220 45% 8%;
-    --foreground: 40 33% 96%;
-    --card: 220 40% 12%;
-    --card-foreground: 40 33% 96%;
-    --popover: 220 40% 12%;
-    --popover-foreground: 40 33% 96%;
-    --primary: 38 80% 55%;
-    --primary-foreground: 220 60% 12%;
-    --secondary: 220 40% 22%;
-    --secondary-foreground: 40 33% 96%;
-    --muted: 220 30% 18%;
-    --muted-foreground: 220 12% 65%;
-    --accent: 175 55% 45%;
-    --accent-foreground: 220 60% 12%;
+    --background: 215 50% 7%;
+    --foreground: 40 30% 95%;
+    --card: 215 45% 11%;
+    --card-foreground: 40 30% 95%;
+    --popover: 215 45% 11%;
+    --popover-foreground: 40 30% 95%;
+
+    --primary: 200 85% 60%;
+    --primary-foreground: 215 65% 10%;
+    --primary-glow: 200 90% 70%;
+
+    --secondary: 215 40% 22%;
+    --secondary-foreground: 40 30% 95%;
+
+    --muted: 215 35% 16%;
+    --muted-foreground: 215 15% 65%;
+
+    --accent: 215 40% 22%;
+    --accent-foreground: 40 30% 95%;
+
+    --gold: 42 80% 60%;
+    --gold-foreground: 215 65% 10%;
+
     --success: 145 55% 50%;
-    --destructive: 0 70% 50%;
+
+    --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 30% 20%;
-    --input: 220 30% 20%;
-    --ring: 38 80% 55%;
+
+    --border: 215 35% 20%;
+    --input: 215 35% 20%;
+    --ring: 200 85% 60%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(215 65% 8%) 0%, hsl(215 55% 14%) 50%, hsl(210 60% 22%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-card: linear-gradient(180deg, hsl(215 45% 11%), hsl(215 50% 9%));
+    --shadow-elegant: 0 12px 40px -12px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 60px hsl(200 85% 60% / 0.25);
   }
 }
 
@@ -86,5 +113,6 @@
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "kern", "liga";
   }
 }
