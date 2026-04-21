@@ -14,8 +14,6 @@ interface AutCourse {
   description: string;
 }
 
-// Reference catalog: AUT — Computer Science / Artificial Intelligence (BSc)
-// Note: synthesized from the official department charter (https://www.aut.edu.jo/college/7/ar)
 const AUT_AI_COURSES: AutCourse[] = [
   { code: "AI101", name: "مقدمة في الذكاء الاصطناعي", credits: 3, description: "تعريف بمفاهيم الذكاء الاصطناعي، تاريخه، تطبيقاته، أنواع الوكلاء الذكية، البحث في فضاء الحالات، خوارزميات البحث غير المُعَلَّم والمُعَلَّم، تمثيل المعرفة، والاستدلال." },
   { code: "AI201", name: "تعلم الآلة", credits: 3, description: "خوارزميات التعلم المُشرَف وغير المُشرَف: الانحدار الخطي واللوجستي، أشجار القرار، الجيران الأقرب K-NN، التجميع K-Means، تقييم النماذج، Overfitting، التحقق المتقاطع." },
@@ -32,16 +30,41 @@ const AUT_AI_COURSES: AutCourse[] = [
   { code: "MATH202", name: "الاحتمالات والإحصاء", credits: 3, description: "الاحتمالات، التوزيعات، الإحصاء الوصفي والاستدلالي، اختبار الفرضيات، Bayes Theorem، تطبيقات في تعلم الآلة." },
 ];
 
+interface RequestBody {
+  saudiCourse?: string;
+  inputMode?: "text" | "pdf" | "image";
+  fileDataUrl?: string; // data:application/pdf;base64,... or data:image/png;base64,...
+  fileName?: string;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { saudiCourse } = await req.json();
-    if (!saudiCourse || typeof saudiCourse !== "string" || saudiCourse.trim().length < 20) {
-      return new Response(
-        JSON.stringify({ error: "يرجى إدخال وصف مادة سعودية لا يقل عن 20 حرفاً." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const body = (await req.json()) as RequestBody;
+    const inputMode = body.inputMode ?? "text";
+
+    if (inputMode === "text") {
+      if (!body.saudiCourse || typeof body.saudiCourse !== "string" || body.saudiCourse.trim().length < 20) {
+        return new Response(
+          JSON.stringify({ error: "يرجى إدخال وصف مادة سعودية لا يقل عن 20 حرفاً." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else {
+      if (!body.fileDataUrl || !body.fileDataUrl.startsWith("data:")) {
+        return new Response(
+          JSON.stringify({ error: "يرجى رفع ملف صالح (PDF أو صورة) بصيغة data URL." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      // Limit ~12MB base64 (~9MB binary)
+      if (body.fileDataUrl.length > 14_000_000) {
+        return new Response(
+          JSON.stringify({ error: "الملف كبير جداً. الحد الأقصى ~10 ميجابايت." }),
+          { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -53,7 +76,9 @@ serve(async (req) => {
 
     const systemPrompt = `أنت خبير أكاديمي مختص في معادلة المواد الدراسية بين الجامعات السعودية وجامعة العقبة للتكنولوجيا (AUT) — تخصص علم الحاسوب/الذكاء الاصطناعي.
 
-مهمتك: مقارنة وصف مادة دراسية من جامعة سعودية مع كل مواد الخطة الدراسية لتخصص الذكاء الاصطناعي في AUT أدناه، ثم تحديد:
+إذا تلقيت ملفاً (PDF أو صورة) فاستخرج منه أولاً وصف المادة الدراسية كاملاً بدقة (الاسم، الساعات المعتمدة، المخرجات، المواضيع) ثم أجرِ المعادلة.
+
+مهمتك: مقارنة وصف المادة الدراسية من جامعة سعودية مع كل مواد الخطة الدراسية لتخصص الذكاء الاصطناعي في AUT أدناه، ثم تحديد:
 1. أفضل مادة (أو مادتين كحد أقصى) في AUT تتطابق مع المادة السعودية.
 2. نسبة التطابق الدلالي (0-100٪) بناءً على: تقاطع المخرجات التعليمية، المواضيع المشتركة، عمق التغطية، وعدد الساعات المعتمدة.
 3. حكم نهائي: "تُعادَل" (≥75٪)، "تُعادَل بشروط" (60-74٪)، "لا تُعادَل" (<60٪).
@@ -64,6 +89,32 @@ ${catalogText}
 
 أرجع نتيجة منظّمة فقط عبر استدعاء الدالة المُحددة.`;
 
+    // Build the user message — multimodal if file uploaded
+    let userMessage: any;
+    if (inputMode === "text") {
+      userMessage = {
+        role: "user",
+        content: `وصف المادة السعودية المراد معادلتها:\n\n${body.saudiCourse}`,
+      };
+    } else if (inputMode === "image") {
+      userMessage = {
+        role: "user",
+        content: [
+          { type: "text", text: "هذه صورة لوصف مادة دراسية من ميثاق جامعة سعودية. اقرأها بدقة (OCR عربي/إنجليزي) ثم أجرِ المعادلة وأعد النتيجة عبر الدالة." },
+          { type: "image_url", image_url: { url: body.fileDataUrl } },
+        ],
+      };
+    } else {
+      // PDF — Gemini supports PDFs via image_url with PDF data URL in this gateway
+      userMessage = {
+        role: "user",
+        content: [
+          { type: "text", text: `هذا ملف PDF لوصف مادة دراسية (${body.fileName ?? "course.pdf"}). استخرج محتوى المادة بدقة ثم أجرِ المعادلة وأعد النتيجة عبر الدالة.` },
+          { type: "image_url", image_url: { url: body.fileDataUrl } },
+        ],
+      };
+    }
+
     const tools = [
       {
         type: "function",
@@ -73,6 +124,10 @@ ${catalogText}
           parameters: {
             type: "object",
             properties: {
+              extracted_course: {
+                type: "string",
+                description: "نص وصف المادة كما استخرجه النموذج من المدخل (مفيد للمستخدم لمعرفة ما تم قراءته).",
+              },
               matches: {
                 type: "array",
                 description: "أفضل المواد المُطابقة في AUT (1 إلى 2)",
@@ -102,6 +157,9 @@ ${catalogText}
       },
     ];
 
+    // Use a vision-capable model when file is provided
+    const model = inputMode === "text" ? "google/gemini-2.5-flash" : "google/gemini-2.5-pro";
+
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -109,10 +167,10 @@ ${catalogText}
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model,
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `وصف المادة السعودية المراد معادلتها:\n\n${saudiCourse}` },
+          userMessage,
         ],
         tools,
         tool_choice: { type: "function", function: { name: "submit_equivalency" } },
@@ -143,6 +201,7 @@ ${catalogText}
     const data = await aiResponse.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall?.function?.arguments) {
+      console.error("Invalid AI response", JSON.stringify(data).slice(0, 500));
       throw new Error("استجابة الذكاء الاصطناعي غير صالحة");
     }
     const result = JSON.parse(toolCall.function.arguments);
