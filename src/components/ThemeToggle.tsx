@@ -2,9 +2,11 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useLang } from "@/i18n/LanguageProvider";
 
 export function ThemeToggle({ className = "" }: { className?: string }) {
   const { theme, setTheme } = useTheme();
+  const { t } = useLang();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -14,7 +16,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     <Button
       variant="ghost"
       size="icon"
-      aria-label={isDark ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الغامق"}
+      aria-label={isDark ? t("theme.toLight") : t("theme.toDark")}
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={className}
     >

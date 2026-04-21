@@ -3,15 +3,10 @@ import { useState, type ReactNode } from "react";
 import { Languages, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import logo from "@/assets/logo.png";
+import { useLang } from "@/i18n/LanguageProvider";
+import logo from "@/assets/aut-logo-full.jpg";
 
-const NAV = [
-  { to: "/", label: "الرئيسية" },
-  { to: "/college", label: "كلية الذكاء الاصطناعي" },
-  { to: "/equivalency", label: "معادلة المواد" },
-  { to: "/about", label: "حول المشروع" },
-  { to: "/faq", label: "الأسئلة الشائعة" },
-];
+const AUT_URL = "https://www.aut.edu.jo/home/ar";
 
 function NavItem({ to, children }: { to: string; children: ReactNode }) {
   return (
@@ -34,26 +29,44 @@ function NavItem({ to, children }: { to: string; children: ReactNode }) {
 export default function SiteLayout({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { t, lang, toggle, dir } = useLang();
+
+  const NAV = [
+    { to: "/", label: t("nav.home") },
+    { to: "/college", label: t("nav.college") },
+    { to: "/equivalency", label: t("nav.equivalency") },
+    { to: "/about", label: t("nav.about") },
+    { to: "/faq", label: t("nav.faq") },
+  ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background" dir="rtl">
+    <div className="min-h-screen flex flex-col bg-background" dir={dir}>
       <header className="bg-primary py-3 px-4 md:px-6 shadow-lg sticky top-0 z-50">
         <div className="container mx-auto flex items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-3 min-w-0 group" onClick={() => setOpen(false)}>
+          {/* Logo opens AUT website in new tab */}
+          <a
+            href={AUT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 min-w-0 group"
+            onClick={() => setOpen(false)}
+            aria-label={t("footer.officialSite")}
+            title={t("footer.officialSite")}
+          >
             <img
               src={logo}
-              alt="شعار جامعة العقبة للتكنولوجيا"
-              width={48}
+              alt={lang === "ar" ? "شعار جامعة العقبة للتكنولوجيا" : "Aqaba University of Technology logo"}
+              width={56}
               height={48}
-              className="h-11 w-11 rounded-full bg-card object-contain shrink-0 group-hover:scale-105 transition-transform"
+              className="h-11 w-auto rounded-md bg-card object-contain shrink-0 px-1.5 py-1 group-hover:scale-105 transition-transform"
             />
             <div className="text-primary-foreground min-w-0 hidden sm:block">
               <h1 className="font-heading text-sm md:text-base font-bold leading-tight truncate">
-                جامعة العقبة للتكنولوجيا
+                {t("header.title")}
               </h1>
-              <p className="text-[10px] md:text-xs opacity-75 truncate">نظام معادلة المواد الذكي</p>
+              <p className="text-[10px] md:text-xs opacity-75 truncate">{t("header.subtitle")}</p>
             </div>
-          </Link>
+          </a>
 
           <nav className="hidden lg:flex items-center gap-1">
             {NAV.map((n) => (
@@ -68,15 +81,27 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
             <Button
               variant="ghost"
               size="sm"
+              onClick={toggle}
+              aria-label="Switch language"
               className="hidden md:inline-flex text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground gap-1.5"
             >
               <Languages className="h-4 w-4" />
-              <span className="text-xs font-bold">EN</span>
+              <span className="text-xs font-bold">{t("header.toggleLang")}</span>
+            </Button>
+            {/* Mobile language toggle (icon-only) */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggle}
+              aria-label="Switch language"
+              className="md:hidden text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+            >
+              <Languages className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              aria-label="القائمة"
+              aria-label={t("header.menu")}
               className="lg:hidden text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
               onClick={() => setOpen((o) => !o)}
             >
@@ -115,19 +140,21 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <footer className="bg-primary py-7 mt-12">
         <div className="container mx-auto px-4 text-center text-primary-foreground/85 text-sm font-heading space-y-2">
           <div className="flex items-center justify-center gap-3 mb-3">
-            <img src={logo} alt="" className="h-9 w-9 rounded-full bg-card object-contain" />
-            <span className="font-bold">جامعة العقبة للتكنولوجيا</span>
+            <a href={AUT_URL} target="_blank" rel="noopener noreferrer">
+              <img src={logo} alt="" className="h-10 w-auto rounded-md bg-card object-contain px-1.5 py-1" />
+            </a>
+            <span className="font-bold">{t("footer.uni")}</span>
           </div>
-          <p>© 2026 نظام معادلة المواد الذكي - مشروع تخرج تخصص الذكاء الاصطناعي</p>
+          <p>{t("footer.copy")}</p>
           <p className="text-xs opacity-75">
-            مدعوم بالذكاء الاصطناعي عبر Lovable AI ·{" "}
+            {t("footer.poweredBy")} ·{" "}
             <a
-              href="https://www.aut.edu.jo/home/ar"
+              href={AUT_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="underline hover:text-gold transition-colors"
             >
-              الموقع الرسمي للجامعة
+              {t("footer.officialSite")}
             </a>
           </p>
         </div>
