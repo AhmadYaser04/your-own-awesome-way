@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { LanguageProvider } from "@/i18n/LanguageProvider";
 import Index from "./pages/Index.tsx";
 import College from "./pages/College.tsx";
 import Equivalency from "./pages/Equivalency.tsx";
@@ -15,6 +16,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <ThemeProvider>
+    <LanguageProvider>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
@@ -32,6 +34,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
+    </LanguageProvider>
   </ThemeProvider>
 );
 
