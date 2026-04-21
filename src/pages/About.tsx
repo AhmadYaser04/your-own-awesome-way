@@ -4,17 +4,18 @@ import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useLang } from "@/i18n/LanguageProvider";
 
 export default function About() {
+  const { t } = useLang();
   return (
     <SiteLayout>
       <section className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground py-14">
         <div className="container mx-auto px-4 max-w-4xl text-center">
-          <Badge className="bg-gold text-gold-foreground border-0 mb-4">مشروع تخرج</Badge>
-          <h1 className="font-heading text-3xl md:text-4xl font-bold mb-3">حول المشروع</h1>
+          <Badge className="bg-gold text-gold-foreground border-0 mb-4">{t("about.badge")}</Badge>
+          <h1 className="font-heading text-3xl md:text-4xl font-bold mb-3">{t("about.title")}</h1>
           <p className="text-primary-foreground/85 max-w-2xl mx-auto leading-relaxed">
-            نظام معادلة المواد الذكي — حلٌّ مدعوم بالذكاء الاصطناعي لمعادلة المواد الدراسية بين الجامعات السعودية
-            وجامعة العقبة للتكنولوجيا في تخصص الذكاء الاصطناعي.
+            {t("about.subtitle")}
           </p>
         </div>
       </section>
