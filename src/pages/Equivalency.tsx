@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Sparkles, Loader2, AlertCircle, CheckCircle2, XCircle, AlertTriangle, Brain,
-  ArrowLeft, ArrowRight, FileText, Upload, Image as ImageIcon, FileType2, X,
+  ArrowLeft, ArrowRight, FileText, Upload, Image as ImageIcon, FileType2, X, Save, LogIn,
 } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LanguageProvider";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Match {
   aut_code: string;
@@ -50,6 +51,7 @@ function fileToDataUrl(file: File): Promise<string> {
 
 export default function Equivalency() {
   const { t, dir } = useLang();
+  const { user } = useAuth();
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
 
   const [mode, setMode] = useState<Mode>("text");
@@ -58,6 +60,8 @@ export default function Equivalency() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const imgInputRef = useRef<HTMLInputElement>(null);
