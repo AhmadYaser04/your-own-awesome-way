@@ -392,6 +392,37 @@ export default function Equivalency() {
               </div>
             </div>
 
+            {/* Save status banner */}
+            {user && savedId && (
+              <Alert className="border-success/40 bg-success/5">
+                <Save className="h-4 w-4 text-success" />
+                <AlertTitle className="text-success">{t("eq.saved")}</AlertTitle>
+                <AlertDescription className="flex items-center justify-between gap-3 flex-wrap">
+                  <span>{t("eq.savedDesc")}</span>
+                  <Button asChild size="sm" variant="outline">
+                    <Link to="/my-requests">{t("auth.myReqs")}</Link>
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+            {!user && (
+              <Alert>
+                <LogIn className="h-4 w-4" />
+                <AlertTitle>{t("eq.signinToSave")}</AlertTitle>
+                <AlertDescription className="flex items-center justify-between gap-3 flex-wrap">
+                  <span>{t("auth.subtitle")}</span>
+                  <Button asChild size="sm">
+                    <Link to="/auth">{t("auth.signin.cta")}</Link>
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+            {saving && (
+              <div className="text-xs text-muted-foreground flex items-center gap-2 justify-center">
+                <Loader2 className="h-3 w-3 animate-spin" /> {t("eq.analyzing")}
+              </div>
+            )}
+
             <div className="text-center pt-4">
               <Button asChild variant="outline" className="gap-2">
                 <Link to="/college">
