@@ -129,7 +129,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                     <span className="text-xs font-bold max-w-[120px] truncate hidden md:inline">{user.email}</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align={dir === "rtl" ? "start" : "end"} className="w-56" dir={dir}>
+                <DropdownMenuContent align={dir === "rtl" ? "start" : "end"} className="w-56">
                   <DropdownMenuLabel className="font-heading">
                     <div className="text-xs text-muted-foreground">{t("auth.signedInAs")}</div>
                     <div className="truncate">{user.email}</div>
