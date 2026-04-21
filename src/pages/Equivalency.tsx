@@ -99,7 +99,7 @@ export default function Equivalency() {
         saudi_course_name: res.extracted_course?.split("\n")[0]?.slice(0, 200) || descriptionText.split("\n")[0]?.slice(0, 200) || null,
         saudi_course_description: descriptionText.slice(0, 8000),
         input_mode: mode,
-        ai_result: res as unknown as Record<string, unknown>,
+        ai_result: res as unknown as never,
         matched_aut_code: top?.aut_code ?? null,
         matched_aut_name: top?.aut_name ?? null,
         similarity: res.overall_similarity ?? null,
