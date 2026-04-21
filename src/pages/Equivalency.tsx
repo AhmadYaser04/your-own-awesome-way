@@ -88,11 +88,42 @@ export default function Equivalency() {
     setError(null);
   };
 
+  const persistRequest = async (res: Result, descriptionText: string) => {
+    if (!user) return;
+    setSaving(true);
+    const top = res.matches?.[0];
+    const { data, error: dbErr } = await supabase
+      .from("equivalency_requests")
+      .insert({
+        user_id: user.id,
+        saudi_course_name: res.extracted_course?.split("\n")[0]?.slice(0, 200) || descriptionText.split("\n")[0]?.slice(0, 200) || null,
+        saudi_course_description: descriptionText.slice(0, 8000),
+        input_mode: mode,
+        ai_result: res as unknown as Record<string, unknown>,
+        matched_aut_code: top?.aut_code ?? null,
+        matched_aut_name: top?.aut_name ?? null,
+        similarity: res.overall_similarity ?? null,
+        verdict: res.verdict ?? null,
+        status: "pending",
+      })
+      .select("id")
+      .single();
+    setSaving(false);
+    if (dbErr) {
+      toast({ title: t("eq.toast.failTitle"), description: dbErr.message, variant: "destructive" });
+      return;
+    }
+    setSavedId(data?.id ?? null);
+    toast({ title: t("eq.saved"), description: t("eq.savedDesc") });
+  };
+
   const handleSubmit = async () => {
     setError(null);
     setResult(null);
+    setSavedId(null);
 
     let payload: Record<string, unknown> = { inputMode: mode };
+    let descriptionForDb = "";
 
     if (mode === "text") {
       if (input.trim().length < 20) {
@@ -104,6 +135,7 @@ export default function Equivalency() {
         return;
       }
       payload.saudiCourse = input.trim();
+      descriptionForDb = input.trim();
     } else {
       if (!file) {
         toast({
@@ -118,6 +150,7 @@ export default function Equivalency() {
         const dataUrl = await fileToDataUrl(file);
         payload.fileDataUrl = dataUrl;
         payload.fileName = file.name;
+        descriptionForDb = `[${mode.toUpperCase()}] ${file.name}`;
       } catch (e) {
         setLoading(false);
         const msg = e instanceof Error ? e.message : String(e);
@@ -131,7 +164,13 @@ export default function Equivalency() {
       const { data, error: fnError } = await supabase.functions.invoke("equivalency", { body: payload });
       if (fnError) throw fnError;
       if (data?.error) throw new Error(data.error);
-      setResult(data as Result);
+      const res = data as Result;
+      setResult(res);
+      // Auto-save if user is signed in
+      const fullDesc = res.extracted_course
+        ? `${descriptionForDb}\n---\n${res.extracted_course}`
+        : descriptionForDb;
+      await persistRequest(res, fullDesc);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Unknown error";
       setError(msg);
