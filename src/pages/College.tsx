@@ -5,16 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AI_COURSES } from "@/data/aiCourses";
-
-const groups = [
-  { key: "تخصص", label: "مواد التخصص", icon: Brain },
-  { key: "متطلب كلية", label: "متطلبات الكلية", icon: Code2 },
-  { key: "رياضيات", label: "الرياضيات", icon: Database },
-] as const;
+import { useLang } from "@/i18n/LanguageProvider";
 
 const totalCredits = AI_COURSES.reduce((s, c) => s + c.credits, 0);
 
 export default function College() {
+  const { t } = useLang();
+  const groups = [
+    { key: "تخصص" as const, label: t("college.group.major"), icon: Brain },
+    { key: "متطلب كلية" as const, label: t("college.group.faculty"), icon: Code2 },
+    { key: "رياضيات" as const, label: t("college.group.math"), icon: Database },
+  ];
   return (
     <SiteLayout>
       {/* Hero */}
