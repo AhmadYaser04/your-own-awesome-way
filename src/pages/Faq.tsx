@@ -7,6 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { HelpCircle, Brain } from "lucide-react";
+import { useLang } from "@/i18n/LanguageProvider";
 
 const FAQ = [
   {
@@ -64,6 +65,7 @@ const FAQ = [
 ];
 
 export default function Faq() {
+  const { t } = useLang();
   return (
     <SiteLayout>
       <section className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground py-12">
@@ -73,9 +75,9 @@ export default function Faq() {
               <HelpCircle className="h-10 w-10" />
             </div>
             <div>
-              <h1 className="font-heading text-2xl md:text-3xl font-bold">الأسئلة الشائعة عن المشروع</h1>
+              <h1 className="font-heading text-2xl md:text-3xl font-bold">{t("faq.title")}</h1>
               <p className="text-primary-foreground/85 text-sm md:text-base mt-1">
-                أكثر الأسئلة المتوقعة في مناقشة المشروع — مع إجاباتها التقنية والأكاديمية
+                {t("faq.subtitle")}
               </p>
             </div>
           </div>
