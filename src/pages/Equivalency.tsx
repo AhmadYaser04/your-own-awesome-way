@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Sparkles, Loader2, AlertCircle, CheckCircle2, XCircle, AlertTriangle, Brain,
-  ArrowLeft, ArrowRight, FileText, Upload, Image as ImageIcon, FileType2, X,
+  ArrowLeft, ArrowRight, FileText, Upload, Image as ImageIcon, FileType2, X, Save, LogIn,
 } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LanguageProvider";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Match {
   aut_code: string;
@@ -50,6 +51,7 @@ function fileToDataUrl(file: File): Promise<string> {
 
 export default function Equivalency() {
   const { t, dir } = useLang();
+  const { user } = useAuth();
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
 
   const [mode, setMode] = useState<Mode>("text");
@@ -58,6 +60,8 @@ export default function Equivalency() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const imgInputRef = useRef<HTMLInputElement>(null);
@@ -84,11 +88,42 @@ export default function Equivalency() {
     setError(null);
   };
 
+  const persistRequest = async (res: Result, descriptionText: string) => {
+    if (!user) return;
+    setSaving(true);
+    const top = res.matches?.[0];
+    const { data, error: dbErr } = await supabase
+      .from("equivalency_requests")
+      .insert([{
+        user_id: user.id,
+        saudi_course_name: res.extracted_course?.split("\n")[0]?.slice(0, 200) || descriptionText.split("\n")[0]?.slice(0, 200) || null,
+        saudi_course_description: descriptionText.slice(0, 8000),
+        input_mode: mode,
+        ai_result: res as unknown as never,
+        matched_aut_code: top?.aut_code ?? null,
+        matched_aut_name: top?.aut_name ?? null,
+        similarity: res.overall_similarity ?? null,
+        verdict: res.verdict ?? null,
+        status: "pending",
+      }])
+      .select("id")
+      .single();
+    setSaving(false);
+    if (dbErr) {
+      toast({ title: t("eq.toast.failTitle"), description: dbErr.message, variant: "destructive" });
+      return;
+    }
+    setSavedId(data?.id ?? null);
+    toast({ title: t("eq.saved"), description: t("eq.savedDesc") });
+  };
+
   const handleSubmit = async () => {
     setError(null);
     setResult(null);
+    setSavedId(null);
 
     let payload: Record<string, unknown> = { inputMode: mode };
+    let descriptionForDb = "";
 
     if (mode === "text") {
       if (input.trim().length < 20) {
@@ -100,6 +135,7 @@ export default function Equivalency() {
         return;
       }
       payload.saudiCourse = input.trim();
+      descriptionForDb = input.trim();
     } else {
       if (!file) {
         toast({
@@ -114,6 +150,7 @@ export default function Equivalency() {
         const dataUrl = await fileToDataUrl(file);
         payload.fileDataUrl = dataUrl;
         payload.fileName = file.name;
+        descriptionForDb = `[${mode.toUpperCase()}] ${file.name}`;
       } catch (e) {
         setLoading(false);
         const msg = e instanceof Error ? e.message : String(e);
@@ -127,7 +164,13 @@ export default function Equivalency() {
       const { data, error: fnError } = await supabase.functions.invoke("equivalency", { body: payload });
       if (fnError) throw fnError;
       if (data?.error) throw new Error(data.error);
-      setResult(data as Result);
+      const res = data as Result;
+      setResult(res);
+      // Auto-save if user is signed in
+      const fullDesc = res.extracted_course
+        ? `${descriptionForDb}\n---\n${res.extracted_course}`
+        : descriptionForDb;
+      await persistRequest(res, fullDesc);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Unknown error";
       setError(msg);
@@ -348,6 +391,37 @@ export default function Equivalency() {
                 ))}
               </div>
             </div>
+
+            {/* Save status banner */}
+            {user && savedId && (
+              <Alert className="border-success/40 bg-success/5">
+                <Save className="h-4 w-4 text-success" />
+                <AlertTitle className="text-success">{t("eq.saved")}</AlertTitle>
+                <AlertDescription className="flex items-center justify-between gap-3 flex-wrap">
+                  <span>{t("eq.savedDesc")}</span>
+                  <Button asChild size="sm" variant="outline">
+                    <Link to="/my-requests">{t("auth.myReqs")}</Link>
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+            {!user && (
+              <Alert>
+                <LogIn className="h-4 w-4" />
+                <AlertTitle>{t("eq.signinToSave")}</AlertTitle>
+                <AlertDescription className="flex items-center justify-between gap-3 flex-wrap">
+                  <span>{t("auth.subtitle")}</span>
+                  <Button asChild size="sm">
+                    <Link to="/auth">{t("auth.signin.cta")}</Link>
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+            {saving && (
+              <div className="text-xs text-muted-foreground flex items-center gap-2 justify-center">
+                <Loader2 className="h-3 w-3 animate-spin" /> {t("eq.analyzing")}
+              </div>
+            )}
 
             <div className="text-center pt-4">
               <Button asChild variant="outline" className="gap-2">

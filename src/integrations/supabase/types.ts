@@ -14,16 +14,126 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      equivalency_requests: {
+        Row: {
+          admin_notes: string | null
+          ai_result: Json
+          created_at: string
+          id: string
+          input_mode: string
+          matched_aut_code: string | null
+          matched_aut_name: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          saudi_course_description: string | null
+          saudi_course_name: string | null
+          similarity: number | null
+          status: string
+          updated_at: string
+          user_id: string
+          verdict: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          ai_result: Json
+          created_at?: string
+          id?: string
+          input_mode?: string
+          matched_aut_code?: string | null
+          matched_aut_name?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          saudi_course_description?: string | null
+          saudi_course_name?: string | null
+          similarity?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          verdict?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          ai_result?: Json
+          created_at?: string
+          id?: string
+          input_mode?: string
+          matched_aut_code?: string | null
+          matched_aut_name?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          saudi_course_description?: string | null
+          saudi_course_name?: string | null
+          similarity?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          verdict?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          saudi_university: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          saudi_university?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          saudi_university?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +260,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
