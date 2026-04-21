@@ -94,7 +94,7 @@ export default function Equivalency() {
     const top = res.matches?.[0];
     const { data, error: dbErr } = await supabase
       .from("equivalency_requests")
-      .insert({
+      .insert([{
         user_id: user.id,
         saudi_course_name: res.extracted_course?.split("\n")[0]?.slice(0, 200) || descriptionText.split("\n")[0]?.slice(0, 200) || null,
         saudi_course_description: descriptionText.slice(0, 8000),
@@ -105,7 +105,7 @@ export default function Equivalency() {
         similarity: res.overall_similarity ?? null,
         verdict: res.verdict ?? null,
         status: "pending",
-      })
+      }])
       .select("id")
       .single();
     setSaving(false);
