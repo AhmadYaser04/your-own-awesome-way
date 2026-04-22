@@ -21,11 +21,12 @@ export default function ProtectedRoute({
   }
 
   if (!user) {
-    return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
+    return <Navigate to="/auth" state={{ from: location.pathname, requireAdmin }} replace />;
   }
 
   if (requireAdmin && role !== "admin") {
-    return <Navigate to="/" replace />;
+    // Logged-in but not admin — send to auth so they can sign in with an admin account
+    return <Navigate to="/auth" state={{ from: location.pathname, requireAdmin: true, notAdmin: true }} replace />;
   }
 
   return <>{children}</>;
