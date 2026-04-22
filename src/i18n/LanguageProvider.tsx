@@ -338,6 +338,13 @@ const EN: Dict = {
   "auth.myReqs": "My Requests",
   "auth.adminPanel": "Admin Panel",
   "auth.signedInAs": "Signed in as",
+  "auth.adminBannerTitle": "Restricted: Equivalency Committee Access",
+  "auth.adminBannerDesc": "Sign in with an admin account to access the academic equivalency committee dashboard and manage requests.",
+  "auth.adminBannerDeniedDesc": "Your current account does not have admin privileges. Please sign out and use a committee member account.",
+  "home.admin.badge": "For committee members only",
+  "home.admin.title": "Equivalency Committee Portal",
+  "home.admin.desc": "If you are a member of the AUT Equivalency Committee, sign in to approve or reject student requests, add official notes, view live statistics, and export CSV.",
+  "home.admin.cta": "Open Admin Dashboard",
 
   // My Requests
   "myReq.title": "My Equivalency Requests",
