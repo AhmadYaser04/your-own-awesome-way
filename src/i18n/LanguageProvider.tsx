@@ -136,6 +136,13 @@ const AR: Dict = {
   "auth.myReqs": "طلباتي",
   "auth.adminPanel": "لوحة المسؤول",
   "auth.signedInAs": "مسجّل كـ",
+  "auth.adminBannerTitle": "وصول مخصص للجنة المعادلات",
+  "auth.adminBannerDesc": "سجّل دخولك بحساب المسؤول للوصول إلى لوحة تحكم لجنة المعادلات الأكاديمية وإدارة الطلبات.",
+  "auth.adminBannerDeniedDesc": "حسابك الحالي ليس له صلاحية مسؤول. سجّل الخروج وادخل بحساب أحد أعضاء لجنة المعادلات.",
+  "home.admin.badge": "خاص بأعضاء لجنة المعادلات",
+  "home.admin.title": "بوابة لجنة المعادلات الأكاديمية",
+  "home.admin.desc": "إذا كنت عضواً في لجنة المعادلات بجامعة العقبة للتكنولوجيا، ادخل إلى لوحة التحكم لاعتماد طلبات الطلاب أو رفضها وإضافة ملاحظات رسمية، مع إحصائيات مباشرة وتصدير CSV.",
+  "home.admin.cta": "الدخول إلى لوحة المسؤول",
 
   // My Requests
   "myReq.title": "طلبات المعادلة الخاصة بي",
@@ -331,6 +338,13 @@ const EN: Dict = {
   "auth.myReqs": "My Requests",
   "auth.adminPanel": "Admin Panel",
   "auth.signedInAs": "Signed in as",
+  "auth.adminBannerTitle": "Restricted: Equivalency Committee Access",
+  "auth.adminBannerDesc": "Sign in with an admin account to access the academic equivalency committee dashboard and manage requests.",
+  "auth.adminBannerDeniedDesc": "Your current account does not have admin privileges. Please sign out and use a committee member account.",
+  "home.admin.badge": "For committee members only",
+  "home.admin.title": "Equivalency Committee Portal",
+  "home.admin.desc": "If you are a member of the AUT Equivalency Committee, sign in to approve or reject student requests, add official notes, view live statistics, and export CSV.",
+  "home.admin.cta": "Open Admin Dashboard",
 
   // My Requests
   "myReq.title": "My Equivalency Requests",
