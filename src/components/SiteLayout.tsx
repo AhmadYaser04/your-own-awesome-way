@@ -170,6 +170,20 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
               </Button>
             )}
 
+            {/* Always-visible Admin entry — ProtectedRoute will redirect non-admins to /auth */}
+            {(!user || role !== "admin") && (
+              <Button
+                asChild
+                size="sm"
+                className="bg-gold text-gold-foreground hover:bg-gold/90 gap-1.5 hidden md:inline-flex font-bold shadow"
+              >
+                <Link to="/admin" title={t("auth.adminPanel")}>
+                  <ShieldCheck className="h-4 w-4" />
+                  <span className="text-xs">{t("auth.adminPanel")}</span>
+                </Link>
+              </Button>
+            )}
+
             <Button
               variant="ghost"
               size="icon"
