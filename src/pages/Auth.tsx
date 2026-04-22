@@ -33,7 +33,9 @@ export default function Auth() {
   const { t, dir } = useLang();
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
 
-  const from = (location.state as { from?: string } | null)?.from || "/equivalency";
+  const locState = (location.state as { from?: string; requireAdmin?: boolean; notAdmin?: boolean } | null) || {};
+  const adminFlow = !!locState.requireAdmin;
+  const from = locState.from || (adminFlow ? "/admin" : "/equivalency");
 
   const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [busy, setBusy] = useState(false);
@@ -129,6 +131,16 @@ export default function Auth() {
       </section>
 
       <section className="container mx-auto px-4 py-10 max-w-xl">
+        {adminFlow && (
+          <Alert className="mb-5 border-2 border-gold/60 bg-gold/10">
+            <ShieldCheck className="h-4 w-4 text-gold" />
+            <AlertDescription className="font-heading text-sm">
+              <strong>{t("auth.adminBannerTitle")}</strong>
+              <br />
+              {locState.notAdmin ? t("auth.adminBannerDeniedDesc") : t("auth.adminBannerDesc")}
+            </AlertDescription>
+          </Alert>
+        )}
         <Card className="p-6 md:p-8 border-2 shadow-elegant">
           <Tabs value={tab} onValueChange={(v) => { setTab(v as "signin" | "signup"); setErr(null); }}>
             <TabsList className="grid w-full grid-cols-2 mb-6">
