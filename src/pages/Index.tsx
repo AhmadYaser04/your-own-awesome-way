@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Brain, Sparkles, Target, Zap, BookOpen, Search, ArrowLeft, ArrowRight, GraduationCap, ScrollText, FileSearch, CheckCircle2 } from "lucide-react";
+import { Brain, Sparkles, Target, Zap, BookOpen, Search, ArrowLeft, ArrowRight, GraduationCap, ScrollText, FileSearch, CheckCircle2, ShieldCheck, LogIn } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -107,6 +107,35 @@ export default function Home() {
               <Button asChild variant="secondary" className="gap-2 mt-2">
                 <Link to="/college">
                   {t("home.collegeBtn")}
+                  <Arrow className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </section>
+
+      {/* Admin / Committee portal entry */}
+      <section className="container mx-auto px-4 pb-2 max-w-4xl">
+        <Card className="p-7 md:p-9 bg-gradient-to-br from-secondary/95 via-secondary to-primary/90 text-primary-foreground border-0 shadow-elegant relative overflow-hidden">
+          <div className="absolute -top-16 -right-16 w-56 h-56 bg-gold/30 rounded-full blur-3xl" />
+          <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-primary-foreground/20 rounded-full blur-3xl" />
+          <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 text-center md:text-start">
+            <div className="bg-gold text-gold-foreground p-5 rounded-2xl shrink-0 shadow-elegant">
+              <ShieldCheck className="h-14 w-14" />
+            </div>
+            <div className="flex-1 space-y-3">
+              <span className="inline-block text-xs font-bold bg-primary-foreground/20 backdrop-blur-md text-primary-foreground px-3 py-1 rounded-full">
+                {t("home.admin.badge")}
+              </span>
+              <h2 className="font-heading text-2xl md:text-3xl font-bold">{t("home.admin.title")}</h2>
+              <p className="text-primary-foreground/90 leading-relaxed text-sm md:text-base">
+                {t("home.admin.desc")}
+              </p>
+              <Button asChild size="lg" className="bg-gold text-gold-foreground hover:bg-gold/90 font-bold gap-2 mt-2">
+                <Link to="/admin">
+                  <LogIn className="h-5 w-5" />
+                  {t("home.admin.cta")}
                   <Arrow className="h-4 w-4" />
                 </Link>
               </Button>

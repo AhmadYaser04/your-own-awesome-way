@@ -225,15 +225,13 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                   >
                     <FileText className="h-4 w-4" /> {t("auth.myReqs")}
                   </RouterNavLink>
-                  {role === "admin" && (
-                    <RouterNavLink
-                      to="/admin"
-                      onClick={() => setOpen(false)}
-                      className="px-3 py-2.5 rounded-md text-sm font-heading text-primary-foreground/85 hover:bg-primary-foreground/10 flex items-center gap-2"
-                    >
-                      <ShieldCheck className="h-4 w-4" /> {t("auth.adminPanel")}
-                    </RouterNavLink>
-                  )}
+                  <RouterNavLink
+                    to="/admin"
+                    onClick={() => setOpen(false)}
+                    className="px-3 py-2.5 rounded-md text-sm font-heading text-gold-foreground bg-gold/90 flex items-center gap-2"
+                  >
+                    <ShieldCheck className="h-4 w-4" /> {t("auth.adminPanel")}
+                  </RouterNavLink>
                   <button
                     onClick={() => { setOpen(false); handleSignOut(); }}
                     className="px-3 py-2.5 rounded-md text-sm font-heading text-destructive-foreground bg-destructive/80 flex items-center gap-2"
@@ -242,13 +240,22 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
                   </button>
                 </>
               ) : (
-                <RouterNavLink
-                  to="/auth"
-                  onClick={() => setOpen(false)}
-                  className="px-3 py-2.5 rounded-md text-sm font-heading text-primary-foreground bg-gold/80 flex items-center gap-2"
-                >
-                  <LogIn className="h-4 w-4" /> {t("auth.signin.cta")}
-                </RouterNavLink>
+                <>
+                  <RouterNavLink
+                    to="/auth"
+                    onClick={() => setOpen(false)}
+                    className="px-3 py-2.5 rounded-md text-sm font-heading text-primary bg-primary-foreground flex items-center gap-2"
+                  >
+                    <LogIn className="h-4 w-4" /> {t("auth.signin.cta")}
+                  </RouterNavLink>
+                  <RouterNavLink
+                    to="/admin"
+                    onClick={() => setOpen(false)}
+                    className="px-3 py-2.5 rounded-md text-sm font-heading text-gold-foreground bg-gold/90 flex items-center gap-2"
+                  >
+                    <ShieldCheck className="h-4 w-4" /> {t("auth.adminPanel")}
+                  </RouterNavLink>
+                </>
               )}
             </div>
           </nav>
