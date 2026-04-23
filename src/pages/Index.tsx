@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Brain, Sparkles, Target, Zap, BookOpen, Search, ArrowLeft, ArrowRight, GraduationCap, ScrollText, FileSearch, CheckCircle2, ShieldCheck, LogIn } from "lucide-react";
+import { Brain, Sparkles, Target, Zap, BookOpen, Search, ArrowLeft, ArrowRight, GraduationCap, ScrollText, FileSearch, CheckCircle2, ShieldCheck, LogIn, Lightbulb, Rocket, Heart } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,10 +11,10 @@ export default function Home() {
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
 
   const stats = [
-    { icon: GraduationCap, value: "1", label: t("home.stat.spec"), color: "text-primary" },
-    { icon: BookOpen, value: "+15", label: t("home.stat.courses"), color: "text-secondary" },
-    { icon: Target, value: "AI", label: t("home.stat.engine"), color: "text-success" },
-    { icon: Zap, value: "<10", label: t("home.stat.speed"), color: "text-gold" },
+    { icon: GraduationCap, value: "1", label: t("home.stat.spec"), color: "text-primary", bg: "bg-primary/10" },
+    { icon: BookOpen, value: "+15", label: t("home.stat.courses"), color: "text-secondary", bg: "bg-secondary/10" },
+    { icon: Target, value: "AI", label: t("home.stat.engine"), color: "text-success", bg: "bg-success/10" },
+    { icon: Zap, value: "<10", label: t("home.stat.speed"), color: "text-gold", bg: "bg-gold/15" },
   ];
 
   const steps = [
@@ -151,14 +151,37 @@ export default function Home() {
           {stats.map((s, i) => (
             <Card
               key={s.label}
-              className="p-5 text-center hover:shadow-elegant transition-all animate-fade-up"
+              className="p-5 text-center hover:shadow-elegant transition-all hover:-translate-y-1 animate-fade-up border-2"
               style={{ animationDelay: `${i * 80}ms` }}
             >
-              <s.icon className={`h-8 w-8 mx-auto mb-2 ${s.color}`} />
+              <div className={`${s.bg} rounded-2xl w-14 h-14 mx-auto flex items-center justify-center mb-3`}>
+                <s.icon className={`h-7 w-7 ${s.color}`} />
+              </div>
               <div className="font-heading font-bold text-2xl text-foreground">{s.value}</div>
               <div className="text-xs text-muted-foreground font-heading mt-1">{s.label}</div>
             </Card>
           ))}
+        </div>
+      </section>
+
+      {/* Vibrant student-friendly perks strip */}
+      <section className="container mx-auto px-4 pb-14 max-w-5xl">
+        <div className="grid sm:grid-cols-3 gap-3">
+          <div className="rounded-2xl p-5 text-white shadow-elegant" style={{ background: "var(--gradient-student)" }}>
+            <Lightbulb className="h-7 w-7 mb-2" />
+            <div className="font-heading font-bold">{dir === "rtl" ? "نتيجة فورية" : "Instant result"}</div>
+            <div className="text-xs opacity-90 mt-1">{dir === "rtl" ? "أقل من 10 ثوانٍ لكل معادلة." : "Less than 10s per request."}</div>
+          </div>
+          <div className="rounded-2xl p-5 text-white shadow-elegant" style={{ background: "var(--gradient-vibrant)" }}>
+            <Rocket className="h-7 w-7 mb-2" />
+            <div className="font-heading font-bold">{dir === "rtl" ? "ادعم بـ 3 صيغ" : "3 input modes"}</div>
+            <div className="text-xs opacity-90 mt-1">{dir === "rtl" ? "نص، PDF، أو صورة من الهاتف." : "Text, PDF, or phone photo."}</div>
+          </div>
+          <div className="rounded-2xl p-5 text-white shadow-elegant" style={{ background: "var(--gradient-success)" }}>
+            <Heart className="h-7 w-7 mb-2" />
+            <div className="font-heading font-bold">{dir === "rtl" ? "موثوق ورسمي" : "Official & trusted"}</div>
+            <div className="text-xs opacity-90 mt-1">{dir === "rtl" ? "ختم لجنة المعادلات وتقرير PDF." : "Committee seal & PDF report."}</div>
+          </div>
         </div>
       </section>
     </SiteLayout>
