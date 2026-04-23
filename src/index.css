@@ -6,61 +6,61 @@
 
 @layer base {
   :root {
-    /* Brighter, airier educational background */
-    --background: 200 60% 99%;
-    --foreground: 220 55% 11%;
+    /* Ultra-bright, airy educational background — no dark tones */
+    --background: 200 80% 99%;
+    --foreground: 215 45% 22%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 55% 11%;
+    --card-foreground: 215 45% 22%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 55% 11%;
+    --popover-foreground: 215 45% 22%;
 
-    /* Vivid AUT-inspired navy/blue */
-    --primary: 220 80% 28%;
-    --primary-foreground: 200 60% 99%;
-    --primary-glow: 195 100% 55%;
+    /* Light sky blue primary — friendly, not heavy */
+    --primary: 200 90% 48%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 190 100% 70%;
 
-    /* Energetic electric cyan — student-friendly */
-    --secondary: 190 100% 48%;
+    /* Soft turquoise secondary */
+    --secondary: 175 75% 55%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 200 35% 95%;
-    --muted-foreground: 220 18% 35%;
+    --muted: 200 50% 96%;
+    --muted-foreground: 215 25% 45%;
 
-    /* Mint/teal accent for friendliness */
-    --accent: 165 80% 90%;
-    --accent-foreground: 175 80% 16%;
+    /* Soft mint accent */
+    --accent: 165 75% 92%;
+    --accent-foreground: 175 65% 28%;
 
-    /* Warm vivid gold (committee seal) */
-    --gold: 42 100% 55%;
-    --gold-foreground: 220 70% 10%;
+    /* Sunny gold (committee seal / CTAs) */
+    --gold: 42 95% 60%;
+    --gold-foreground: 30 60% 20%;
 
-    /* Lively pink/coral highlight (CTAs, badges) */
-    --highlight: 340 90% 60%;
+    /* Soft coral highlight */
+    --highlight: 340 85% 68%;
     --highlight-foreground: 0 0% 100%;
 
-    /* Vibrant green */
-    --success: 150 75% 42%;
+    /* Fresh green */
+    --success: 150 65% 50%;
 
-    --destructive: 0 85% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 75% 65%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 200 35% 88%;
-    --input: 200 35% 92%;
-    --ring: 190 100% 50%;
+    --border: 200 50% 90%;
+    --input: 200 50% 94%;
+    --ring: 200 90% 55%;
 
     --radius: 1rem;
 
-    --gradient-hero: linear-gradient(135deg, hsl(220 80% 28%) 0%, hsl(200 90% 38%) 40%, hsl(175 90% 45%) 80%, hsl(42 100% 60%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(200 90% 60%) 0%, hsl(190 95% 70%) 50%, hsl(42 95% 75%) 100%);
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(200 60% 97%));
-    --gradient-vibrant: linear-gradient(135deg, hsl(190 100% 50%) 0%, hsl(165 85% 50%) 35%, hsl(42 100% 60%) 70%, hsl(340 90% 65%) 100%);
-    --gradient-student: linear-gradient(135deg, hsl(280 80% 60%) 0%, hsl(220 90% 55%) 50%, hsl(190 100% 50%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(165 85% 45%) 0%, hsl(150 80% 50%) 100%);
-    --shadow-elegant: 0 18px 50px -16px hsl(190 90% 35% / 0.32);
-    --shadow-glow: 0 0 70px hsl(190 100% 55% / 0.40);
-    --shadow-warm: 0 14px 40px -12px hsl(42 100% 50% / 0.30);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(200 70% 98%));
+    --gradient-vibrant: linear-gradient(135deg, hsl(190 95% 65%) 0%, hsl(165 80% 65%) 35%, hsl(42 95% 70%) 70%, hsl(340 85% 75%) 100%);
+    --gradient-student: linear-gradient(135deg, hsl(280 70% 75%) 0%, hsl(220 85% 70%) 50%, hsl(190 95% 65%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(165 75% 60%) 0%, hsl(150 70% 60%) 100%);
+    --shadow-elegant: 0 12px 36px -14px hsl(200 90% 50% / 0.22);
+    --shadow-glow: 0 0 60px hsl(190 100% 70% / 0.35);
+    --shadow-warm: 0 10px 30px -10px hsl(42 95% 60% / 0.25);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 215 30% 26%;
