@@ -642,13 +642,11 @@ export default function Admin() {
                   </Button>
                 </div>
 
-                {/* PDF + Delete */}
+                {/* PDF + Delete — PDF always available */}
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     onClick={() => printPdf(active)}
-                    className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 flex-1 font-bold"
-                    disabled={active.status === "pending"}
-                    title={active.status === "pending" ? t("admin.printPdfHint") : ""}
+                    className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 flex-1 font-bold shadow-warm"
                   >
                     <Printer className="h-4 w-4" /> {t("admin.printPdf")}
                   </Button>
@@ -656,9 +654,6 @@ export default function Admin() {
                     <Trash2 className="h-4 w-4" /> {t("admin.delete")}
                   </Button>
                 </div>
-                {active.status === "pending" && (
-                  <p className="text-xs text-muted-foreground text-center">{t("admin.printPdfHint")}</p>
-                )}
 
                 <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground border-t pt-3">
                   <ShieldCheck className="h-3 w-3 text-gold" />
