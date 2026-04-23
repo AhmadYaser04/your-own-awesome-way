@@ -516,11 +516,9 @@ export default function Admin() {
                         <div className="text-[10px] text-muted-foreground">{t("admin.aiSimilarity")}</div>
                       </div>
                     )}
-                    {r.status !== "pending" && (
-                      <Button size="sm" variant="outline" className="gap-1 border-gold/50 text-gold-foreground bg-gold/10 hover:bg-gold/20" onClick={() => printPdf(r)}>
-                        <Printer className="h-4 w-4" /> PDF
-                      </Button>
-                    )}
+                    <Button size="sm" variant="outline" className="gap-1 border-gold/50 text-gold-foreground bg-gold/15 hover:bg-gold/25" onClick={() => printPdf(r)}>
+                      <Printer className="h-4 w-4" /> PDF
+                    </Button>
                     <Button size="sm" variant="outline" className="gap-1" onClick={() => { setActive(r); setNotes(r.admin_notes || ""); setDescExpanded(false); }}>
                       <Eye className="h-4 w-4" /> {t("admin.review")}
                     </Button>
