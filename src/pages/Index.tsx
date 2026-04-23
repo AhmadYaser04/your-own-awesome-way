@@ -4,7 +4,7 @@ import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useLang } from "@/i18n/LanguageProvider";
-import heroBg from "@/assets/aut-campus.png";
+import heroBg from "@/assets/aut-campus-bright.jpg";
 
 export default function Home() {
   const { t, dir } = useLang();
@@ -25,43 +25,52 @@ export default function Home() {
 
   return (
     <SiteLayout>
-      {/* Hero with AUT campus */}
-      <section className="relative overflow-hidden">
-        <img
-          src={heroBg}
-          alt={t("header.title")}
-          className="absolute inset-0 w-full h-full object-cover"
-          width={1920}
-          height={900}
-        />
-        <div className="absolute inset-0" style={{ background: "var(--gradient-hero)", opacity: 0.92 }} />
-        <div className="relative z-10 container mx-auto px-4 py-20 md:py-28 text-center">
-          <span className="inline-flex items-center gap-2 bg-primary-foreground/15 backdrop-blur-md border border-primary-foreground/30 text-primary-foreground text-xs md:text-sm font-heading font-bold px-4 py-1.5 rounded-full mb-5 animate-fade-up">
-            <Sparkles className="h-3.5 w-3.5" />
-            {t("home.badge")}
-          </span>
-          <h1 className="font-heading text-3xl md:text-5xl font-bold text-primary-foreground mb-4 animate-fade-up leading-tight">
-            {t("home.title")}
-          </h1>
-          <p className="text-primary-foreground/90 text-base md:text-xl max-w-3xl mx-auto font-heading mb-3 animate-fade-up">
-            {t("home.tagline")}
-          </p>
-          <p className="text-primary-foreground/75 text-sm md:text-base max-w-2xl mx-auto mb-8 animate-fade-up">
-            {t("home.subtagline")}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center animate-fade-up">
-            <Button asChild size="lg" className="bg-gold text-gold-foreground hover:bg-gold/90 font-bold gap-2 shadow-elegant">
-              <Link to="/equivalency">
-                <Search className="h-5 w-5" />
-                {t("home.cta.start")}
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="bg-primary-foreground/10 border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/20 backdrop-blur-md gap-2">
-              <Link to="/college">
-                <Brain className="h-5 w-5" />
-                {t("home.cta.explore")}
-              </Link>
-            </Button>
+      {/* Hero with AUT campus — image takes center stage */}
+      <section className="relative bg-gradient-to-b from-accent/40 via-background to-background pt-8 pb-16">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center mb-8 space-y-3">
+            <span className="inline-flex items-center gap-2 bg-gold/20 border border-gold/40 text-gold-foreground text-xs md:text-sm font-heading font-bold px-4 py-1.5 rounded-full animate-fade-up">
+              <Sparkles className="h-3.5 w-3.5" />
+              {t("home.badge")}
+            </span>
+            <h1 className="font-heading text-3xl md:text-5xl font-bold text-foreground animate-fade-up leading-tight">
+              {t("home.title")}
+            </h1>
+            <p className="text-muted-foreground text-base md:text-xl max-w-3xl mx-auto font-heading animate-fade-up">
+              {t("home.tagline")}
+            </p>
+          </div>
+
+          {/* Big bright campus showcase */}
+          <div className="relative rounded-3xl overflow-hidden shadow-elegant border-4 border-card animate-fade-up">
+            <img
+              src={heroBg}
+              alt={t("header.title")}
+              className="w-full h-[280px] md:h-[460px] object-cover"
+              width={1920}
+              height={1080}
+            />
+            {/* Light gradient only at bottom for text legibility */}
+            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-primary/85 via-primary/40 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-6 md:p-10">
+              <p className="text-white text-sm md:text-lg font-heading mb-4 max-w-2xl drop-shadow-lg">
+                {t("home.subtagline")}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button asChild size="lg" className="bg-gold text-gold-foreground hover:bg-gold/90 font-bold gap-2 shadow-warm">
+                  <Link to="/equivalency">
+                    <Search className="h-5 w-5" />
+                    {t("home.cta.start")}
+                  </Link>
+                </Button>
+                <Button asChild size="lg" className="bg-white/95 text-primary hover:bg-white font-bold gap-2 backdrop-blur-md">
+                  <Link to="/college">
+                    <Brain className="h-5 w-5" />
+                    {t("home.cta.explore")}
+                  </Link>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
