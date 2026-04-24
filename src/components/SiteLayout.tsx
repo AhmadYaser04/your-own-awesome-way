@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLang } from "@/i18n/LanguageProvider";
 import { useAuth } from "@/hooks/useAuth";
-import logo from "@/assets/aut-logo-full.jpg";
+import logo from "@/assets/aut-logo-official.png";
 
 const AUT_URL = "https://www.aut.edu.jo/home/ar";
 
