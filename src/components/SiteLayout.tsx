@@ -95,25 +95,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
 
           <div className="flex items-center gap-1">
             <ThemeToggle className="text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground" />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggle}
-              aria-label="Switch language"
-              className="hidden md:inline-flex text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground gap-1.5"
-            >
-              <Languages className="h-4 w-4" />
-              <span className="text-xs font-bold">{t("header.toggleLang")}</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggle}
-              aria-label="Switch language"
-              className="md:hidden text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
-            >
-              <Languages className="h-4 w-4" />
-            </Button>
+            {/* تم تعطيل خيار تبديل اللغة — العربية حصراً */}
 
             {user ? (
               <DropdownMenu>

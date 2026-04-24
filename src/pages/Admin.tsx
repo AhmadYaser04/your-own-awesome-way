@@ -33,7 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/i18n/LanguageProvider";
 import { exportDecisionPdf } from "@/lib/exportDecisionPdf";
-import campus from "@/assets/aut-campus.png";
+import campus from "@/assets/aut-campus-bright.png";
 import logo from "@/assets/aut-logo-full.jpg";
 
 type Status = "pending" | "approved" | "rejected";

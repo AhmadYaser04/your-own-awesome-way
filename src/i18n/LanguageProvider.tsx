@@ -471,10 +471,8 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(() => {
-    if (typeof window === "undefined") return "ar";
-    return (localStorage.getItem("lang") as Lang) || "ar";
-  });
+  // اللغة افتراضياً وحصراً عربية — لا تُحفظ تفضيلات قديمة
+  const [lang, setLangState] = useState<Lang>("ar");
 
   const dir: "rtl" | "ltr" = lang === "ar" ? "rtl" : "ltr";
 
