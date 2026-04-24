@@ -20,6 +20,7 @@ interface Row {
   verdict: string | null;
   status: "pending" | "approved" | "rejected";
   admin_notes: string | null;
+  reviewer_name: string | null;
   created_at: string;
   reviewed_at: string | null;
 }
@@ -104,12 +105,22 @@ export default function MyRequests() {
                   <Progress value={Number(r.similarity ?? 0)} className="h-1.5" />
                 </div>
               )}
-              {r.admin_notes && (
+              {(r.admin_notes || r.reviewer_name) && (
                 <div className={`flex gap-2 text-sm bg-primary/5 p-3 rounded-md ${dir === "rtl" ? "border-r-2" : "border-l-2"} border-primary`}>
                   <MessageSquare className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <div className="text-xs text-muted-foreground font-heading">{t("myReq.adminNotes")}</div>
-                    <div className="text-foreground">{r.admin_notes}</div>
+                  <div className="flex-1 space-y-1">
+                    {r.reviewer_name && (
+                      <div className="text-xs">
+                        <span className="text-muted-foreground font-heading">القرار صادر عن: </span>
+                        <span className="font-heading font-bold text-primary">د. {r.reviewer_name}</span>
+                      </div>
+                    )}
+                    {r.admin_notes && (
+                      <>
+                        <div className="text-xs text-muted-foreground font-heading">{t("myReq.adminNotes")}</div>
+                        <div className="text-foreground">{r.admin_notes}</div>
+                      </>
+                    )}
                   </div>
                 </div>
               )}

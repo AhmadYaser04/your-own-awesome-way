@@ -34,7 +34,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/i18n/LanguageProvider";
 import { exportDecisionPdf } from "@/lib/exportDecisionPdf";
 import campus from "@/assets/aut-campus-bright.png";
-import logo from "@/assets/aut-logo-full.jpg";
+import logo from "@/assets/aut-logo-official.png";
 
 type Status = "pending" | "approved" | "rejected";
 type SortKey = "newest" | "oldest" | "simHigh" | "simLow";
