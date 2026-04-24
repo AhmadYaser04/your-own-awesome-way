@@ -633,6 +633,21 @@ export default function Admin() {
 
                 <Separator />
 
+                {/* اسم المشرف الموقّع */}
+                <div>
+                  <div className="font-heading font-bold text-sm mb-1.5 flex items-center gap-1.5">
+                    <ShieldCheck className="h-4 w-4 text-gold" /> اسم الدكتور / المشرف الأكاديمي
+                    <span className="text-xs text-destructive">*</span>
+                  </div>
+                  <Input
+                    value={reviewerName}
+                    onChange={(e) => setReviewerName(e.target.value)}
+                    placeholder="مثال: محمد عبد الله — يظهر للطالب وفي ملف PDF الرسمي"
+                    dir={dir}
+                    className="font-heading"
+                  />
+                </div>
+
                 <div>
                   <div className="font-heading font-bold text-sm mb-1.5 flex items-center gap-1.5">
                     <MessageSquare className="h-4 w-4 text-primary" /> {t("admin.notesLabel")}
@@ -660,11 +675,51 @@ export default function Admin() {
                   </Button>
                 </div>
 
-                {/* PDF + Delete — PDF always available */}
+                {/* بانر مميز يظهر بعد القبول/الرفض ويوفر طباعة PDF */}
+                {(active.status === "approved" || active.status === "rejected") && (
+                  <div
+                    className={`rounded-lg p-4 border-2 ${
+                      active.status === "approved"
+                        ? "border-success/40 bg-success/5"
+                        : "border-destructive/40 bg-destructive/5"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      {active.status === "approved" ? (
+                        <CheckCircle2 className="h-5 w-5 text-success" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-destructive" />
+                      )}
+                      <span className="font-heading font-bold text-sm">
+                        {active.status === "approved"
+                          ? "تم اعتماد المعادلة بنجاح"
+                          : "تم رفض المعادلة"}
+                      </span>
+                      {active.reviewer_name && (
+                        <Badge variant="outline" className="text-[10px]">
+                          د. {active.reviewer_name}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      اضغط على الزر أدناه لتنزيل شهادة المعادلة الرسمية بصيغة PDF (مختومة وموقّعة).
+                    </p>
+                    <Button
+                      onClick={() => printPdf(active)}
+                      size="lg"
+                      className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 w-full font-bold shadow-elegant"
+                    >
+                      <Printer className="h-5 w-5" /> تنزيل شهادة المعادلة الرسمية (PDF)
+                    </Button>
+                  </div>
+                )}
+
+                {/* أزرار PDF + حذف العامة */}
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     onClick={() => printPdf(active)}
-                    className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 flex-1 font-bold shadow-warm"
+                    variant="outline"
+                    className="gap-2 flex-1 border-gold/40 text-gold-foreground bg-gold/10 hover:bg-gold/20"
                   >
                     <Printer className="h-4 w-4" /> {t("admin.printPdf")}
                   </Button>
