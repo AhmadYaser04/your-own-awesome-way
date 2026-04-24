@@ -68,6 +68,7 @@ export default function Admin() {
   const [sort, setSort] = useState<SortKey>("newest");
   const [active, setActive] = useState<ReqRow | null>(null);
   const [notes, setNotes] = useState("");
+  const [reviewerName, setReviewerName] = useState("");
   const [busy, setBusy] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
