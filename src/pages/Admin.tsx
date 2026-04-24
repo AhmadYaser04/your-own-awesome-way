@@ -174,26 +174,43 @@ export default function Admin() {
 
   const decide = async (status: Status) => {
     if (!active || !user) return;
+    if ((status === "approved" || status === "rejected") && !reviewerName.trim()) {
+      toast({
+        title: "اسم المشرف مطلوب",
+        description: "يرجى إدخال اسم الدكتور / المشرف الأكاديمي قبل اعتماد القرار.",
+        variant: "destructive",
+      });
+      return;
+    }
     setBusy(true);
+    const reviewedAtIso = new Date().toISOString();
+    const finalReviewer = reviewerName.trim() || null;
     const { error } = await supabase
       .from("equivalency_requests")
       .update({
         status,
         admin_notes: notes.trim() || null,
+        reviewer_name: finalReviewer,
         reviewed_by: user.id,
-        reviewed_at: new Date().toISOString(),
+        reviewed_at: reviewedAtIso,
       })
       .eq("id", active.id);
     setBusy(false);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
       return;
     }
     toast({
       title: status === "approved" ? t("admin.approvedToast") : t("admin.rejectedToast"),
+      description: finalReviewer ? `بواسطة د. ${finalReviewer}` : undefined,
     });
-    // refresh active row in-place so the print PDF can use latest values
-    const refreshed: ReqRow = { ...active, status, admin_notes: notes.trim() || null, reviewed_at: new Date().toISOString() };
+    const refreshed: ReqRow = {
+      ...active,
+      status,
+      admin_notes: notes.trim() || null,
+      reviewer_name: finalReviewer,
+      reviewed_at: reviewedAtIso,
+    };
     setActive(refreshed);
     load();
   };
@@ -204,7 +221,7 @@ export default function Admin() {
       studentName: r.profile?.full_name || "—",
       studentEmail: r.profile?.email || "—",
       saudiUniversity: r.profile?.saudi_university || "—",
-      saudiCourseName: r.saudi_course_name || "(unnamed)",
+      saudiCourseName: r.saudi_course_name || "(بدون اسم)",
       saudiCourseDescription: r.saudi_course_description || "",
       inputMode: r.input_mode,
       matchedCode: r.matched_aut_code || "—",
@@ -213,9 +230,10 @@ export default function Admin() {
       verdict: r.verdict || "—",
       status: r.status,
       adminNotes: r.admin_notes || "",
+      reviewerName: r.reviewer_name || reviewerName || "",
       reviewerEmail: user?.email || "—",
-      reviewedAt: r.reviewed_at ? new Date(r.reviewed_at).toLocaleString("en-US") : "—",
-      submittedAt: new Date(r.created_at).toLocaleString("en-US"),
+      reviewedAt: r.reviewed_at || "",
+      submittedAt: r.created_at,
     });
   };
 
