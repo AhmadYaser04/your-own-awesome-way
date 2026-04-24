@@ -34,7 +34,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/i18n/LanguageProvider";
 import { exportDecisionPdf } from "@/lib/exportDecisionPdf";
 import campus from "@/assets/aut-campus-bright.png";
-import logo from "@/assets/aut-logo-full.jpg";
+import logo from "@/assets/aut-logo-official.png";
 
 type Status = "pending" | "approved" | "rejected";
 type SortKey = "newest" | "oldest" | "simHigh" | "simLow";
@@ -51,6 +51,7 @@ interface ReqRow {
   verdict: string | null;
   status: Status;
   admin_notes: string | null;
+  reviewer_name: string | null;
   reviewed_at: string | null;
   created_at: string;
   ai_result: unknown;
@@ -67,6 +68,7 @@ export default function Admin() {
   const [sort, setSort] = useState<SortKey>("newest");
   const [active, setActive] = useState<ReqRow | null>(null);
   const [notes, setNotes] = useState("");
+  const [reviewerName, setReviewerName] = useState("");
   const [busy, setBusy] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -172,26 +174,43 @@ export default function Admin() {
 
   const decide = async (status: Status) => {
     if (!active || !user) return;
+    if ((status === "approved" || status === "rejected") && !reviewerName.trim()) {
+      toast({
+        title: "اسم المشرف مطلوب",
+        description: "يرجى إدخال اسم الدكتور / المشرف الأكاديمي قبل اعتماد القرار.",
+        variant: "destructive",
+      });
+      return;
+    }
     setBusy(true);
+    const reviewedAtIso = new Date().toISOString();
+    const finalReviewer = reviewerName.trim() || null;
     const { error } = await supabase
       .from("equivalency_requests")
       .update({
         status,
         admin_notes: notes.trim() || null,
+        reviewer_name: finalReviewer,
         reviewed_by: user.id,
-        reviewed_at: new Date().toISOString(),
+        reviewed_at: reviewedAtIso,
       })
       .eq("id", active.id);
     setBusy(false);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
       return;
     }
     toast({
       title: status === "approved" ? t("admin.approvedToast") : t("admin.rejectedToast"),
+      description: finalReviewer ? `بواسطة د. ${finalReviewer}` : undefined,
     });
-    // refresh active row in-place so the print PDF can use latest values
-    const refreshed: ReqRow = { ...active, status, admin_notes: notes.trim() || null, reviewed_at: new Date().toISOString() };
+    const refreshed: ReqRow = {
+      ...active,
+      status,
+      admin_notes: notes.trim() || null,
+      reviewer_name: finalReviewer,
+      reviewed_at: reviewedAtIso,
+    };
     setActive(refreshed);
     load();
   };
@@ -202,7 +221,7 @@ export default function Admin() {
       studentName: r.profile?.full_name || "—",
       studentEmail: r.profile?.email || "—",
       saudiUniversity: r.profile?.saudi_university || "—",
-      saudiCourseName: r.saudi_course_name || "(unnamed)",
+      saudiCourseName: r.saudi_course_name || "(بدون اسم)",
       saudiCourseDescription: r.saudi_course_description || "",
       inputMode: r.input_mode,
       matchedCode: r.matched_aut_code || "—",
@@ -211,9 +230,10 @@ export default function Admin() {
       verdict: r.verdict || "—",
       status: r.status,
       adminNotes: r.admin_notes || "",
+      reviewerName: r.reviewer_name || reviewerName || "",
       reviewerEmail: user?.email || "—",
-      reviewedAt: r.reviewed_at ? new Date(r.reviewed_at).toLocaleString("en-US") : "—",
-      submittedAt: new Date(r.created_at).toLocaleString("en-US"),
+      reviewedAt: r.reviewed_at || "",
+      submittedAt: r.created_at,
     });
   };
 
@@ -519,7 +539,7 @@ export default function Admin() {
                     <Button size="sm" variant="outline" className="gap-1 border-gold/50 text-gold-foreground bg-gold/15 hover:bg-gold/25" onClick={() => printPdf(r)}>
                       <Printer className="h-4 w-4" /> PDF
                     </Button>
-                    <Button size="sm" variant="outline" className="gap-1" onClick={() => { setActive(r); setNotes(r.admin_notes || ""); setDescExpanded(false); }}>
+                    <Button size="sm" variant="outline" className="gap-1" onClick={() => { setActive(r); setNotes(r.admin_notes || ""); setReviewerName(r.reviewer_name || ""); setDescExpanded(false); }}>
                       <Eye className="h-4 w-4" /> {t("admin.review")}
                     </Button>
                   </div>
@@ -531,7 +551,7 @@ export default function Admin() {
       </section>
 
       {/* Review dialog */}
-      <Dialog open={!!active} onOpenChange={(o) => { if (!o) { setActive(null); setNotes(""); setDescExpanded(false); } }}>
+      <Dialog open={!!active} onOpenChange={(o) => { if (!o) { setActive(null); setNotes(""); setReviewerName(""); setDescExpanded(false); } }}>
         <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto p-0" dir={dir}>
           {active && (
             <>
@@ -613,6 +633,21 @@ export default function Admin() {
 
                 <Separator />
 
+                {/* اسم المشرف الموقّع */}
+                <div>
+                  <div className="font-heading font-bold text-sm mb-1.5 flex items-center gap-1.5">
+                    <ShieldCheck className="h-4 w-4 text-gold" /> اسم الدكتور / المشرف الأكاديمي
+                    <span className="text-xs text-destructive">*</span>
+                  </div>
+                  <Input
+                    value={reviewerName}
+                    onChange={(e) => setReviewerName(e.target.value)}
+                    placeholder="مثال: محمد عبد الله — يظهر للطالب وفي ملف PDF الرسمي"
+                    dir={dir}
+                    className="font-heading"
+                  />
+                </div>
+
                 <div>
                   <div className="font-heading font-bold text-sm mb-1.5 flex items-center gap-1.5">
                     <MessageSquare className="h-4 w-4 text-primary" /> {t("admin.notesLabel")}
@@ -640,11 +675,51 @@ export default function Admin() {
                   </Button>
                 </div>
 
-                {/* PDF + Delete — PDF always available */}
+                {/* بانر مميز يظهر بعد القبول/الرفض ويوفر طباعة PDF */}
+                {(active.status === "approved" || active.status === "rejected") && (
+                  <div
+                    className={`rounded-lg p-4 border-2 ${
+                      active.status === "approved"
+                        ? "border-success/40 bg-success/5"
+                        : "border-destructive/40 bg-destructive/5"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      {active.status === "approved" ? (
+                        <CheckCircle2 className="h-5 w-5 text-success" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-destructive" />
+                      )}
+                      <span className="font-heading font-bold text-sm">
+                        {active.status === "approved"
+                          ? "تم اعتماد المعادلة بنجاح"
+                          : "تم رفض المعادلة"}
+                      </span>
+                      {active.reviewer_name && (
+                        <Badge variant="outline" className="text-[10px]">
+                          د. {active.reviewer_name}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      اضغط على الزر أدناه لتنزيل شهادة المعادلة الرسمية بصيغة PDF (مختومة وموقّعة).
+                    </p>
+                    <Button
+                      onClick={() => printPdf(active)}
+                      size="lg"
+                      className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 w-full font-bold shadow-elegant"
+                    >
+                      <Printer className="h-5 w-5" /> تنزيل شهادة المعادلة الرسمية (PDF)
+                    </Button>
+                  </div>
+                )}
+
+                {/* أزرار PDF + حذف العامة */}
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     onClick={() => printPdf(active)}
-                    className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 flex-1 font-bold shadow-warm"
+                    variant="outline"
+                    className="gap-2 flex-1 border-gold/40 text-gold-foreground bg-gold/10 hover:bg-gold/20"
                   >
                     <Printer className="h-4 w-4" /> {t("admin.printPdf")}
                   </Button>

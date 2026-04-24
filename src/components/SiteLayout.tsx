@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLang } from "@/i18n/LanguageProvider";
 import { useAuth } from "@/hooks/useAuth";
-import logo from "@/assets/aut-logo-full.jpg";
+import logo from "@/assets/aut-logo-official.png";
 
 const AUT_URL = "https://www.aut.edu.jo/home/ar";
 
@@ -95,7 +95,17 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
 
           <div className="flex items-center gap-1">
             <ThemeToggle className="text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground" />
-            {/* تم تعطيل خيار تبديل اللغة — العربية حصراً */}
+            {/* زر تبديل اللغة عربي/إنجليزي */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggle}
+              className="text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground gap-1.5 hidden sm:inline-flex"
+              title={t("header.toggleLang")}
+            >
+              <Languages className="h-4 w-4" />
+              <span className="text-xs font-bold">{t("header.toggleLang")}</span>
+            </Button>
 
             {user ? (
               <DropdownMenu>
