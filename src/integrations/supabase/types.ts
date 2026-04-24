@@ -25,6 +25,7 @@ export type Database = {
           matched_aut_name: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          reviewer_name: string | null
           saudi_course_description: string | null
           saudi_course_name: string | null
           similarity: number | null
@@ -43,6 +44,7 @@ export type Database = {
           matched_aut_name?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          reviewer_name?: string | null
           saudi_course_description?: string | null
           saudi_course_name?: string | null
           similarity?: number | null
@@ -61,6 +63,7 @@ export type Database = {
           matched_aut_name?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          reviewer_name?: string | null
           saudi_course_description?: string | null
           saudi_course_name?: string | null
           similarity?: number | null
