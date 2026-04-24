@@ -51,6 +51,7 @@ interface ReqRow {
   verdict: string | null;
   status: Status;
   admin_notes: string | null;
+  reviewer_name: string | null;
   reviewed_at: string | null;
   created_at: string;
   ai_result: unknown;
