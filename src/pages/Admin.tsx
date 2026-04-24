@@ -539,7 +539,7 @@ export default function Admin() {
                     <Button size="sm" variant="outline" className="gap-1 border-gold/50 text-gold-foreground bg-gold/15 hover:bg-gold/25" onClick={() => printPdf(r)}>
                       <Printer className="h-4 w-4" /> PDF
                     </Button>
-                    <Button size="sm" variant="outline" className="gap-1" onClick={() => { setActive(r); setNotes(r.admin_notes || ""); setDescExpanded(false); }}>
+                    <Button size="sm" variant="outline" className="gap-1" onClick={() => { setActive(r); setNotes(r.admin_notes || ""); setReviewerName(r.reviewer_name || ""); setDescExpanded(false); }}>
                       <Eye className="h-4 w-4" /> {t("admin.review")}
                     </Button>
                   </div>
@@ -551,7 +551,7 @@ export default function Admin() {
       </section>
 
       {/* Review dialog */}
-      <Dialog open={!!active} onOpenChange={(o) => { if (!o) { setActive(null); setNotes(""); setDescExpanded(false); } }}>
+      <Dialog open={!!active} onOpenChange={(o) => { if (!o) { setActive(null); setNotes(""); setReviewerName(""); setDescExpanded(false); } }}>
         <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto p-0" dir={dir}>
           {active && (
             <>
