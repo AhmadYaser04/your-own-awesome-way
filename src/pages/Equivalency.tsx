@@ -393,7 +393,35 @@ export default function Equivalency() {
               </div>
             </div>
 
-            {/* Save status banner */}
+            {/* زر تنزيل التقرير الأولي PDF */}
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch">
+              <Button
+                onClick={() =>
+                  exportPreliminaryPdf({
+                    studentName: user?.user_metadata?.full_name || user?.email || "—",
+                    studentEmail: user?.email || "—",
+                    saudiUniversity: (user?.user_metadata?.saudi_university as string) || "—",
+                    inputMode: mode,
+                    generatedAt: new Date().toISOString(),
+                    courses: [
+                      {
+                        saudi_course: result.extracted_course || input || "",
+                        matches: result.matches,
+                        verdict: result.verdict,
+                        overall_similarity: result.overall_similarity,
+                        summary: result.summary,
+                      },
+                    ],
+                  })
+                }
+                size="lg"
+                className="bg-gold text-gold-foreground hover:bg-gold/90 gap-2 flex-1 font-bold shadow-warm"
+              >
+                <Download className="h-5 w-5" />
+                تحميل التقرير الأولي PDF
+              </Button>
+            </div>
+
             {user && savedId && (
               <Alert className="border-success/40 bg-success/5">
                 <Save className="h-4 w-4 text-success" />
