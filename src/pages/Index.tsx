@@ -4,7 +4,7 @@ import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useLang } from "@/i18n/LanguageProvider";
-import heroBg from "@/assets/aut-campus-bright.jpg";
+import heroBg from "@/assets/aut-campus-bright.png";
 
 export default function Home() {
   const { t, dir } = useLang();
