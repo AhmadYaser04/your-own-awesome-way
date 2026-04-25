@@ -104,21 +104,49 @@ export default function Equivalency() {
   const persistRequest = async (res: Result, descriptionText: string) => {
     if (!user) return;
     setSaving(true);
-    const top = res.matches?.[0];
+    const courses = res.courses ?? [];
+    const isBatch = (res.is_batch ?? courses.length > 1) && courses.length > 1;
+    const top = res.matches?.[0] ?? courses[0]?.matches?.[0];
+
+    const headerName = isBatch
+      ? `📚 دفعة من ${courses.length} مواد`
+      : courses[0]?.saudi_course_name ||
+        res.extracted_course?.split("\n")[0]?.slice(0, 200) ||
+        descriptionText.split("\n")[0]?.slice(0, 200) ||
+        null;
+
+    const headerDesc = isBatch
+      ? `طلب جماعي يحتوي على ${courses.length} مواد سعودية:\n` +
+        courses
+          .map(
+            (c, i) =>
+              `${i + 1}. ${c.saudi_course_name} → ${c.matches?.[0]?.aut_name ?? "—"} (${Math.round(
+                c.overall_similarity ?? 0
+              )}%) — ${c.verdict}`
+          )
+          .join("\n")
+      : descriptionText.slice(0, 8000);
+
     const { data, error: dbErr } = await supabase
       .from("equivalency_requests")
-      .insert([{
-        user_id: user.id,
-        saudi_course_name: res.extracted_course?.split("\n")[0]?.slice(0, 200) || descriptionText.split("\n")[0]?.slice(0, 200) || null,
-        saudi_course_description: descriptionText.slice(0, 8000),
-        input_mode: mode,
-        ai_result: res as unknown as never,
-        matched_aut_code: top?.aut_code ?? null,
-        matched_aut_name: top?.aut_name ?? null,
-        similarity: res.overall_similarity ?? null,
-        verdict: res.verdict ?? null,
-        status: "pending",
-      }])
+      .insert([
+        {
+          user_id: user.id,
+          saudi_course_name: headerName,
+          saudi_course_description: headerDesc,
+          input_mode: mode,
+          ai_result: res as unknown as never,
+          matched_aut_code: top?.aut_code ?? null,
+          matched_aut_name: top?.aut_name ?? null,
+          similarity: isBatch
+            ? Math.round(
+                courses.reduce((a, c) => a + (c.overall_similarity ?? 0), 0) / courses.length
+              )
+            : res.overall_similarity ?? null,
+          verdict: isBatch ? `دفعة (${courses.length} مواد)` : res.verdict ?? null,
+          status: "pending",
+        },
+      ])
       .select("id")
       .single();
     setSaving(false);
