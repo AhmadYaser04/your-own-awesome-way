@@ -11,6 +11,7 @@ import {
   formatDate,
   getLogoDataUrl,
   wrapArabic,
+  shapeForDraw,
 } from "./pdfHelpers";
 
 export interface DecisionPdfData {
@@ -110,7 +111,7 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
   const descLines = wrapArabic(doc, (data.saudiCourseDescription || "").slice(0, 320), contentW - 28);
   let dy = y + 60;
   for (const line of descLines.slice(0, 3)) {
-    doc.text(line, pageW - margin - 14, dy, { align: "right" });
+    doc.text(shapeForDraw(line), pageW - margin - 14, dy, { align: "right" });
     dy += 12;
   }
   y += srcH + 12;
@@ -159,7 +160,7 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
   doc.setTextColor(40, 40, 60);
   let ny = y + 18;
   for (const line of notesLines) {
-    doc.text(line, pageW - margin - 12, ny, { align: "right" });
+    doc.text(shapeForDraw(line), pageW - margin - 12, ny, { align: "right" });
     ny += 14;
   }
   y += notesH + 20;
