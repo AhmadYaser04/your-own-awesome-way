@@ -215,9 +215,28 @@ ${catalogText}
       console.error("Invalid AI response", JSON.stringify(data).slice(0, 500));
       throw new Error("استجابة الذكاء الاصطناعي غير صالحة");
     }
-    const result = JSON.parse(toolCall.function.arguments);
+    const raw = JSON.parse(toolCall.function.arguments);
+    const courses: any[] = Array.isArray(raw.courses) ? raw.courses : [];
+    if (courses.length === 0) {
+      throw new Error("لم يتم استخراج أي مادة من المدخل.");
+    }
 
-    return new Response(JSON.stringify(result), {
+    // نضع legacy fields من أول مادة للتوافق مع الواجهة الحالية،
+    // ونرفق المصفوفة كاملة للوضع الدفعي.
+    const first = courses[0] ?? {};
+    const response = {
+      // ===== legacy fields (مادة واحدة) =====
+      matches: first.matches ?? [],
+      verdict: first.verdict ?? "لا تُعادَل",
+      overall_similarity: first.overall_similarity ?? 0,
+      summary: first.summary ?? "",
+      extracted_course: first.extracted_course ?? "",
+      // ===== batch (كل المواد) =====
+      is_batch: courses.length > 1,
+      courses,
+    };
+
+    return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
