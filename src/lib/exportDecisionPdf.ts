@@ -32,6 +32,16 @@ export interface DecisionPdfData {
   reviewerEmail: string;
   reviewedAt: string;
   submittedAt: string;
+  /** عند وجود أكثر من مادة (طلب جماعي) — كل مادة بقرارها الخاص. */
+  batchCourses?: Array<{
+    saudi_course_name: string;
+    matched_aut_name?: string;
+    matched_aut_code?: string;
+    similarity: number;
+    verdict: string;
+    summary?: string;
+    decision?: { status: "approved" | "rejected" | "pending"; notes?: string };
+  }>;
 }
 
 const STATUS_LABEL: Record<DecisionPdfData["status"], string> = {
