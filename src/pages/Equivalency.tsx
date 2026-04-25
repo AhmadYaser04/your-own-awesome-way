@@ -537,8 +537,9 @@ export default function Equivalency() {
                 </Link>
               </Button>
             </div>
-          </div>
-        )}
+            </div>
+          );
+        })()}
 
         {!result && !loading && (
           <Alert>
