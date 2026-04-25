@@ -76,13 +76,17 @@ serve(async (req) => {
 
     const systemPrompt = `أنت خبير أكاديمي مختص في معادلة المواد الدراسية بين الجامعات السعودية وجامعة العقبة للتكنولوجيا (AUT) — تخصص علم الحاسوب/الذكاء الاصطناعي.
 
-إذا تلقيت ملفاً (PDF أو صورة) فاستخرج منه أولاً وصف المادة الدراسية كاملاً بدقة (الاسم، الساعات المعتمدة، المخرجات، المواضيع) ثم أجرِ المعادلة.
+عند استلامك ملفاً (PDF أو صورة) قد يحتوي على **مادة واحدة أو عدّة مواد دراسية** (مثلاً: كشف علامات، خطة جامعية كاملة، أو قائمة من المواد).
+- استخرج كل مادة موجودة في المدخل بدقة (الاسم، الساعات إن وُجدت، المخرجات، المواضيع).
+- إذا كان النص يصف مادة واحدة فقط، أعِد مادة واحدة في المصفوفة.
+- إذا كان يحتوي على أكثر من مادة، أعِد كل واحدة منها في عنصر مستقل داخل المصفوفة.
 
-مهمتك: مقارنة وصف المادة الدراسية من جامعة سعودية مع كل مواد الخطة الدراسية لتخصص الذكاء الاصطناعي في AUT أدناه، ثم تحديد:
-1. أفضل مادة (أو مادتين كحد أقصى) في AUT تتطابق مع المادة السعودية.
-2. نسبة التطابق الدلالي (0-100٪) بناءً على: تقاطع المخرجات التعليمية، المواضيع المشتركة، عمق التغطية، وعدد الساعات المعتمدة.
-3. حكم نهائي: "تُعادَل" (≥75٪)، "تُعادَل بشروط" (60-74٪)، "لا تُعادَل" (<60٪).
-4. مبررات قصيرة وواضحة بالعربية.
+لكل مادة سعودية مستخرَجة:
+1. قارنها مع مواد AUT أدناه.
+2. اختر أفضل مادة (أو مادتين كحد أقصى) في AUT تتطابق معها.
+3. احسب نسبة التطابق الدلالي (0-100٪) بناءً على: تقاطع المخرجات، المواضيع المشتركة، عمق التغطية، الساعات.
+4. حكم: "تُعادَل" (≥75٪)، "تُعادَل بشروط" (60-74٪)، "لا تُعادَل" (<60٪).
+5. مبررات قصيرة بالعربية.
 
 قائمة مواد AUT للذكاء الاصطناعي:
 ${catalogText}
@@ -94,63 +98,70 @@ ${catalogText}
     if (inputMode === "text") {
       userMessage = {
         role: "user",
-        content: `وصف المادة السعودية المراد معادلتها:\n\n${body.saudiCourse}`,
+        content: `وصف المادة (أو المواد) السعودية المراد معادلتها:\n\n${body.saudiCourse}`,
       };
     } else if (inputMode === "image") {
       userMessage = {
         role: "user",
         content: [
-          { type: "text", text: "هذه صورة لوصف مادة دراسية من ميثاق جامعة سعودية. اقرأها بدقة (OCR عربي/إنجليزي) ثم أجرِ المعادلة وأعد النتيجة عبر الدالة." },
+          { type: "text", text: "هذه صورة من ميثاق/خطة جامعية سعودية. اقرأها بدقة (OCR عربي/إنجليزي)، استخرج كل المواد التي تظهر فيها، ثم أجرِ المعادلة لكل مادة على حدة وأعد النتيجة عبر الدالة." },
           { type: "image_url", image_url: { url: body.fileDataUrl } },
         ],
       };
     } else {
-      // PDF — Gemini supports PDFs via image_url with PDF data URL in this gateway
       userMessage = {
         role: "user",
         content: [
-          { type: "text", text: `هذا ملف PDF لوصف مادة دراسية (${body.fileName ?? "course.pdf"}). استخرج محتوى المادة بدقة ثم أجرِ المعادلة وأعد النتيجة عبر الدالة.` },
+          { type: "text", text: `هذا ملف PDF (${body.fileName ?? "courses.pdf"}) قد يحتوي على مادة واحدة أو خطة جامعية كاملة. استخرج كل مادة بدقة، ثم أجرِ المعادلة لكل واحدة منها على حدة وأعد النتيجة عبر الدالة.` },
           { type: "image_url", image_url: { url: body.fileDataUrl } },
         ],
       };
     }
+
+    const courseSchema = {
+      type: "object",
+      properties: {
+        saudi_course_name: { type: "string", description: "اسم المادة السعودية كما استُخرج." },
+        extracted_course: { type: "string", description: "وصف المادة كما استُخرج (المخرجات + المواضيع)." },
+        matches: {
+          type: "array",
+          description: "أفضل المواد المُطابقة في AUT (1 إلى 2)",
+          items: {
+            type: "object",
+            properties: {
+              aut_code: { type: "string" },
+              aut_name: { type: "string" },
+              similarity: { type: "number", description: "نسبة التطابق 0-100" },
+              reasoning: { type: "string", description: "تبرير المطابقة بالعربية" },
+            },
+            required: ["aut_code", "aut_name", "similarity", "reasoning"],
+            additionalProperties: false,
+          },
+        },
+        verdict: { type: "string", enum: ["تُعادَل", "تُعادَل بشروط", "لا تُعادَل"] },
+        overall_similarity: { type: "number", description: "أعلى نسبة تطابق إجمالية" },
+        summary: { type: "string", description: "ملخص نهائي 1-2 جمل" },
+      },
+      required: ["saudi_course_name", "matches", "verdict", "overall_similarity", "summary"],
+      additionalProperties: false,
+    };
 
     const tools = [
       {
         type: "function",
         function: {
           name: "submit_equivalency",
-          description: "إرجاع نتيجة معادلة المادة بشكل منظم.",
+          description: "إرجاع نتيجة معادلة المادة (أو المواد) بشكل منظم.",
           parameters: {
             type: "object",
             properties: {
-              extracted_course: {
-                type: "string",
-                description: "نص وصف المادة كما استخرجه النموذج من المدخل (مفيد للمستخدم لمعرفة ما تم قراءته).",
-              },
-              matches: {
+              courses: {
                 type: "array",
-                description: "أفضل المواد المُطابقة في AUT (1 إلى 2)",
-                items: {
-                  type: "object",
-                  properties: {
-                    aut_code: { type: "string" },
-                    aut_name: { type: "string" },
-                    similarity: { type: "number", description: "نسبة التطابق 0-100" },
-                    reasoning: { type: "string", description: "تبرير المطابقة بالعربية" },
-                  },
-                  required: ["aut_code", "aut_name", "similarity", "reasoning"],
-                  additionalProperties: false,
-                },
+                description: "كل مادة سعودية تم استخراجها مع نتيجة معادلتها. مادة واحدة أو أكثر.",
+                items: courseSchema,
               },
-              verdict: {
-                type: "string",
-                enum: ["تُعادَل", "تُعادَل بشروط", "لا تُعادَل"],
-              },
-              overall_similarity: { type: "number", description: "أعلى نسبة تطابق إجمالية" },
-              summary: { type: "string", description: "ملخص نهائي 2-3 جمل" },
             },
-            required: ["matches", "verdict", "overall_similarity", "summary"],
+            required: ["courses"],
             additionalProperties: false,
           },
         },
@@ -204,9 +215,28 @@ ${catalogText}
       console.error("Invalid AI response", JSON.stringify(data).slice(0, 500));
       throw new Error("استجابة الذكاء الاصطناعي غير صالحة");
     }
-    const result = JSON.parse(toolCall.function.arguments);
+    const raw = JSON.parse(toolCall.function.arguments);
+    const courses: any[] = Array.isArray(raw.courses) ? raw.courses : [];
+    if (courses.length === 0) {
+      throw new Error("لم يتم استخراج أي مادة من المدخل.");
+    }
 
-    return new Response(JSON.stringify(result), {
+    // نضع legacy fields من أول مادة للتوافق مع الواجهة الحالية،
+    // ونرفق المصفوفة كاملة للوضع الدفعي.
+    const first = courses[0] ?? {};
+    const response = {
+      // ===== legacy fields (مادة واحدة) =====
+      matches: first.matches ?? [],
+      verdict: first.verdict ?? "لا تُعادَل",
+      overall_similarity: first.overall_similarity ?? 0,
+      summary: first.summary ?? "",
+      extracted_course: first.extracted_course ?? "",
+      // ===== batch (كل المواد) =====
+      is_batch: courses.length > 1,
+      courses,
+    };
+
+    return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

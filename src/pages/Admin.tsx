@@ -39,6 +39,27 @@ import logo from "@/assets/aut-logo-official.png";
 type Status = "pending" | "approved" | "rejected";
 type SortKey = "newest" | "oldest" | "simHigh" | "simLow";
 
+interface BatchCourse {
+  saudi_course_name: string;
+  extracted_course?: string;
+  matches: { aut_code: string; aut_name: string; similarity: number; reasoning: string }[];
+  verdict: string;
+  overall_similarity: number;
+  summary: string;
+  /** قرار المشرف الخاص بهذه المادة بالذات. يُضاف عند المراجعة. */
+  decision?: { status: "approved" | "rejected" | "pending"; notes?: string };
+}
+
+interface AiResultShape {
+  matches?: { aut_code: string; aut_name: string; similarity: number; reasoning: string }[];
+  verdict?: string;
+  overall_similarity?: number;
+  summary?: string;
+  extracted_course?: string;
+  is_batch?: boolean;
+  courses?: BatchCourse[];
+}
+
 interface ReqRow {
   id: string;
   user_id: string;
@@ -54,8 +75,16 @@ interface ReqRow {
   reviewer_name: string | null;
   reviewed_at: string | null;
   created_at: string;
-  ai_result: unknown;
+  ai_result: AiResultShape | unknown;
   profile?: { full_name: string | null; email: string | null; saudi_university: string | null };
+}
+
+/** يقرأ المواد من ai_result. يُعيد [] لو ليس بدفعة. */
+function getBatchCourses(ai: unknown): BatchCourse[] {
+  if (!ai || typeof ai !== "object") return [];
+  const r = ai as AiResultShape;
+  const cs = r.courses ?? [];
+  return Array.isArray(cs) && cs.length > 1 ? cs : [];
 }
 
 export default function Admin() {
@@ -215,7 +244,69 @@ export default function Admin() {
     load();
   };
 
+  /** قرار على مادة واحدة من الدفعة. يُحدّث ai_result.courses[idx].decision
+   *  ثم يُحدّث الحالة الكلية للطلب: approved لو كل المواد محسومة وفيها واحدة معتمدة على الأقل،
+   *  rejected لو كل المواد مرفوضة، pending خلاف ذلك. */
+  const decideCourse = async (idx: number, status: "approved" | "rejected") => {
+    if (!active || !user) return;
+    if (!reviewerName.trim()) {
+      toast({
+        title: "اسم المشرف مطلوب",
+        description: "يرجى إدخال اسم الدكتور / المشرف الأكاديمي قبل اعتماد قرار أي مادة.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const ai = (active.ai_result ?? {}) as AiResultShape;
+    const courses = [...(ai.courses ?? [])] as BatchCourse[];
+    if (!courses[idx]) return;
+    courses[idx] = { ...courses[idx], decision: { status, notes: notes.trim() || undefined } };
+    const newAi = { ...ai, courses } as AiResultShape;
+
+    // الحالة الكلية
+    const allDecided = courses.every((c) => c.decision?.status === "approved" || c.decision?.status === "rejected");
+    let overall: Status = active.status;
+    if (allDecided) {
+      const anyApproved = courses.some((c) => c.decision?.status === "approved");
+      overall = anyApproved ? "approved" : "rejected";
+    } else {
+      overall = "pending";
+    }
+
+    setBusy(true);
+    const reviewedAtIso = new Date().toISOString();
+    const finalReviewer = reviewerName.trim();
+    const { error } = await supabase
+      .from("equivalency_requests")
+      .update({
+        ai_result: newAi as never,
+        status: overall,
+        reviewer_name: finalReviewer,
+        reviewed_by: user.id,
+        reviewed_at: reviewedAtIso,
+      })
+      .eq("id", active.id);
+    setBusy(false);
+    if (error) {
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: status === "approved" ? `تم اعتماد المادة #${idx + 1}` : `تم رفض المادة #${idx + 1}`,
+      description: `بواسطة د. ${finalReviewer}`,
+    });
+    setActive({
+      ...active,
+      ai_result: newAi,
+      status: overall,
+      reviewer_name: finalReviewer,
+      reviewed_at: reviewedAtIso,
+    });
+    load();
+  };
+
   const printPdf = (r: ReqRow) => {
+    const batch = getBatchCourses(r.ai_result);
     exportDecisionPdf({
       requestId: r.id,
       studentName: r.profile?.full_name || "—",
@@ -234,6 +325,17 @@ export default function Admin() {
       reviewerEmail: user?.email || "—",
       reviewedAt: r.reviewed_at || "",
       submittedAt: r.created_at,
+      batchCourses: batch.length
+        ? batch.map((c) => ({
+            saudi_course_name: c.saudi_course_name,
+            matched_aut_name: c.matches?.[0]?.aut_name,
+            matched_aut_code: c.matches?.[0]?.aut_code,
+            similarity: c.overall_similarity,
+            verdict: c.verdict,
+            summary: c.summary,
+            decision: c.decision,
+          }))
+        : undefined,
     });
   };
 
@@ -606,30 +708,138 @@ export default function Admin() {
                   </div>
                 </div>
 
-                {active.matched_aut_name && (
-                  <div className="bg-gradient-to-br from-primary/5 to-gold/5 p-4 rounded-lg border border-primary/20 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs font-heading font-bold text-primary uppercase tracking-wide flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5" /> {t("admin.aiAnalysis")}
+                {(() => {
+                  const batchCourses = getBatchCourses(active.ai_result);
+                  const isBatch = batchCourses.length > 0;
+                  if (isBatch) {
+                    const decidedCount = batchCourses.filter(
+                      (c) => c.decision?.status === "approved" || c.decision?.status === "rejected"
+                    ).length;
+                    const approvedCount = batchCourses.filter((c) => c.decision?.status === "approved").length;
+                    const rejectedCount = batchCourses.filter((c) => c.decision?.status === "rejected").length;
+                    return (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="text-xs font-heading font-bold text-secondary uppercase tracking-wide flex items-center gap-1.5">
+                            <Sparkles className="h-3.5 w-3.5" /> طلب جماعي — {batchCourses.length} مواد
+                          </div>
+                          <div className="flex gap-1.5 flex-wrap">
+                            <Badge variant="outline" className="text-[10px]">تم الفصل: {decidedCount}/{batchCourses.length}</Badge>
+                            <Badge className="bg-success/15 text-success border-success/30 text-[10px]">
+                              <CheckCircle2 className="h-3 w-3 me-1" /> {approvedCount}
+                            </Badge>
+                            <Badge className="bg-destructive/15 text-destructive border-destructive/30 text-[10px]">
+                              <XCircle className="h-3 w-3 me-1" /> {rejectedCount}
+                            </Badge>
+                          </div>
+                        </div>
+                        <Progress value={(decidedCount / batchCourses.length) * 100} className="h-1.5" />
+                        <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                          {batchCourses.map((c, idx) => {
+                            const dec = c.decision?.status;
+                            const top = c.matches?.[0];
+                            return (
+                              <div
+                                key={idx}
+                                className={`p-3 rounded-lg border-2 ${
+                                  dec === "approved"
+                                    ? "border-success/40 bg-success/5"
+                                    : dec === "rejected"
+                                    ? "border-destructive/40 bg-destructive/5"
+                                    : "border-border bg-card"
+                                }`}
+                              >
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                      <Badge variant="outline" className="text-[10px] font-bold">#{idx + 1}</Badge>
+                                      {dec === "approved" && (
+                                        <Badge className="bg-success text-white text-[10px] gap-1">
+                                          <CheckCircle2 className="h-3 w-3" /> معتمدة
+                                        </Badge>
+                                      )}
+                                      {dec === "rejected" && (
+                                        <Badge className="bg-destructive text-destructive-foreground text-[10px] gap-1">
+                                          <XCircle className="h-3 w-3" /> مرفوضة
+                                        </Badge>
+                                      )}
+                                      {!dec && (
+                                        <Badge className="bg-gold text-gold-foreground text-[10px] gap-1">
+                                          <Clock className="h-3 w-3" /> بانتظار القرار
+                                        </Badge>
+                                      )}
+                                      <Badge variant="outline" className="text-[10px]">{c.verdict}</Badge>
+                                    </div>
+                                    <div className="font-heading font-bold text-sm text-foreground truncate">
+                                      {c.saudi_course_name}
+                                    </div>
+                                    {top && (
+                                      <div className="text-xs text-primary mt-0.5">
+                                        ← {top.aut_name} ({top.aut_code})
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="text-end shrink-0">
+                                    <div className="font-heading font-bold text-lg text-primary leading-none">
+                                      {Math.round(c.overall_similarity)}%
+                                    </div>
+                                    <div className="text-[9px] text-muted-foreground">تطابق</div>
+                                  </div>
+                                </div>
+                                <Progress value={c.overall_similarity} className="h-1 mb-2" />
+                                <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{c.summary}</p>
+                                <div className="flex gap-1.5">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => decideCourse(idx, "approved")}
+                                    disabled={busy || dec === "approved"}
+                                    className="bg-success hover:bg-success/90 text-white gap-1 h-7 text-xs flex-1"
+                                  >
+                                    <CheckCircle2 className="h-3 w-3" /> اعتماد
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => decideCourse(idx, "rejected")}
+                                    disabled={busy || dec === "rejected"}
+                                    variant="destructive"
+                                    className="gap-1 h-7 text-xs flex-1"
+                                  >
+                                    <XCircle className="h-3 w-3" /> رفض
+                                  </Button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                      {active.verdict && <Badge variant="outline" className="text-xs">{active.verdict}</Badge>}
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-muted-foreground font-heading uppercase">{t("admin.aiCourseMatch")}</div>
-                      <div className="font-heading font-bold text-foreground">
-                        → {active.matched_aut_name}{" "}
-                        <span className="text-xs text-muted-foreground">({active.matched_aut_code})</span>
+                    );
+                  }
+                  // طلب مادة واحدة — العرض القديم
+                  return active.matched_aut_name ? (
+                    <div className="bg-gradient-to-br from-primary/5 to-gold/5 p-4 rounded-lg border border-primary/20 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs font-heading font-bold text-primary uppercase tracking-wide flex items-center gap-1.5">
+                          <Sparkles className="h-3.5 w-3.5" /> {t("admin.aiAnalysis")}
+                        </div>
+                        {active.verdict && <Badge variant="outline" className="text-xs">{active.verdict}</Badge>}
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-muted-foreground font-heading uppercase">{t("admin.aiCourseMatch")}</div>
+                        <div className="font-heading font-bold text-foreground">
+                          → {active.matched_aut_name}{" "}
+                          <span className="text-xs text-muted-foreground">({active.matched_aut_code})</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-muted-foreground">{t("admin.confidence")}</span>
+                          <span className="font-heading font-bold text-primary">{Math.round(Number(active.similarity ?? 0))}%</span>
+                        </div>
+                        <Progress value={Number(active.similarity ?? 0)} className="h-2" />
                       </div>
                     </div>
-                    <div>
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="text-muted-foreground">{t("admin.confidence")}</span>
-                        <span className="font-heading font-bold text-primary">{Math.round(Number(active.similarity ?? 0))}%</span>
-                      </div>
-                      <Progress value={Number(active.similarity ?? 0)} className="h-2" />
-                    </div>
-                  </div>
-                )}
+                  ) : null;
+                })()}
 
                 <Separator />
 
@@ -661,19 +871,22 @@ export default function Admin() {
                   />
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                  <Button onClick={() => decide("approved")} disabled={busy} className="bg-success hover:bg-success/90 text-white gap-2 flex-1">
-                    {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                    {t("admin.approve")}
-                  </Button>
-                  <Button onClick={() => decide("rejected")} disabled={busy} variant="destructive" className="gap-2 flex-1">
-                    {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
-                    {t("admin.reject")}
-                  </Button>
-                  <Button onClick={() => decide("pending")} disabled={busy} variant="outline" className="gap-2">
-                    <Clock className="h-4 w-4" /> {t("admin.markPending")}
-                  </Button>
-                </div>
+                {/* أزرار القرار العام — للطلب المُفرد فقط */}
+                {getBatchCourses(active.ai_result).length === 0 && (
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    <Button onClick={() => decide("approved")} disabled={busy} className="bg-success hover:bg-success/90 text-white gap-2 flex-1">
+                      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                      {t("admin.approve")}
+                    </Button>
+                    <Button onClick={() => decide("rejected")} disabled={busy} variant="destructive" className="gap-2 flex-1">
+                      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+                      {t("admin.reject")}
+                    </Button>
+                    <Button onClick={() => decide("pending")} disabled={busy} variant="outline" className="gap-2">
+                      <Clock className="h-4 w-4" /> {t("admin.markPending")}
+                    </Button>
+                  </div>
+                )}
 
                 {/* بانر مميز يظهر بعد القبول/الرفض ويوفر طباعة PDF */}
                 {(active.status === "approved" || active.status === "rejected") && (

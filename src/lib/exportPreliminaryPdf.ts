@@ -9,6 +9,7 @@ import {
   formatDate,
   getLogoDataUrl,
   wrapArabic,
+  shapeForDraw,
 } from "./pdfHelpers";
 
 export interface PreliminaryMatch {
@@ -112,7 +113,7 @@ export async function exportPreliminaryPdf(data: PreliminaryPdfData) {
   );
   let ny = y + 34;
   for (const line of noticeLines.slice(0, 2)) {
-    doc.text(line, pageW - margin - 14, ny, { align: "right" });
+    doc.text(shapeForDraw(line), pageW - margin - 14, ny, { align: "right" });
     ny += 12;
   }
   y += noticeH + 12;
@@ -206,7 +207,7 @@ export async function exportPreliminaryPdf(data: PreliminaryPdfData) {
       const sumLines = wrapArabic(doc, c.summary || top.reasoning || "", contentW - 28);
       let sy = y + 122;
       for (const line of sumLines.slice(0, 3)) {
-        doc.text(line, pageW - margin - 14, sy, { align: "right" });
+        doc.text(shapeForDraw(line), pageW - margin - 14, sy, { align: "right" });
         sy += 11;
       }
     }

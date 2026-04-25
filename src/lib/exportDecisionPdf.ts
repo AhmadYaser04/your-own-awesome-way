@@ -11,6 +11,7 @@ import {
   formatDate,
   getLogoDataUrl,
   wrapArabic,
+  shapeForDraw,
 } from "./pdfHelpers";
 
 export interface DecisionPdfData {
@@ -31,6 +32,16 @@ export interface DecisionPdfData {
   reviewerEmail: string;
   reviewedAt: string;
   submittedAt: string;
+  /** عند وجود أكثر من مادة (طلب جماعي) — كل مادة بقرارها الخاص. */
+  batchCourses?: Array<{
+    saudi_course_name: string;
+    matched_aut_name?: string;
+    matched_aut_code?: string;
+    similarity: number;
+    verdict: string;
+    summary?: string;
+    decision?: { status: "approved" | "rejected" | "pending"; notes?: string };
+  }>;
 }
 
 const STATUS_LABEL: Record<DecisionPdfData["status"], string> = {
@@ -86,83 +97,146 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
   yy = drawInfoRow(doc, "تاريخ تقديم الطلب:", formatDate(data.submittedAt), margin + 8, yy, contentW - 16);
   y = Math.max(y + studentBoxH, yy) + 12;
 
-  // ============ المادة المصدر ============
-  doc.setFillColor(255, 251, 240);
-  doc.setDrawColor(255, 200, 80);
-  const srcH = 100;
-  doc.roundedRect(margin, y, contentW, srcH, 6, 6, "FD");
-  doc.setFontSize(11);
-  doc.setTextColor(150, 90, 0);
-  drawText(doc, "المادة المعروضة من الجامعة السعودية", pageW - margin - 14, y + 18, {
-    bold: true,
-    align: "right",
-  });
-  doc.setFontSize(13);
-  doc.setTextColor(20, 30, 60);
-  drawText(doc, data.saudiCourseName || "(بدون اسم)", pageW - margin - 14, y + 40, {
-    bold: true,
-    align: "right",
-    maxWidth: contentW - 28,
-  });
-  // وصف مختصر
-  doc.setFontSize(9);
-  doc.setTextColor(80, 80, 100);
-  const descLines = wrapArabic(doc, (data.saudiCourseDescription || "").slice(0, 320), contentW - 28);
-  let dy = y + 60;
-  for (const line of descLines.slice(0, 3)) {
-    doc.text(line, pageW - margin - 14, dy, { align: "right" });
-    dy += 12;
-  }
-  y += srcH + 12;
+  const isBatch = (data.batchCourses?.length ?? 0) > 1;
 
-  // ============ المادة المعادِلة في AUT ============
-  doc.setFillColor(238, 248, 255);
-  doc.setDrawColor(60, 140, 220);
-  const tgtH = 110;
-  doc.roundedRect(margin, y, contentW, tgtH, 6, 6, "FD");
-  doc.setFontSize(11);
-  doc.setTextColor(20, 80, 160);
-  drawText(doc, "المادة المُعادِلة في جامعة العقبة للتكنولوجيا", pageW - margin - 14, y + 18, {
-    bold: true,
-    align: "right",
-  });
-  doc.setFontSize(13);
-  doc.setTextColor(20, 30, 60);
-  drawText(
-    doc,
-    `${data.matchedName || "—"} (${data.matchedCode || "—"})`,
-    pageW - margin - 14,
-    y + 42,
-    { bold: true, align: "right", maxWidth: contentW - 28 }
-  );
-  drawSimilarityBar(doc, margin + 14, y + 60, contentW - 28, data.similarity, "نسبة التطابق");
-  y += tgtH + 16;
+  if (isBatch) {
+    // ============ جدول مواد الدفعة ============
+    doc.setFontSize(12);
+    doc.setTextColor(20, 50, 110);
+    drawText(doc, `قرارات لجنة المعادلات على المواد المقدّمة (${data.batchCourses!.length} مواد)`, pageW - margin, y, {
+      bold: true,
+      align: "right",
+    });
+    y += 16;
 
-  // ============ ملاحظات اللجنة ============
-  doc.setFontSize(11);
-  doc.setTextColor(20, 50, 110);
-  drawText(doc, "ملاحظات لجنة المعادلات", pageW - margin, y, { bold: true, align: "right" });
-  y += 12;
-  doc.setFillColor(252, 252, 254);
-  doc.setDrawColor(210, 210, 220);
-  const notesText =
-    data.adminNotes?.trim() ||
-    (data.status === "approved"
-      ? "تم اعتماد المعادلة بناءً على تطابق المخرجات التعليمية ومحتوى المادة."
-      : data.status === "rejected"
-      ? "لم تتم الموافقة على المعادلة لعدم استيفاء معايير التطابق المطلوبة."
-      : "لا توجد ملاحظات إضافية.");
-  const notesLines = wrapArabic(doc, notesText, contentW - 24);
-  const notesH = Math.max(60, notesLines.length * 14 + 24);
-  doc.roundedRect(margin, y, contentW, notesH, 6, 6, "FD");
-  doc.setFontSize(10);
-  doc.setTextColor(40, 40, 60);
-  let ny = y + 18;
-  for (const line of notesLines) {
-    doc.text(line, pageW - margin - 12, ny, { align: "right" });
-    ny += 14;
+    data.batchCourses!.forEach((c, idx) => {
+      const decStatus = c.decision?.status ?? "pending";
+      const blockH = 110;
+      // فاصل صفحة
+      if (y + blockH > pageH - 160) {
+        drawFooter(doc, doc.getNumberOfPages(), 0);
+        doc.addPage();
+        ensureArabicFont(doc);
+        y = margin + 10;
+      }
+      // لون الإطار حسب القرار
+      const border: [number, number, number] =
+        decStatus === "approved" ? [38, 170, 90] : decStatus === "rejected" ? [220, 60, 60] : [200, 200, 210];
+      doc.setFillColor(252, 253, 255);
+      doc.setDrawColor(...border);
+      doc.setLineWidth(1.4);
+      doc.roundedRect(margin, y, contentW, blockH, 6, 6, "FD");
+      doc.setLineWidth(0.4);
+
+      // رأس البطاقة: رقم + شارة قرار
+      doc.setFontSize(10);
+      doc.setTextColor(20, 50, 110);
+      drawText(doc, `المادة #${idx + 1}`, pageW - margin - 14, y + 18, { bold: true, align: "right" });
+
+      const decLabel =
+        decStatus === "approved" ? "معتمدة" : decStatus === "rejected" ? "مرفوضة" : "بانتظار القرار";
+      drawStatusBadge(doc, margin + 14, y + 18, decLabel, decStatus);
+
+      // اسم المادة السعودية
+      doc.setFontSize(11);
+      doc.setTextColor(40, 40, 60);
+      drawText(doc, `📘 ${c.saudi_course_name}`, pageW - margin - 14, y + 42, {
+        bold: true, align: "right", maxWidth: contentW - 28,
+      });
+
+      // المعادِلة في AUT
+      doc.setFontSize(10);
+      doc.setTextColor(20, 80, 160);
+      drawText(
+        doc,
+        `← المعادِلة في AUT: ${c.matched_aut_name || "—"} (${c.matched_aut_code || "—"})`,
+        pageW - margin - 14,
+        y + 60,
+        { align: "right", maxWidth: contentW - 28 }
+      );
+
+      // شريط التطابق + ملخص
+      drawSimilarityBar(doc, margin + 14, y + 76, contentW - 28, c.similarity);
+      doc.setFontSize(8);
+      doc.setTextColor(70, 70, 90);
+      const sumLine = (c.summary || "").slice(0, 140);
+      if (sumLine) {
+        drawText(doc, sumLine, pageW - margin - 14, y + 102, { align: "right", maxWidth: contentW - 28 });
+      }
+
+      y += blockH + 8;
+    });
+
+    y += 8;
+  } else {
+    // ============ مادة واحدة (نمط قديم) ============
+    doc.setFillColor(255, 251, 240);
+    doc.setDrawColor(255, 200, 80);
+    const srcH = 100;
+    doc.roundedRect(margin, y, contentW, srcH, 6, 6, "FD");
+    doc.setFontSize(11);
+    doc.setTextColor(150, 90, 0);
+    drawText(doc, "المادة المعروضة من الجامعة السعودية", pageW - margin - 14, y + 18, {
+      bold: true, align: "right",
+    });
+    doc.setFontSize(13);
+    doc.setTextColor(20, 30, 60);
+    drawText(doc, data.saudiCourseName || "(بدون اسم)", pageW - margin - 14, y + 40, {
+      bold: true, align: "right", maxWidth: contentW - 28,
+    });
+    doc.setFontSize(9);
+    doc.setTextColor(80, 80, 100);
+    const descLines = wrapArabic(doc, (data.saudiCourseDescription || "").slice(0, 320), contentW - 28);
+    let dy = y + 60;
+    for (const line of descLines.slice(0, 3)) {
+      doc.text(shapeForDraw(line), pageW - margin - 14, dy, { align: "right" });
+      dy += 12;
+    }
+    y += srcH + 12;
+
+    doc.setFillColor(238, 248, 255);
+    doc.setDrawColor(60, 140, 220);
+    const tgtH = 110;
+    doc.roundedRect(margin, y, contentW, tgtH, 6, 6, "FD");
+    doc.setFontSize(11);
+    doc.setTextColor(20, 80, 160);
+    drawText(doc, "المادة المُعادِلة في جامعة العقبة للتكنولوجيا", pageW - margin - 14, y + 18, {
+      bold: true, align: "right",
+    });
+    doc.setFontSize(13);
+    doc.setTextColor(20, 30, 60);
+    drawText(doc, `${data.matchedName || "—"} (${data.matchedCode || "—"})`, pageW - margin - 14, y + 42, {
+      bold: true, align: "right", maxWidth: contentW - 28,
+    });
+    drawSimilarityBar(doc, margin + 14, y + 60, contentW - 28, data.similarity, "نسبة التطابق");
+    y += tgtH + 16;
+
+    // ملاحظات
+    doc.setFontSize(11);
+    doc.setTextColor(20, 50, 110);
+    drawText(doc, "ملاحظات لجنة المعادلات", pageW - margin, y, { bold: true, align: "right" });
+    y += 12;
+    doc.setFillColor(252, 252, 254);
+    doc.setDrawColor(210, 210, 220);
+    const notesText =
+      data.adminNotes?.trim() ||
+      (data.status === "approved"
+        ? "تم اعتماد المعادلة بناءً على تطابق المخرجات التعليمية ومحتوى المادة."
+        : data.status === "rejected"
+        ? "لم تتم الموافقة على المعادلة لعدم استيفاء معايير التطابق المطلوبة."
+        : "لا توجد ملاحظات إضافية.");
+    const notesLines = wrapArabic(doc, notesText, contentW - 24);
+    const notesH = Math.max(60, notesLines.length * 14 + 24);
+    doc.roundedRect(margin, y, contentW, notesH, 6, 6, "FD");
+    doc.setFontSize(10);
+    doc.setTextColor(40, 40, 60);
+    let ny = y + 18;
+    for (const line of notesLines) {
+      doc.text(shapeForDraw(line), pageW - margin - 12, ny, { align: "right" });
+      ny += 14;
+    }
+    y += notesH + 20;
   }
-  y += notesH + 20;
 
   // ============ التوقيع + الختم ============
   if (y > pageH - 150) {
