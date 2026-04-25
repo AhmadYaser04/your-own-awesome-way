@@ -244,6 +244,67 @@ export default function Admin() {
     load();
   };
 
+  /** قرار على مادة واحدة من الدفعة. يُحدّث ai_result.courses[idx].decision
+   *  ثم يُحدّث الحالة الكلية للطلب: approved لو كل المواد محسومة وفيها واحدة معتمدة على الأقل،
+   *  rejected لو كل المواد مرفوضة، pending خلاف ذلك. */
+  const decideCourse = async (idx: number, status: "approved" | "rejected") => {
+    if (!active || !user) return;
+    if (!reviewerName.trim()) {
+      toast({
+        title: "اسم المشرف مطلوب",
+        description: "يرجى إدخال اسم الدكتور / المشرف الأكاديمي قبل اعتماد قرار أي مادة.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const ai = (active.ai_result ?? {}) as AiResultShape;
+    const courses = [...(ai.courses ?? [])] as BatchCourse[];
+    if (!courses[idx]) return;
+    courses[idx] = { ...courses[idx], decision: { status, notes: notes.trim() || undefined } };
+    const newAi = { ...ai, courses } as AiResultShape;
+
+    // الحالة الكلية
+    const allDecided = courses.every((c) => c.decision?.status === "approved" || c.decision?.status === "rejected");
+    let overall: Status = active.status;
+    if (allDecided) {
+      const anyApproved = courses.some((c) => c.decision?.status === "approved");
+      overall = anyApproved ? "approved" : "rejected";
+    } else {
+      overall = "pending";
+    }
+
+    setBusy(true);
+    const reviewedAtIso = new Date().toISOString();
+    const finalReviewer = reviewerName.trim();
+    const { error } = await supabase
+      .from("equivalency_requests")
+      .update({
+        ai_result: newAi as never,
+        status: overall,
+        reviewer_name: finalReviewer,
+        reviewed_by: user.id,
+        reviewed_at: reviewedAtIso,
+      })
+      .eq("id", active.id);
+    setBusy(false);
+    if (error) {
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: status === "approved" ? `تم اعتماد المادة #${idx + 1}` : `تم رفض المادة #${idx + 1}`,
+      description: `بواسطة د. ${finalReviewer}`,
+    });
+    setActive({
+      ...active,
+      ai_result: newAi,
+      status: overall,
+      reviewer_name: finalReviewer,
+      reviewed_at: reviewedAtIso,
+    });
+    load();
+  };
+
   const printPdf = (r: ReqRow) => {
     exportDecisionPdf({
       requestId: r.id,
