@@ -306,6 +306,7 @@ export default function Admin() {
   };
 
   const printPdf = (r: ReqRow) => {
+    const batch = getBatchCourses(r.ai_result);
     exportDecisionPdf({
       requestId: r.id,
       studentName: r.profile?.full_name || "—",
@@ -324,6 +325,17 @@ export default function Admin() {
       reviewerEmail: user?.email || "—",
       reviewedAt: r.reviewed_at || "",
       submittedAt: r.created_at,
+      batchCourses: batch.length
+        ? batch.map((c) => ({
+            saudi_course_name: c.saudi_course_name,
+            matched_aut_name: c.matches?.[0]?.aut_name,
+            matched_aut_code: c.matches?.[0]?.aut_code,
+            similarity: c.overall_similarity,
+            verdict: c.verdict,
+            summary: c.summary,
+            decision: c.decision,
+          }))
+        : undefined,
     });
   };
 
