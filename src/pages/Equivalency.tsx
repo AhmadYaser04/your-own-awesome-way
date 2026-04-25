@@ -24,12 +24,24 @@ interface Match {
   similarity: number;
   reasoning: string;
 }
+interface CourseResult {
+  saudi_course_name: string;
+  extracted_course?: string;
+  matches: Match[];
+  verdict: "تُعادَل" | "تُعادَل بشروط" | "لا تُعادَل";
+  overall_similarity: number;
+  summary: string;
+}
 interface Result {
+  // legacy (مادة واحدة)
   matches: Match[];
   verdict: "تُعادَل" | "تُعادَل بشروط" | "لا تُعادَل";
   overall_similarity: number;
   summary: string;
   extracted_course?: string;
+  // batch
+  is_batch?: boolean;
+  courses: CourseResult[];
 }
 
 const SAMPLE = `اسم المادة: مقدمة في الذكاء الاصطناعي
