@@ -368,99 +368,136 @@ export default function Equivalency() {
           </Alert>
         )}
 
-        {result && (
-          <div className="space-y-5 animate-fade-up">
-            {result.extracted_course && mode !== "text" && (
-              <Card className="p-5 bg-accent/40 border-dashed">
-                <div className="text-xs font-heading font-bold text-muted-foreground mb-2">
-                  {dir === "rtl" ? "النص المُستخرَج من الملف" : "Extracted text from the file"}
-                </div>
-                <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">
-                  {result.extracted_course}
-                </p>
-              </Card>
-            )}
+        {result && (() => {
+          const courses = result.courses ?? [];
+          const isBatch = (result.is_batch ?? courses.length > 1) && courses.length > 1;
+          return (
+            <div className="space-y-5 animate-fade-up">
+              {/* بانر الدفعة */}
+              {isBatch && (
+                <Alert className="border-2 border-secondary/40 bg-secondary/5">
+                  <Sparkles className="h-4 w-4 text-secondary" />
+                  <AlertTitle className="text-secondary font-bold">
+                    تم استخراج {courses.length} مواد دراسية من الملف
+                  </AlertTitle>
+                  <AlertDescription className="text-sm">
+                    سيتم إرسال الطلب كحزمة واحدة. سيقوم المشرف الأكاديمي بمراجعة كل مادة على حدة، ويمكنه قبول أو رفض كل مادة بشكل منفصل.
+                  </AlertDescription>
+                </Alert>
+              )}
 
-            {/* Verdict */}
-            <Card className="p-6 md:p-8 border-2 shadow-elegant">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
-                <div className="space-y-1">
-                  <div className="text-xs text-muted-foreground font-heading">{t("eq.verdictLabel")}</div>
-                  {(() => {
-                    const v = verdictConfig(result.verdict);
-                    return (
-                      <Badge className={`${v.color} hover:${v.color} text-base px-4 py-1.5 font-bold gap-2`}>
-                        <v.icon className="h-4 w-4" />
-                        {result.verdict}
-                      </Badge>
-                    );
-                  })()}
-                </div>
-                <div className={dir === "rtl" ? "text-center md:text-left" : "text-center md:text-right"}>
-                  <div className="text-xs text-muted-foreground font-heading mb-1">{t("eq.overall")}</div>
-                  <div className="font-heading font-bold text-4xl text-primary">
-                    {result.overall_similarity}%
+              {result.extracted_course && mode !== "text" && !isBatch && (
+                <Card className="p-5 bg-accent/40 border-dashed">
+                  <div className="text-xs font-heading font-bold text-muted-foreground mb-2">
+                    {dir === "rtl" ? "النص المُستخرَج من الملف" : "Extracted text from the file"}
                   </div>
-                </div>
-              </div>
-              <Progress value={result.overall_similarity} className="h-3 mb-4" />
-              <p className="text-sm text-foreground leading-relaxed bg-accent/40 p-4 rounded-lg">
-                {result.summary}
-              </p>
-            </Card>
+                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">
+                    {result.extracted_course}
+                  </p>
+                </Card>
+              )}
 
-            <div>
-              <h3 className="font-heading font-bold text-lg mb-3 text-foreground">
-                {t("eq.bestMatches")} ({result.matches.length})
-              </h3>
-              <div className="space-y-3">
-                {result.matches.map((m, i) => (
-                  <Card key={i} className={`p-5 ${dir === "rtl" ? "border-r-4 border-r-secondary" : "border-l-4 border-l-secondary"} hover:shadow-elegant transition-all`}>
-                    <div className="flex items-start justify-between gap-4 mb-3">
-                      <div>
-                        <div className="font-heading font-bold text-foreground">{m.aut_name}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">{m.aut_code}</div>
+              {/* عرض كل مادة */}
+              {(isBatch ? courses : [
+                {
+                  saudi_course_name:
+                    courses[0]?.saudi_course_name ||
+                    result.extracted_course?.split("\n")[0]?.slice(0, 80) ||
+                    "المادة المعروضة",
+                  extracted_course: courses[0]?.extracted_course ?? result.extracted_course,
+                  matches: result.matches,
+                  verdict: result.verdict,
+                  overall_similarity: result.overall_similarity,
+                  summary: result.summary,
+                } as CourseResult,
+              ]).map((c, idx) => {
+                const v = verdictConfig(c.verdict);
+                return (
+                  <Card key={idx} className="p-6 md:p-7 border-2 shadow-elegant">
+                    {isBatch && (
+                      <div className="flex items-center gap-2 mb-3 pb-3 border-b">
+                        <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/30 font-bold">
+                          مادة #{idx + 1}
+                        </Badge>
+                        <span className="font-heading font-bold text-foreground truncate">
+                          {c.saudi_course_name}
+                        </span>
                       </div>
-                      <div className={dir === "rtl" ? "text-left shrink-0" : "text-right shrink-0"}>
-                        <div className="font-heading font-bold text-2xl text-primary">{m.similarity}%</div>
-                        <div className="text-[10px] text-muted-foreground">{t("eq.matchPct")}</div>
+                    )}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                      <div className="space-y-1">
+                        <div className="text-xs text-muted-foreground font-heading">{t("eq.verdictLabel")}</div>
+                        <Badge className={`${v.color} hover:${v.color} text-base px-4 py-1.5 font-bold gap-2`}>
+                          <v.icon className="h-4 w-4" />
+                          {c.verdict}
+                        </Badge>
+                      </div>
+                      <div className={dir === "rtl" ? "text-center md:text-left" : "text-center md:text-right"}>
+                        <div className="text-xs text-muted-foreground font-heading mb-1">{t("eq.overall")}</div>
+                        <div className="font-heading font-bold text-3xl text-primary">{Math.round(c.overall_similarity)}%</div>
                       </div>
                     </div>
-                    <Progress value={m.similarity} className="h-2 mb-3" />
-                    <p className="text-sm text-muted-foreground leading-relaxed">{m.reasoning}</p>
+                    <Progress value={c.overall_similarity} className="h-3 mb-3" />
+                    <p className="text-sm text-foreground leading-relaxed bg-accent/40 p-3 rounded-lg mb-4">
+                      {c.summary}
+                    </p>
+                    <div className="space-y-2">
+                      <div className="text-xs font-heading font-bold text-muted-foreground">
+                        {t("eq.bestMatches")} ({c.matches.length})
+                      </div>
+                      {c.matches.map((m, i) => (
+                        <div key={i} className={`p-3 rounded-lg bg-card border ${dir === "rtl" ? "border-r-2 border-r-secondary" : "border-l-2 border-l-secondary"}`}>
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <div>
+                              <div className="font-heading font-bold text-sm text-foreground">{m.aut_name}</div>
+                              <div className="text-xs text-muted-foreground">{m.aut_code}</div>
+                            </div>
+                            <div className="font-heading font-bold text-lg text-primary shrink-0">
+                              {Math.round(m.similarity)}%
+                            </div>
+                          </div>
+                          <Progress value={m.similarity} className="h-1.5 mb-2" />
+                          <p className="text-xs text-muted-foreground leading-relaxed">{m.reasoning}</p>
+                        </div>
+                      ))}
+                    </div>
                   </Card>
-                ))}
-              </div>
-            </div>
+                );
+              })}
 
-            {/* زر تنزيل التقرير الأولي PDF */}
-            <div className="flex flex-col sm:flex-row gap-3 items-stretch">
-              <Button
-                onClick={() =>
-                  exportPreliminaryPdf({
-                    studentName: user?.user_metadata?.full_name || user?.email || "—",
-                    studentEmail: user?.email || "—",
-                    saudiUniversity: (user?.user_metadata?.saudi_university as string) || "—",
-                    inputMode: mode,
-                    generatedAt: new Date().toISOString(),
-                    courses: [
-                      {
-                        saudi_course: result.extracted_course || input || "",
+              {/* زر تنزيل التقرير الأولي PDF */}
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch">
+                <Button
+                  onClick={() =>
+                    exportPreliminaryPdf({
+                      studentName: user?.user_metadata?.full_name || user?.email || "—",
+                      studentEmail: user?.email || "—",
+                      saudiUniversity: (user?.user_metadata?.saudi_university as string) || "—",
+                      inputMode: mode,
+                      generatedAt: new Date().toISOString(),
+                      courses: (isBatch ? courses : [{
+                        saudi_course_name: courses[0]?.saudi_course_name || "المادة",
                         matches: result.matches,
                         verdict: result.verdict,
                         overall_similarity: result.overall_similarity,
                         summary: result.summary,
-                      },
-                    ],
-                  })
-                }
-                size="lg"
-                className="bg-gold text-gold-foreground hover:bg-gold/90 gap-2 flex-1 font-bold shadow-warm"
-              >
-                <Download className="h-5 w-5" />
-                تحميل التقرير الأولي PDF
-              </Button>
-            </div>
+                        extracted_course: result.extracted_course,
+                      } as CourseResult]).map((c) => ({
+                        saudi_course: c.saudi_course_name + (c.extracted_course ? `\n${c.extracted_course}` : ""),
+                        matches: c.matches,
+                        verdict: c.verdict,
+                        overall_similarity: c.overall_similarity,
+                        summary: c.summary,
+                      })),
+                    })
+                  }
+                  size="lg"
+                  className="bg-gold text-gold-foreground hover:bg-gold/90 gap-2 flex-1 font-bold shadow-warm"
+                >
+                  <Download className="h-5 w-5" />
+                  {isBatch ? `تحميل تقرير ${courses.length} مواد PDF` : "تحميل التقرير الأولي PDF"}
+                </Button>
+              </div>
 
             {user && savedId && (
               <Alert className="border-success/40 bg-success/5">
