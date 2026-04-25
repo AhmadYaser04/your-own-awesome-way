@@ -331,7 +331,7 @@ export function drawInfoRow(
   const lines = wrapArabic(doc, value || "—", valueW);
   let yy = y;
   for (const line of lines.slice(0, 3)) {
-    doc.text(line, valueRightX, yy, { align: "right" });
+    doc.text(shapeForDraw(line), valueRightX, yy, { align: "right" });
     yy += 12;
   }
   return Math.max(y + 14, yy);
