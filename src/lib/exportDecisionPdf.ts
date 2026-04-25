@@ -7,11 +7,8 @@ import {
   drawStatusBadge,
   drawText,
   drawInfoRow,
-  ensureArabicFont,
   formatDate,
   getLogoDataUrl,
-  wrapArabic,
-  shapeForDraw,
 } from "./pdfHelpers";
 
 export interface DecisionPdfData {
@@ -28,11 +25,11 @@ export interface DecisionPdfData {
   verdict: string;
   status: "approved" | "rejected" | "pending";
   adminNotes: string;
-  reviewerName: string;   // اسم المشرف الموقّع
+  reviewerName: string;
   reviewerEmail: string;
   reviewedAt: string;
   submittedAt: string;
-  /** عند وجود أكثر من مادة (طلب جماعي) — كل مادة بقرارها الخاص. */
+  /** Set when the request contains multiple courses processed together. */
   batchCourses?: Array<{
     saudi_course_name: string;
     matched_aut_name?: string;
@@ -45,14 +42,13 @@ export interface DecisionPdfData {
 }
 
 const STATUS_LABEL: Record<DecisionPdfData["status"], string> = {
-  approved: "مقبولة ومعتمدة",
-  rejected: "مرفوضة",
-  pending: "قيد المراجعة",
+  approved: "APPROVED",
+  rejected: "REJECTED",
+  pending: "PENDING REVIEW",
 };
 
 /**
- * شهادة معادلة رسمية موقّعة من لجنة المعادلات.
- * الملف بالكامل بالعربية، يدعم RTL والربط الحرفي بشكل سليم.
+ * Official equivalency certificate (English-only output).
  */
 export async function exportDecisionPdf(data: DecisionPdfData) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
@@ -61,65 +57,70 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
   const margin = 36;
   const contentW = pageW - margin * 2;
   const logo = await getLogoDataUrl();
-  ensureArabicFont(doc);
 
-  // ============ ترويسة ============
+  // ============ HEADER ============
   let y = drawBrandedHeader({
     doc,
     logo,
-    title: "شهادة معادلة المادة الدراسية",
-    subtitle: "قرار رسمي صادر عن لجنة المعادلات الأكاديمية",
-    topBadge: "قرار نهائي",
+    title: "Course Equivalency Certificate",
+    subtitle: "Official decision issued by the Academic Equivalency Committee",
+    topBadge: "FINAL DECISION",
   });
 
-  // شارة الحالة
-  drawStatusBadge(doc, pageW - margin - 140, y, STATUS_LABEL[data.status], data.status);
-  // رقم الطلب يسار
+  // Status badge (right) + request ID (left)
+  const statusLabel = STATUS_LABEL[data.status];
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  const sw = doc.getTextWidth(statusLabel) + 24;
+  drawStatusBadge(doc, pageW - margin - sw, y, statusLabel, data.status);
+
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(120, 120, 130);
-  drawText(doc, `رقم الطلب: ${data.requestId.slice(0, 8).toUpperCase()}`, margin, y, { align: "left" });
+  doc.text(`Request ID: ${data.requestId.slice(0, 8).toUpperCase()}`, margin, y);
   y += 30;
 
-  // ============ بيانات الطالب ============
+  // ============ STUDENT INFO ============
   doc.setDrawColor(220, 220, 230);
   doc.setFillColor(247, 250, 253);
   const studentBoxH = 110;
   doc.roundedRect(margin, y, contentW, studentBoxH, 6, 6, "FD");
-  // عنوان القسم
+
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(20, 50, 110);
-  drawText(doc, "بيانات الطالب", pageW - margin - 14, y + 18, { bold: true, align: "right" });
+  doc.text("Student Information", margin + 14, y + 18);
 
   let yy = y + 38;
-  yy = drawInfoRow(doc, "الاسم الكامل:", data.studentName, margin + 8, yy, contentW - 16);
-  yy = drawInfoRow(doc, "البريد الإلكتروني:", data.studentEmail, margin + 8, yy, contentW - 16);
-  yy = drawInfoRow(doc, "الجامعة السعودية:", data.saudiUniversity, margin + 8, yy, contentW - 16);
-  yy = drawInfoRow(doc, "تاريخ تقديم الطلب:", formatDate(data.submittedAt), margin + 8, yy, contentW - 16);
+  yy = drawInfoRow(doc, "Full Name:", data.studentName, margin, yy, contentW);
+  yy = drawInfoRow(doc, "Email:", data.studentEmail, margin, yy, contentW);
+  yy = drawInfoRow(doc, "Saudi University:", data.saudiUniversity, margin, yy, contentW);
+  yy = drawInfoRow(doc, "Submitted At:", formatDate(data.submittedAt), margin, yy, contentW);
   y = Math.max(y + studentBoxH, yy) + 12;
 
   const isBatch = (data.batchCourses?.length ?? 0) > 1;
 
   if (isBatch) {
-    // ============ جدول مواد الدفعة ============
+    // ============ BATCH TABLE ============
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(20, 50, 110);
-    drawText(doc, `قرارات لجنة المعادلات على المواد المقدّمة (${data.batchCourses!.length} مواد)`, pageW - margin, y, {
-      bold: true,
-      align: "right",
-    });
+    doc.text(
+      `Committee Decisions (${data.batchCourses!.length} courses)`,
+      margin,
+      y
+    );
     y += 16;
 
     data.batchCourses!.forEach((c, idx) => {
       const decStatus = c.decision?.status ?? "pending";
       const blockH = 110;
-      // فاصل صفحة
       if (y + blockH > pageH - 160) {
         drawFooter(doc, doc.getNumberOfPages(), 0);
         doc.addPage();
-        ensureArabicFont(doc);
         y = margin + 10;
       }
-      // لون الإطار حسب القرار
+
       const border: [number, number, number] =
         decStatus === "approved" ? [38, 170, 90] : decStatus === "rejected" ? [220, 60, 60] : [200, 200, 210];
       doc.setFillColor(252, 253, 255);
@@ -128,40 +129,44 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
       doc.roundedRect(margin, y, contentW, blockH, 6, 6, "FD");
       doc.setLineWidth(0.4);
 
-      // رأس البطاقة: رقم + شارة قرار
+      // Card header
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
       doc.setTextColor(20, 50, 110);
-      drawText(doc, `المادة #${idx + 1}`, pageW - margin - 14, y + 18, { bold: true, align: "right" });
+      doc.text(`Course #${idx + 1}`, margin + 14, y + 18);
 
       const decLabel =
-        decStatus === "approved" ? "معتمدة" : decStatus === "rejected" ? "مرفوضة" : "بانتظار القرار";
-      drawStatusBadge(doc, margin + 14, y + 18, decLabel, decStatus);
+        decStatus === "approved" ? "APPROVED" : decStatus === "rejected" ? "REJECTED" : "PENDING";
+      const labelW = doc.getTextWidth(decLabel) + 24;
+      drawStatusBadge(doc, pageW - margin - labelW, y + 18, decLabel, decStatus);
 
-      // اسم المادة السعودية
+      // Saudi course name
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
       doc.setTextColor(40, 40, 60);
-      drawText(doc, `📘 ${c.saudi_course_name}`, pageW - margin - 14, y + 42, {
-        bold: true, align: "right", maxWidth: contentW - 28,
+      drawText(doc, `Source: ${c.saudi_course_name}`, margin + 14, y + 42, {
+        bold: true, maxWidth: contentW - 28,
       });
 
-      // المعادِلة في AUT
+      // AUT match
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
       doc.setTextColor(20, 80, 160);
       drawText(
         doc,
-        `← المعادِلة في AUT: ${c.matched_aut_name || "—"} (${c.matched_aut_code || "—"})`,
-        pageW - margin - 14,
-        y + 60,
-        { align: "right", maxWidth: contentW - 28 }
+        `→ AUT Equivalent: ${c.matched_aut_name || "—"} (${c.matched_aut_code || "—"})`,
+        margin + 14, y + 60,
+        { maxWidth: contentW - 28 }
       );
 
-      // شريط التطابق + ملخص
+      // Similarity bar + brief summary
       drawSimilarityBar(doc, margin + 14, y + 76, contentW - 28, c.similarity);
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       doc.setTextColor(70, 70, 90);
-      const sumLine = (c.summary || "").slice(0, 140);
+      const sumLine = (c.summary || "").slice(0, 160);
       if (sumLine) {
-        drawText(doc, sumLine, pageW - margin - 14, y + 102, { align: "right", maxWidth: contentW - 28 });
+        doc.text(sumLine, margin + 14, y + 102);
       }
 
       y += blockH + 8;
@@ -169,106 +174,120 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
 
     y += 8;
   } else {
-    // ============ مادة واحدة (نمط قديم) ============
+    // ============ SINGLE COURSE ============
     doc.setFillColor(255, 251, 240);
     doc.setDrawColor(255, 200, 80);
     const srcH = 100;
     doc.roundedRect(margin, y, contentW, srcH, 6, 6, "FD");
+
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(150, 90, 0);
-    drawText(doc, "المادة المعروضة من الجامعة السعودية", pageW - margin - 14, y + 18, {
-      bold: true, align: "right",
-    });
+    doc.text("Source course (Saudi university)", margin + 14, y + 18);
+
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
     doc.setTextColor(20, 30, 60);
-    drawText(doc, data.saudiCourseName || "(بدون اسم)", pageW - margin - 14, y + 40, {
-      bold: true, align: "right", maxWidth: contentW - 28,
+    drawText(doc, data.saudiCourseName || "(no name provided)", margin + 14, y + 40, {
+      bold: true, maxWidth: contentW - 28,
     });
+
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(80, 80, 100);
-    const descLines = wrapArabic(doc, (data.saudiCourseDescription || "").slice(0, 320), contentW - 28);
+    const descLines = doc.splitTextToSize(
+      (data.saudiCourseDescription || "").slice(0, 320),
+      contentW - 28
+    ) as string[];
     let dy = y + 60;
     for (const line of descLines.slice(0, 3)) {
-      doc.text(shapeForDraw(line), pageW - margin - 14, dy, { align: "right" });
+      doc.text(line, margin + 14, dy);
       dy += 12;
     }
     y += srcH + 12;
 
+    // AUT side
     doc.setFillColor(238, 248, 255);
     doc.setDrawColor(60, 140, 220);
     const tgtH = 110;
     doc.roundedRect(margin, y, contentW, tgtH, 6, 6, "FD");
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(20, 80, 160);
-    drawText(doc, "المادة المُعادِلة في جامعة العقبة للتكنولوجيا", pageW - margin - 14, y + 18, {
-      bold: true, align: "right",
-    });
+    doc.text("Equivalent course at Aqaba University of Technology", margin + 14, y + 18);
+
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
     doc.setTextColor(20, 30, 60);
-    drawText(doc, `${data.matchedName || "—"} (${data.matchedCode || "—"})`, pageW - margin - 14, y + 42, {
-      bold: true, align: "right", maxWidth: contentW - 28,
+    drawText(doc, `${data.matchedName || "—"} (${data.matchedCode || "—"})`, margin + 14, y + 42, {
+      bold: true, maxWidth: contentW - 28,
     });
-    drawSimilarityBar(doc, margin + 14, y + 60, contentW - 28, data.similarity, "نسبة التطابق");
+    drawSimilarityBar(doc, margin + 14, y + 60, contentW - 28, data.similarity, "Similarity");
     y += tgtH + 16;
 
-    // ملاحظات
+    // Notes
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(20, 50, 110);
-    drawText(doc, "ملاحظات لجنة المعادلات", pageW - margin, y, { bold: true, align: "right" });
+    doc.text("Committee notes", margin, y);
     y += 12;
     doc.setFillColor(252, 252, 254);
     doc.setDrawColor(210, 210, 220);
     const notesText =
       data.adminNotes?.trim() ||
       (data.status === "approved"
-        ? "تم اعتماد المعادلة بناءً على تطابق المخرجات التعليمية ومحتوى المادة."
+        ? "The equivalency was approved based on alignment of learning outcomes and content."
         : data.status === "rejected"
-        ? "لم تتم الموافقة على المعادلة لعدم استيفاء معايير التطابق المطلوبة."
-        : "لا توجد ملاحظات إضافية.");
-    const notesLines = wrapArabic(doc, notesText, contentW - 24);
+        ? "The equivalency was not approved due to insufficient alignment with required criteria."
+        : "No additional notes.");
+    const notesLines = doc.splitTextToSize(notesText, contentW - 24) as string[];
     const notesH = Math.max(60, notesLines.length * 14 + 24);
     doc.roundedRect(margin, y, contentW, notesH, 6, 6, "FD");
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(40, 40, 60);
     let ny = y + 18;
     for (const line of notesLines) {
-      doc.text(shapeForDraw(line), pageW - margin - 12, ny, { align: "right" });
+      doc.text(line, margin + 12, ny);
       ny += 14;
     }
     y += notesH + 20;
   }
 
-  // ============ التوقيع + الختم ============
+  // ============ SIGNATURE + SEAL ============
   if (y > pageH - 150) {
     doc.addPage();
     y = margin;
   }
 
-  // خط التوقيع (يمين)
+  // Signature line (left)
   doc.setDrawColor(150, 150, 160);
-  doc.line(pageW - margin - 220, y + 32, pageW - margin, y + 32);
+  doc.line(margin, y + 32, margin + 220, y + 32);
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(20, 50, 110);
-  drawText(doc, "اعتمد القرار:", pageW - margin, y + 14, { bold: true, align: "right" });
+  doc.text("Approved by:", margin, y + 14);
+  doc.setFontSize(11);
   doc.setTextColor(20, 30, 60);
-  drawText(
-    doc,
-    data.reviewerName?.trim() ? `د. ${data.reviewerName}` : "(لم يحدَّد)",
-    pageW - margin,
-    y + 30,
-    { bold: true, align: "right" }
+  doc.text(
+    data.reviewerName?.trim() ? `Dr. ${data.reviewerName}` : "(not specified)",
+    margin, y + 30
   );
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(120, 120, 130);
-  drawText(doc, data.reviewerEmail || "", pageW - margin, y + 44, { align: "right" });
-  drawText(doc, `تاريخ القرار: ${formatDate(data.reviewedAt) || "—"}`, pageW - margin, y + 58, {
-    align: "right",
-  });
+  doc.text(data.reviewerEmail || "", margin, y + 44);
+  doc.text(`Decision date: ${formatDate(data.reviewedAt) || "—"}`, margin, y + 58);
 
-  // الختم (يسار)
-  drawSeal(doc, margin + 50, y + 35);
+  // Seal (right)
+  drawSeal(doc, pageW - margin - 50, y + 35);
 
-  drawFooter(doc, 1, 1);
+  // Final footers
+  const total = doc.getNumberOfPages();
+  for (let p = 1; p <= total; p++) {
+    doc.setPage(p);
+    drawFooter(doc, p, total);
+  }
 
   doc.save(`AUT-Equivalency-${data.requestId.slice(0, 8)}-${data.status}.pdf`);
 }
