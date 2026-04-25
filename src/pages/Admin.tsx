@@ -39,6 +39,27 @@ import logo from "@/assets/aut-logo-official.png";
 type Status = "pending" | "approved" | "rejected";
 type SortKey = "newest" | "oldest" | "simHigh" | "simLow";
 
+interface BatchCourse {
+  saudi_course_name: string;
+  extracted_course?: string;
+  matches: { aut_code: string; aut_name: string; similarity: number; reasoning: string }[];
+  verdict: string;
+  overall_similarity: number;
+  summary: string;
+  /** قرار المشرف الخاص بهذه المادة بالذات. يُضاف عند المراجعة. */
+  decision?: { status: "approved" | "rejected" | "pending"; notes?: string };
+}
+
+interface AiResultShape {
+  matches?: { aut_code: string; aut_name: string; similarity: number; reasoning: string }[];
+  verdict?: string;
+  overall_similarity?: number;
+  summary?: string;
+  extracted_course?: string;
+  is_batch?: boolean;
+  courses?: BatchCourse[];
+}
+
 interface ReqRow {
   id: string;
   user_id: string;
@@ -54,8 +75,16 @@ interface ReqRow {
   reviewer_name: string | null;
   reviewed_at: string | null;
   created_at: string;
-  ai_result: unknown;
+  ai_result: AiResultShape | unknown;
   profile?: { full_name: string | null; email: string | null; saudi_university: string | null };
+}
+
+/** يقرأ المواد من ai_result. يُعيد [] لو ليس بدفعة. */
+function getBatchCourses(ai: unknown): BatchCourse[] {
+  if (!ai || typeof ai !== "object") return [];
+  const r = ai as AiResultShape;
+  const cs = r.courses ?? [];
+  return Array.isArray(cs) && cs.length > 1 ? cs : [];
 }
 
 export default function Admin() {
