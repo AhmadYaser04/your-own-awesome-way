@@ -27,6 +27,43 @@ export function ensureArabicFont(doc: jsPDF) {
 }
 
 /**
+ * يلفّ نصاً عربياً (أو مختلطاً) على عدّة أسطر — يلتزم بالكلمات المنطقية،
+ * ثم يعيد كل سطر بعد shaping (ربط الحروف + RTL).
+ * هذا الترتيب مهم: لا نقوم بـ split على نص مُشكَّل لأن jsPDF لن يعرف الكلمات.
+ */
+function wrapArabicLogical(doc: jsPDF, text: string, maxWidth: number): string[] {
+  ensureArabicFont(doc);
+  if (!text) return [];
+  // نستخدم خط Amiri لقياس عرض الكلمات (يعمل لكل من العربي والإنجليزي).
+  doc.setFont(FONT_NAME, "normal");
+
+  const paragraphs = text.split(/\r?\n/);
+  const out: string[] = [];
+
+  for (const para of paragraphs) {
+    const words = para.split(/\s+/).filter(Boolean);
+    if (words.length === 0) {
+      out.push("");
+      continue;
+    }
+    let line = "";
+    for (const word of words) {
+      const trial = line ? line + " " + word : word;
+      // نقيس باستخدام الشكل المُشكَّل لتقدير العرض الحقيقي.
+      const trialWidth = doc.getTextWidth(shapeArabic(trial));
+      if (trialWidth > maxWidth && line) {
+        out.push(line);
+        line = word;
+      } else {
+        line = trial;
+      }
+    }
+    if (line) out.push(line);
+  }
+  return out;
+}
+
+/**
  * يكتب نصاً يحتوي عربية بشكل صحيح (Shaping + RTL).
  * يستخدم خط Amiri تلقائياً للنصوص العربية.
  */
@@ -40,21 +77,28 @@ export function drawText(
     maxWidth?: number;
     bold?: boolean;
     rtl?: boolean;
+    lineHeight?: number;
   } = {}
 ) {
   if (!text) return;
   ensureArabicFont(doc);
-  const { align = "left", maxWidth, bold = false } = opts;
+  const { align = "left", maxWidth, bold = false, lineHeight = 14 } = opts;
   const isAr = containsArabic(text);
 
   if (isAr) {
     doc.setFont(FONT_NAME, bold ? "bold" : "normal");
-    const shaped = shapeArabic(text);
+    // العربية: المحاذاة الافتراضية يمين (لو وُضع left فهي خاطئة دلالياً)
+    const arAlign: "right" | "center" = align === "center" ? "center" : "right";
     if (maxWidth) {
-      const lines = doc.splitTextToSize(shaped, maxWidth) as string[];
-      doc.text(lines, x, y, { align: align === "left" ? "right" : align });
+      // نقطع منطقياً ثم نُشكِّل كل سطر — لتفادي إفساد الترتيب.
+      const logical = wrapArabicLogical(doc, text, maxWidth);
+      let yy = y;
+      for (const line of logical) {
+        doc.text(shapeArabic(line), x, yy, { align: arAlign });
+        yy += lineHeight;
+      }
     } else {
-      doc.text(shaped, x, y, { align: align === "left" ? "right" : align });
+      doc.text(shapeArabic(text), x, y, { align: arAlign });
     }
   } else {
     doc.setFont("helvetica", bold ? "bold" : "normal");
@@ -67,17 +111,22 @@ export function drawText(
   }
 }
 
-/** يقسم نصاً عربياً إلى أسطر بعد عمل reshape ليناسب maxWidth. */
+/** يقسم نصاً (عربي/إنجليزي) إلى أسطر منطقية ليناسب maxWidth.
+ *  ملاحظة: للعربية ترجع الأسطر **غير مُشكَّلة** — استخدم shapeArabic عند الرسم.
+ */
 export function wrapArabic(doc: jsPDF, text: string, maxWidth: number): string[] {
   ensureArabicFont(doc);
   if (!text) return [];
   if (containsArabic(text)) {
-    doc.setFont(FONT_NAME, "normal");
-    const shaped = shapeArabic(text);
-    return doc.splitTextToSize(shaped, maxWidth) as string[];
+    return wrapArabicLogical(doc, text, maxWidth);
   }
   doc.setFont("helvetica", "normal");
   return doc.splitTextToSize(text, maxWidth) as string[];
+}
+
+/** اختصار: يُعيد النص جاهزاً للرسم (مُشكَّلاً إن كان عربياً). */
+export function shapeForDraw(text: string): string {
+  return containsArabic(text) ? shapeArabic(text) : text;
 }
 
 // تحميل شعار الجامعة كـ data URL لإدراجه في الـ PDF
