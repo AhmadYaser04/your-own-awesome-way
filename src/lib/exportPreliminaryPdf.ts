@@ -6,6 +6,11 @@ import {
   drawStatusBadge,
   formatDate,
   getLogoDataUrl,
+  safePdfCourseSummary,
+  safePdfCourseTitle,
+  safePdfStudentName,
+  safePdfText,
+  safePdfUniversity,
 } from "./pdfHelpers";
 
 export interface PreliminaryMatch {
@@ -55,6 +60,9 @@ export async function exportPreliminaryPdf(data: PreliminaryPdfData) {
   const margin = 36;
   const contentW = pageW - margin * 2;
   const logo = await getLogoDataUrl();
+  const safeStudentName = safePdfStudentName(data.studentName, data.studentEmail);
+  const safeStudentEmail = safePdfText(data.studentEmail, "student@record.local");
+  const safeUniversity = safePdfUniversity(data.saudiUniversity);
 
   const isBatch = data.courses.length > 1;
   const drawHeader = () =>
@@ -105,9 +113,9 @@ export async function exportPreliminaryPdf(data: PreliminaryPdfData) {
     doc.text(value || "—", margin + 14 + 110, yy);
     yy += 14;
   };
-  drawRow("Name:", data.studentName || "—");
-  drawRow("Email:", data.studentEmail || "—");
-  drawRow("Saudi University:", data.saudiUniversity || "—");
+  drawRow("Name:", safeStudentName);
+  drawRow("Email:", safeStudentEmail);
+  drawRow("Saudi University:", safeUniversity);
   y += boxH + 12;
 
   // ============ NOTICE ============
@@ -195,7 +203,7 @@ export async function exportPreliminaryPdf(data: PreliminaryPdfData) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(40, 40, 60);
-    const srcName = c.saudi_course.split("\n")[0].slice(0, 110);
+    const srcName = safePdfCourseTitle(c.saudi_course.split("\n")[0], idx).slice(0, 110);
     const srcLines = doc.splitTextToSize(`Source: ${srcName}`, contentW - 28) as string[];
     doc.text(srcLines.slice(0, 1), margin + 14, y + 46);
 
@@ -206,7 +214,7 @@ export async function exportPreliminaryPdf(data: PreliminaryPdfData) {
       doc.setFontSize(11);
       doc.setTextColor(20, 80, 160);
       const matchLines = doc.splitTextToSize(
-        `-> AUT equivalent: ${top.aut_name} (${top.aut_code})`,
+        `-> AUT equivalent: ${safePdfText(top.aut_name, "No direct AUT match")} (${safePdfText(top.aut_code, "—")})`,
         contentW - 28
       ) as string[];
       doc.text(matchLines.slice(0, 1), margin + 14, y + 70);
@@ -217,7 +225,7 @@ export async function exportPreliminaryPdf(data: PreliminaryPdfData) {
       doc.setFontSize(8);
       doc.setTextColor(60, 60, 80);
       const sumLines = doc.splitTextToSize(
-        c.summary || top.reasoning || "",
+        safePdfCourseSummary(c.summary || top.reasoning, top.aut_name, c.overall_similarity),
         contentW - 28
       ) as string[];
       let sy = y + 122;
