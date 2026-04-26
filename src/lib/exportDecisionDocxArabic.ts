@@ -79,7 +79,11 @@ function arRun(
 /** A right-to-left paragraph (default body). */
 function arParagraph(
   children: TextRun[],
-  opts: { spacingAfter?: number; spacingBefore?: number; alignment?: AlignmentType } = {}
+  opts: {
+    spacingAfter?: number;
+    spacingBefore?: number;
+    alignment?: (typeof AlignmentType)[keyof typeof AlignmentType];
+  } = {}
 ): Paragraph {
   return new Paragraph({
     children,
