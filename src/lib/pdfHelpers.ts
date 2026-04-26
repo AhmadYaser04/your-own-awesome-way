@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import logoUrl from "@/assets/aut-logo-official.png";
+import { containsArabic } from "./arabicText";
 
 /**
  * PDF helpers for AUT official documents.
@@ -15,6 +16,96 @@ export function ensureArabicFont(doc: jsPDF) {
 /** Backwards-compatible identity (no Arabic shaping needed for English PDFs). */
 export function shapeForDraw(text: string): string {
   return text ?? "";
+}
+
+const PDF_SAFE_TEXT_RE = /^[\x09\x0A\x0D\x20-\x7E\u00A0-\u024F]*$/;
+
+function normalizePdfText(text?: string | null): string {
+  return (text ?? "").replace(/\s+/g, " ").trim();
+}
+
+export function isSafePdfLatinText(text?: string | null): boolean {
+  const normalized = normalizePdfText(text);
+  return !!normalized && !containsArabic(normalized) && PDF_SAFE_TEXT_RE.test(normalized);
+}
+
+export function safePdfText(text: string | null | undefined, fallback = "—"): string {
+  const normalized = normalizePdfText(text);
+  return isSafePdfLatinText(normalized) ? normalized : fallback;
+}
+
+export function safePdfStudentName(name: string | null | undefined, email: string | null | undefined): string {
+  return safePdfText(name, safePdfText(email, "Student record"));
+}
+
+export function safePdfUniversity(university: string | null | undefined): string {
+  return safePdfText(university, "Saudi university record");
+}
+
+export function safePdfReviewerName(name: string | null | undefined): string {
+  return safePdfText(name, "Academic Supervisor");
+}
+
+export function safePdfCourseTitle(title: string | null | undefined, index: number): string {
+  return safePdfText(title, `Submitted course #${index + 1}`);
+}
+
+export function safePdfCourseSummary(
+  summary: string | null | undefined,
+  matchedCourseName: string | null | undefined,
+  similarity: number | null | undefined
+): string {
+  const normalized = normalizePdfText(summary);
+  if (isSafePdfLatinText(normalized)) return normalized;
+  const safeMatch = safePdfText(matchedCourseName, "the AUT curriculum");
+  return `The uploaded course was reviewed against ${safeMatch} with an estimated ${Math.round(
+    similarity ?? 0
+  )}% alignment.`;
+}
+
+export function safePdfNotes(
+  notes: string | null | undefined,
+  status: "approved" | "rejected" | "pending"
+): string {
+  const normalized = normalizePdfText(notes);
+  if (isSafePdfLatinText(normalized)) return normalized;
+  if (status === "approved") {
+    return "The equivalency was approved after academic review of the uploaded course record.";
+  }
+  if (status === "rejected") {
+    return "The equivalency was not approved after academic review of the uploaded course record.";
+  }
+  return "The request is still under academic review.";
+}
+
+export function resolveBatchDecisionBadge(
+  courses: Array<{ decision?: { status: "approved" | "rejected" | "pending" } }> | undefined,
+  fallback: "approved" | "rejected" | "pending"
+): { label: string; type: "approved" | "rejected" | "pending" | "partial" } {
+  if (!courses?.length) {
+    return {
+      label:
+        fallback === "approved" ? "APPROVED" : fallback === "rejected" ? "REJECTED" : "PENDING REVIEW",
+      type: fallback,
+    };
+  }
+
+  const approved = courses.filter((course) => course.decision?.status === "approved").length;
+  const rejected = courses.filter((course) => course.decision?.status === "rejected").length;
+
+  if (approved > 0 && rejected > 0) {
+    return { label: "MIXED DECISION", type: "partial" };
+  }
+
+  if (approved > 0 && rejected === 0 && approved === courses.length) {
+    return { label: "APPROVED", type: "approved" };
+  }
+
+  if (rejected > 0 && approved === 0 && rejected === courses.length) {
+    return { label: "REJECTED", type: "rejected" };
+  }
+
+  return { label: "PENDING REVIEW", type: "pending" };
 }
 
 /** Wrap text on word boundaries to fit maxWidth. */
@@ -179,13 +270,14 @@ export function drawStatusBadge(
   x: number,
   y: number,
   text: string,
-  type: "approved" | "rejected" | "pending" | "preliminary"
+  type: "approved" | "rejected" | "pending" | "preliminary" | "partial"
 ) {
   const colors: Record<string, [number, number, number]> = {
     approved: [38, 170, 90],
     rejected: [220, 60, 60],
     pending: [240, 170, 30],
     preliminary: [60, 120, 200],
+    partial: [20, 80, 160],
   };
   const c = colors[type] ?? [120, 120, 120];
   doc.setFillColor(...c);
