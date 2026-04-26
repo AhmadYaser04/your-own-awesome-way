@@ -417,7 +417,7 @@ export default function Equivalency() {
                         <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/30 font-bold text-sm md:text-base px-3 py-1">
                           مادة #{idx + 1}
                         </Badge>
-                        <span className="font-heading font-bold text-foreground text-lg md:text-xl truncate">
+                        <span className="font-heading font-bold text-foreground text-base md:text-lg truncate">
                           {c.saudi_course_name}
                         </span>
                       </div>
@@ -427,37 +427,37 @@ export default function Equivalency() {
                         <div className="text-sm text-muted-foreground font-heading">
                           {dir === "rtl" ? "حالة المعادلة" : "Equivalency status"}
                         </div>
-                        <Badge className="bg-muted text-foreground hover:bg-muted text-base md:text-lg px-4 py-2 font-bold gap-2 border border-border">
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                        <Badge className="bg-muted text-foreground hover:bg-muted text-sm md:text-base px-3 py-1.5 font-bold gap-2 border border-border">
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
                           {dir === "rtl" ? "بانتظار قرار المرشد الأكاديمي" : "Pending advisor decision"}
                         </Badge>
                       </div>
                       <div className={dir === "rtl" ? "text-center md:text-left" : "text-center md:text-right"}>
                         <div className="text-sm text-muted-foreground font-heading mb-1">{t("eq.overall")}</div>
-                        <div className="font-heading font-bold text-4xl md:text-5xl text-primary">{Math.round(c.overall_similarity)}%</div>
+                        <div className="font-heading font-bold text-2xl md:text-3xl text-primary">{Math.round(c.overall_similarity)}%</div>
                       </div>
                     </div>
-                    <Progress value={c.overall_similarity} className="h-3 mb-4" />
-                    <p className="text-base md:text-lg text-foreground leading-relaxed bg-accent/40 p-4 rounded-lg mb-5">
+                    <Progress value={c.overall_similarity} className="h-2.5 mb-4" />
+                    <p className="text-sm md:text-base text-foreground leading-relaxed bg-accent/40 p-3 rounded-lg mb-5">
                       {c.summary}
                     </p>
                     <div className="space-y-3">
-                      <div className="text-sm md:text-base font-heading font-bold text-muted-foreground">
+                      <div className="text-xs md:text-sm font-heading font-bold text-muted-foreground">
                         {t("eq.bestMatches")} ({c.matches.length})
                       </div>
                       {c.matches.map((m, i) => (
-                        <div key={i} className={`p-4 rounded-lg bg-card border ${dir === "rtl" ? "border-r-2 border-r-secondary" : "border-l-2 border-l-secondary"}`}>
+                        <div key={i} className={`p-3 rounded-lg bg-card border ${dir === "rtl" ? "border-r-2 border-r-secondary" : "border-l-2 border-l-secondary"}`}>
                           <div className="flex items-start justify-between gap-3 mb-2">
                             <div>
-                              <div className="font-heading font-bold text-base md:text-lg text-foreground">{m.aut_name}</div>
-                              <div className="text-sm text-muted-foreground mt-0.5">{m.aut_code}</div>
+                              <div className="font-heading font-bold text-sm md:text-base text-foreground">{m.aut_name}</div>
+                              <div className="text-xs text-muted-foreground mt-0.5">{m.aut_code}</div>
                             </div>
-                            <div className="font-heading font-bold text-2xl md:text-3xl text-primary shrink-0">
+                            <div className="font-heading font-bold text-lg md:text-xl text-primary shrink-0">
                               {Math.round(m.similarity)}%
                             </div>
                           </div>
-                          <Progress value={m.similarity} className="h-2 mb-3" />
-                          <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{m.reasoning}</p>
+                          <Progress value={m.similarity} className="h-1.5 mb-2" />
+                          <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{m.reasoning}</p>
                         </div>
                       ))}
                     </div>
