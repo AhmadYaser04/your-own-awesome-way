@@ -921,21 +921,13 @@ export default function Admin() {
                     <p className="text-xs text-muted-foreground mb-3">
                       اضغط على الزر أدناه لتنزيل شهادة المعادلة الرسمية بصيغة PDF (مختومة وموقّعة).
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Button
-                        onClick={() => printPdf(active, "ar")}
-                        size="lg"
-                        className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 flex-1 font-bold shadow-elegant"
-                      >
-                        <Printer className="h-5 w-5" /> تنزيل الشهادة بالعربية (Word)
-                      </Button>
+                    <div className="flex">
                       <Button
                         onClick={() => printPdf(active, "en")}
                         size="lg"
-                        variant="outline"
-                        className="gap-2 flex-1 border-gold/40 text-gold-foreground bg-gold/10 hover:bg-gold/20 font-bold"
+                        className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 flex-1 font-bold shadow-elegant"
                       >
-                        <Printer className="h-5 w-5" /> Download Official PDF (EN)
+                        <Printer className="h-5 w-5" /> Download Certificate (PDF)
                       </Button>
                     </div>
                   </div>
