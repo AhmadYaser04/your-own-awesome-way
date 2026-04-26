@@ -33,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/i18n/LanguageProvider";
 import { exportDecisionPdf } from "@/lib/exportDecisionPdf";
+import { exportDecisionPdfArabic } from "@/lib/exportDecisionPdfArabic";
 import campus from "@/assets/aut-campus-bright.png";
 import logo from "@/assets/aut-logo-official.png";
 
@@ -305,9 +306,9 @@ export default function Admin() {
     load();
   };
 
-  const printPdf = (r: ReqRow) => {
+  const buildPdfData = (r: ReqRow) => {
     const batch = getBatchCourses(r.ai_result);
-    exportDecisionPdf({
+    return {
       requestId: r.id,
       studentName: r.profile?.full_name || "—",
       studentEmail: r.profile?.email || "—",
@@ -336,7 +337,13 @@ export default function Admin() {
             decision: c.decision,
           }))
         : undefined,
-    });
+    };
+  };
+
+  const printPdf = (r: ReqRow, language: "en" | "ar" = "en") => {
+    const data = buildPdfData(r);
+    if (language === "ar") return exportDecisionPdfArabic(data);
+    return exportDecisionPdf(data);
   };
 
   const exportCsv = () => {
