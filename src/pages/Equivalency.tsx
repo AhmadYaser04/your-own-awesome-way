@@ -427,18 +427,18 @@ export default function Equivalency() {
                         <div className="text-sm text-muted-foreground font-heading">
                           {dir === "rtl" ? "حالة المعادلة" : "Equivalency status"}
                         </div>
-                        <Badge className="bg-muted text-foreground hover:bg-muted text-base md:text-lg px-4 py-2 font-bold gap-2 border border-border">
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                        <Badge className="bg-muted text-foreground hover:bg-muted text-sm md:text-base px-3 py-1.5 font-bold gap-2 border border-border">
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
                           {dir === "rtl" ? "بانتظار قرار المرشد الأكاديمي" : "Pending advisor decision"}
                         </Badge>
                       </div>
                       <div className={dir === "rtl" ? "text-center md:text-left" : "text-center md:text-right"}>
                         <div className="text-sm text-muted-foreground font-heading mb-1">{t("eq.overall")}</div>
-                        <div className="font-heading font-bold text-4xl md:text-5xl text-primary">{Math.round(c.overall_similarity)}%</div>
+                        <div className="font-heading font-bold text-2xl md:text-3xl text-primary">{Math.round(c.overall_similarity)}%</div>
                       </div>
                     </div>
-                    <Progress value={c.overall_similarity} className="h-3 mb-4" />
-                    <p className="text-base md:text-lg text-foreground leading-relaxed bg-accent/40 p-4 rounded-lg mb-5">
+                    <Progress value={c.overall_similarity} className="h-2.5 mb-4" />
+                    <p className="text-sm md:text-base text-foreground leading-relaxed bg-accent/40 p-3 rounded-lg mb-5">
                       {c.summary}
                     </p>
                     <div className="space-y-3">
