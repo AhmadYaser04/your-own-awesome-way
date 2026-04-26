@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LanguageProvider";
 import { useAuth } from "@/hooks/useAuth";
 import { exportPreliminaryPdf } from "@/lib/exportPreliminaryPdf";
+import { exportPreliminaryPdfArabic } from "@/lib/exportPreliminaryPdfArabic";
 
 interface Match {
   aut_code: string;
@@ -465,39 +466,51 @@ export default function Equivalency() {
                 );
               })}
 
-              {/* زر تنزيل التقرير الأولي PDF */}
-              <div className="flex flex-col sm:flex-row gap-3 items-stretch">
-                <Button
-                  onClick={() =>
-                    exportPreliminaryPdf({
-                      studentName: user?.user_metadata?.full_name || user?.email || "—",
-                      studentEmail: user?.email || "—",
-                      saudiUniversity: (user?.user_metadata?.saudi_university as string) || "—",
-                      inputMode: mode,
-                      generatedAt: new Date().toISOString(),
-                      courses: (isBatch ? courses : [{
-                        saudi_course_name: courses[0]?.saudi_course_name || "المادة",
-                        matches: result.matches,
-                        verdict: result.verdict,
-                        overall_similarity: result.overall_similarity,
-                        summary: result.summary,
-                        extracted_course: result.extracted_course,
-                      } as CourseResult]).map((c) => ({
-                        saudi_course: c.saudi_course_name + (c.extracted_course ? `\n${c.extracted_course}` : ""),
-                        matches: c.matches,
-                        verdict: c.verdict,
-                        overall_similarity: c.overall_similarity,
-                        summary: c.summary,
-                      })),
-                    })
-                  }
-                  size="lg"
-                  className="bg-gold text-gold-foreground hover:bg-gold/90 gap-2 flex-1 font-bold shadow-warm"
-                >
-                  <Download className="h-5 w-5" />
-                  {isBatch ? `تحميل تقرير ${courses.length} مواد PDF` : "تحميل التقرير الأولي PDF"}
-                </Button>
-              </div>
+              {/* أزرار تنزيل التقرير الأولي PDF (عربي + إنجليزي) */}
+              {(() => {
+                const buildData = () => ({
+                  studentName: user?.user_metadata?.full_name || user?.email || "—",
+                  studentEmail: user?.email || "—",
+                  saudiUniversity: (user?.user_metadata?.saudi_university as string) || "—",
+                  inputMode: mode,
+                  generatedAt: new Date().toISOString(),
+                  courses: (isBatch ? courses : [{
+                    saudi_course_name: courses[0]?.saudi_course_name || "المادة",
+                    matches: result.matches,
+                    verdict: result.verdict,
+                    overall_similarity: result.overall_similarity,
+                    summary: result.summary,
+                    extracted_course: result.extracted_course,
+                  } as CourseResult]).map((c) => ({
+                    saudi_course: c.saudi_course_name + (c.extracted_course ? `\n${c.extracted_course}` : ""),
+                    matches: c.matches,
+                    verdict: c.verdict,
+                    overall_similarity: c.overall_similarity,
+                    summary: c.summary,
+                  })),
+                });
+                return (
+                  <div className="flex flex-col sm:flex-row gap-3 items-stretch">
+                    <Button
+                      onClick={() => exportPreliminaryPdfArabic(buildData())}
+                      size="lg"
+                      className="bg-gold text-gold-foreground hover:bg-gold/90 gap-2 flex-1 font-bold shadow-warm"
+                    >
+                      <Download className="h-5 w-5" />
+                      {isBatch ? `تحميل تقرير ${courses.length} مواد PDF (عربي)` : "تحميل التقرير الأولي PDF (عربي)"}
+                    </Button>
+                    <Button
+                      onClick={() => exportPreliminaryPdf(buildData())}
+                      size="lg"
+                      variant="outline"
+                      className="gap-2 flex-1 font-bold"
+                    >
+                      <Download className="h-5 w-5" />
+                      Download Preliminary PDF (EN)
+                    </Button>
+                  </div>
+                );
+              })()}
 
             {user && savedId && (
               <Alert className="border-success/40 bg-success/5">

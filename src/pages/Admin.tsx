@@ -33,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/i18n/LanguageProvider";
 import { exportDecisionPdf } from "@/lib/exportDecisionPdf";
+import { exportDecisionPdfArabic } from "@/lib/exportDecisionPdfArabic";
 import campus from "@/assets/aut-campus-bright.png";
 import logo from "@/assets/aut-logo-official.png";
 
@@ -305,9 +306,9 @@ export default function Admin() {
     load();
   };
 
-  const printPdf = (r: ReqRow) => {
+  const buildPdfData = (r: ReqRow) => {
     const batch = getBatchCourses(r.ai_result);
-    exportDecisionPdf({
+    return {
       requestId: r.id,
       studentName: r.profile?.full_name || "—",
       studentEmail: r.profile?.email || "—",
@@ -336,7 +337,13 @@ export default function Admin() {
             decision: c.decision,
           }))
         : undefined,
-    });
+    };
+  };
+
+  const printPdf = (r: ReqRow, language: "en" | "ar" = "en") => {
+    const data = buildPdfData(r);
+    if (language === "ar") return exportDecisionPdfArabic(data);
+    return exportDecisionPdf(data);
   };
 
   const exportCsv = () => {
@@ -638,8 +645,11 @@ export default function Admin() {
                         <div className="text-[10px] text-muted-foreground">{t("admin.aiSimilarity")}</div>
                       </div>
                     )}
-                    <Button size="sm" variant="outline" className="gap-1 border-gold/50 text-gold-foreground bg-gold/15 hover:bg-gold/25" onClick={() => printPdf(r)}>
-                      <Printer className="h-4 w-4" /> PDF
+                    <Button size="sm" variant="outline" className="gap-1 border-gold/50 text-gold-foreground bg-gold/15 hover:bg-gold/25" onClick={() => printPdf(r, "ar")}>
+                      <Printer className="h-4 w-4" /> PDF عربي
+                    </Button>
+                    <Button size="sm" variant="outline" className="gap-1" onClick={() => printPdf(r, "en")}>
+                      <Printer className="h-4 w-4" /> PDF EN
                     </Button>
                     <Button size="sm" variant="outline" className="gap-1" onClick={() => { setActive(r); setNotes(r.admin_notes || ""); setReviewerName(r.reviewer_name || ""); setDescExpanded(false); }}>
                       <Eye className="h-4 w-4" /> {t("admin.review")}
@@ -917,24 +927,41 @@ export default function Admin() {
                     <p className="text-xs text-muted-foreground mb-3">
                       اضغط على الزر أدناه لتنزيل شهادة المعادلة الرسمية بصيغة PDF (مختومة وموقّعة).
                     </p>
-                    <Button
-                      onClick={() => printPdf(active)}
-                      size="lg"
-                      className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 w-full font-bold shadow-elegant"
-                    >
-                      <Printer className="h-5 w-5" /> تنزيل شهادة المعادلة الرسمية (PDF)
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        onClick={() => printPdf(active, "ar")}
+                        size="lg"
+                        className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 flex-1 font-bold shadow-elegant"
+                      >
+                        <Printer className="h-5 w-5" /> تنزيل الشهادة بالعربي (PDF)
+                      </Button>
+                      <Button
+                        onClick={() => printPdf(active, "en")}
+                        size="lg"
+                        variant="outline"
+                        className="gap-2 flex-1 border-gold/40 text-gold-foreground bg-gold/10 hover:bg-gold/20 font-bold"
+                      >
+                        <Printer className="h-5 w-5" /> Download Official PDF (EN)
+                      </Button>
+                    </div>
                   </div>
                 )}
 
                 {/* أزرار PDF + حذف العامة */}
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button
-                    onClick={() => printPdf(active)}
+                    onClick={() => printPdf(active, "ar")}
                     variant="outline"
                     className="gap-2 flex-1 border-gold/40 text-gold-foreground bg-gold/10 hover:bg-gold/20"
                   >
-                    <Printer className="h-4 w-4" /> {t("admin.printPdf")}
+                    <Printer className="h-4 w-4" /> PDF عربي
+                  </Button>
+                  <Button
+                    onClick={() => printPdf(active, "en")}
+                    variant="outline"
+                    className="gap-2 flex-1"
+                  >
+                    <Printer className="h-4 w-4" /> PDF EN
                   </Button>
                   <Button onClick={() => setConfirmDelete({ ids: [active.id] })} variant="outline" className="gap-2 text-destructive border-destructive/40 hover:bg-destructive/10">
                     <Trash2 className="h-4 w-4" /> {t("admin.delete")}

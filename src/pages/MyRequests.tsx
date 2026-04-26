@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, FileText, CheckCircle2, XCircle, Clock, Calendar, BookOpen, MessageSquare, Plus, ChevronDown, ChevronUp, FolderKanban } from "lucide-react";
+import { Loader2, FileText, CheckCircle2, XCircle, Clock, Calendar, BookOpen, MessageSquare, Plus, ChevronDown, ChevronUp, FolderKanban, Download } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/i18n/LanguageProvider";
+import { exportDecisionPdf } from "@/lib/exportDecisionPdf";
+import { exportDecisionPdfArabic } from "@/lib/exportDecisionPdfArabic";
 
 interface Row {
   id: string;
@@ -40,24 +42,38 @@ function getBatchCourses(ai: unknown): BatchCourse[] {
   return Array.isArray(courses) && courses.length > 1 ? courses : [];
 }
 
+interface Profile {
+  full_name: string | null;
+  email: string | null;
+  saudi_university: string | null;
+}
+
 export default function MyRequests() {
   const { user } = useAuth();
   const { t, dir, lang } = useLang();
   const [rows, setRows] = useState<Row[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedBatchId, setExpandedBatchId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("equivalency_requests")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        setRows((data ?? []) as Row[]);
-        setLoading(false);
-      });
+    Promise.all([
+      supabase
+        .from("equivalency_requests")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("profiles")
+        .select("full_name,email,saudi_university")
+        .eq("id", user.id)
+        .maybeSingle(),
+    ]).then(([reqRes, profRes]) => {
+      setRows((reqRes.data ?? []) as Row[]);
+      setProfile((profRes.data ?? null) as Profile | null);
+      setLoading(false);
+    });
   }, [user]);
 
   const badge = (s: Row["status"]) => {
@@ -71,6 +87,37 @@ export default function MyRequests() {
     if (s === "rejected") return <Badge className="bg-destructive text-destructive-foreground gap-1 text-[11px]"><XCircle className="h-3 w-3" /> مرفوضة</Badge>;
     return <Badge className="bg-gold text-gold-foreground gap-1 text-[11px]"><Clock className="h-3 w-3" /> قيد المراجعة</Badge>;
   };
+
+  const buildDecisionData = (r: Row, batchCourses: BatchCourse[]) => ({
+    requestId: r.id,
+    studentName: profile?.full_name || user?.email || "—",
+    studentEmail: profile?.email || user?.email || "—",
+    saudiUniversity: profile?.saudi_university || "—",
+    saudiCourseName: r.saudi_course_name || "—",
+    saudiCourseDescription: r.saudi_course_description || "",
+    inputMode: "text",
+    matchedCode: r.matched_aut_code || "—",
+    matchedName: r.matched_aut_name || "—",
+    similarity: Number(r.similarity ?? 0),
+    verdict: r.verdict || "—",
+    status: r.status,
+    adminNotes: r.admin_notes || "",
+    reviewerName: r.reviewer_name || "",
+    reviewerEmail: "committee@aut.edu.jo",
+    reviewedAt: r.reviewed_at || "",
+    submittedAt: r.created_at,
+    batchCourses: batchCourses.length
+      ? batchCourses.map((c) => ({
+          saudi_course_name: c.saudi_course_name,
+          matched_aut_name: c.matches?.[0]?.aut_name,
+          matched_aut_code: c.matches?.[0]?.aut_code,
+          similarity: c.overall_similarity,
+          verdict: c.verdict,
+          summary: (c as { summary?: string }).summary,
+          decision: c.decision,
+        }))
+      : undefined,
+  });
 
   return (
     <SiteLayout>
@@ -211,6 +258,39 @@ export default function MyRequests() {
                           <div className="text-foreground">{r.admin_notes}</div>
                         </>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* أزرار تحميل الشهادة الرسمية بعد قرار المشرف */}
+                {r.status !== "pending" && (
+                  <div className={`rounded-lg border-2 p-3 space-y-2 ${
+                    r.status === "approved"
+                      ? "border-success/40 bg-success/5"
+                      : "border-destructive/40 bg-destructive/5"
+                  }`}>
+                    <div className="flex items-center gap-2 text-xs font-heading">
+                      <FileText className={`h-4 w-4 ${r.status === "approved" ? "text-success" : "text-destructive"}`} />
+                      <span className="font-bold">
+                        {r.status === "approved" ? "تم اعتماد القرار من قبل المرشد" : "تم إصدار قرار من قبل المرشد"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => exportDecisionPdfArabic(buildDecisionData(r, batchCourses))}
+                        className="gap-2 flex-1 bg-gold text-gold-foreground hover:bg-gold/90 font-bold"
+                      >
+                        <Download className="h-4 w-4" /> تحميل القرار النهائي (عربي)
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => exportDecisionPdf(buildDecisionData(r, batchCourses))}
+                        className="gap-2 flex-1"
+                      >
+                        <Download className="h-4 w-4" /> Download (EN)
+                      </Button>
                     </div>
                   </div>
                 )}
