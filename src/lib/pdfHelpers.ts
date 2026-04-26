@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import logoUrl from "@/assets/aut-logo-official.png";
+import logoDataUrl from "@/assets/aut-logo-official.png?inline";
 import { containsArabic } from "./arabicText";
 
 /**
@@ -144,25 +144,8 @@ export function drawText(
   }
 }
 
-// Cache for the university logo
-let cachedLogo: string | null = null;
-export async function getLogoDataUrl(): Promise<string | null> {
-  if (cachedLogo) return cachedLogo;
-  try {
-    const res = await fetch(logoUrl);
-    const blob = await res.blob();
-    return await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        cachedLogo = reader.result as string;
-        resolve(cachedLogo);
-      };
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return null;
-  }
+export function getLogoDataUrl(): string | null {
+  return logoDataUrl || null;
 }
 
 export interface BrandedHeaderOpts {
