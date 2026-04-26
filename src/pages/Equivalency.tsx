@@ -442,22 +442,22 @@ export default function Equivalency() {
                       {c.summary}
                     </p>
                     <div className="space-y-3">
-                      <div className="text-sm md:text-base font-heading font-bold text-muted-foreground">
+                      <div className="text-xs md:text-sm font-heading font-bold text-muted-foreground">
                         {t("eq.bestMatches")} ({c.matches.length})
                       </div>
                       {c.matches.map((m, i) => (
-                        <div key={i} className={`p-4 rounded-lg bg-card border ${dir === "rtl" ? "border-r-2 border-r-secondary" : "border-l-2 border-l-secondary"}`}>
+                        <div key={i} className={`p-3 rounded-lg bg-card border ${dir === "rtl" ? "border-r-2 border-r-secondary" : "border-l-2 border-l-secondary"}`}>
                           <div className="flex items-start justify-between gap-3 mb-2">
                             <div>
-                              <div className="font-heading font-bold text-base md:text-lg text-foreground">{m.aut_name}</div>
-                              <div className="text-sm text-muted-foreground mt-0.5">{m.aut_code}</div>
+                              <div className="font-heading font-bold text-sm md:text-base text-foreground">{m.aut_name}</div>
+                              <div className="text-xs text-muted-foreground mt-0.5">{m.aut_code}</div>
                             </div>
-                            <div className="font-heading font-bold text-2xl md:text-3xl text-primary shrink-0">
+                            <div className="font-heading font-bold text-lg md:text-xl text-primary shrink-0">
                               {Math.round(m.similarity)}%
                             </div>
                           </div>
-                          <Progress value={m.similarity} className="h-2 mb-3" />
-                          <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{m.reasoning}</p>
+                          <Progress value={m.similarity} className="h-1.5 mb-2" />
+                          <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{m.reasoning}</p>
                         </div>
                       ))}
                     </div>
