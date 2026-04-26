@@ -176,18 +176,21 @@ export default function Home() {
       {/* Vibrant student-friendly perks strip */}
       <section className="container mx-auto px-4 pb-14 max-w-5xl">
         <div className="grid sm:grid-cols-3 gap-3">
-          <div className="rounded-2xl p-5 text-white shadow-elegant" style={{ background: "var(--gradient-student)" }}>
-            <Lightbulb className="h-7 w-7 mb-2" />
+          {/* أزرق جامعي عميق */}
+          <div className="rounded-2xl p-5 text-primary-foreground shadow-elegant bg-gradient-to-br from-primary via-primary to-primary/80">
+            <Lightbulb className="h-7 w-7 mb-2 text-gold" />
             <div className="font-heading font-bold">{dir === "rtl" ? "نتيجة فورية" : "Instant result"}</div>
             <div className="text-xs opacity-90 mt-1">{dir === "rtl" ? "أقل من 10 ثوانٍ لكل معادلة." : "Less than 10s per request."}</div>
           </div>
-          <div className="rounded-2xl p-5 text-white shadow-elegant" style={{ background: "var(--gradient-vibrant)" }}>
+          {/* تدرّج أزرق ↔ ذهبي (هوية الجامعة) */}
+          <div className="rounded-2xl p-5 text-primary-foreground shadow-elegant" style={{ background: "var(--gradient-vibrant)" }}>
             <Rocket className="h-7 w-7 mb-2" />
             <div className="font-heading font-bold">{dir === "rtl" ? "ادعم بـ 3 صيغ" : "3 input modes"}</div>
             <div className="text-xs opacity-90 mt-1">{dir === "rtl" ? "نص، PDF، أو صورة من الهاتف." : "Text, PDF, or phone photo."}</div>
           </div>
-          <div className="rounded-2xl p-5 text-white shadow-elegant" style={{ background: "var(--gradient-success)" }}>
-            <Heart className="h-7 w-7 mb-2" />
+          {/* ذهبي دافئ */}
+          <div className="rounded-2xl p-5 text-gold-foreground shadow-warm bg-gradient-to-br from-gold via-gold to-gold/80">
+            <Heart className="h-7 w-7 mb-2 text-primary" />
             <div className="font-heading font-bold">{dir === "rtl" ? "موثوق ورسمي" : "Official & trusted"}</div>
             <div className="text-xs opacity-90 mt-1">{dir === "rtl" ? "ختم لجنة المعادلات وتقرير PDF." : "Committee seal & PDF report."}</div>
           </div>
