@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, FileText, CheckCircle2, XCircle, Clock, Calendar, BookOpen, MessageSquare, Plus, ChevronDown, ChevronUp, FolderKanban } from "lucide-react";
+import { Loader2, FileText, CheckCircle2, XCircle, Clock, Calendar, BookOpen, MessageSquare, Plus, ChevronDown, ChevronUp, FolderKanban, Download } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/i18n/LanguageProvider";
+import { exportDecisionPdf } from "@/lib/exportDecisionPdf";
+import { exportDecisionPdfArabic } from "@/lib/exportDecisionPdfArabic";
 
 interface Row {
   id: string;
