@@ -417,7 +417,7 @@ export default function Equivalency() {
                         <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/30 font-bold text-sm md:text-base px-3 py-1">
                           مادة #{idx + 1}
                         </Badge>
-                        <span className="font-heading font-bold text-foreground text-lg md:text-xl truncate">
+                        <span className="font-heading font-bold text-foreground text-base md:text-lg truncate">
                           {c.saudi_course_name}
                         </span>
                       </div>
