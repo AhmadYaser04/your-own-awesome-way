@@ -177,7 +177,7 @@ export interface BrandedHeaderOpts {
 export function drawBrandedHeader(opts: BrandedHeaderOpts): number {
   const { doc, logo, title, subtitle, topBadge } = opts;
   const pageW = doc.internal.pageSize.getWidth();
-  const headerH = 110;
+  const headerH = 130;
 
   // Main university-color band
   doc.setFillColor(20, 50, 110);
@@ -186,25 +186,30 @@ export function drawBrandedHeader(opts: BrandedHeaderOpts): number {
   doc.setFillColor(230, 170, 30);
   doc.rect(0, headerH, pageW, 5, "F");
 
-  // Official university logo (top-left for LTR English layout)
+  // Official university logo — keep its native aspect ratio (666x375 ≈ 1.776).
+  // Render at 110pt wide × 62pt tall, vertically centered inside the header.
+  const logoW = 110;
+  const logoH = 62;
+  const logoX = 28;
+  const logoY = (headerH - logoH) / 2;
   if (logo) {
     try {
-      doc.addImage(logo, "PNG", 28, 18, 70, 70, undefined, "FAST");
+      doc.addImage(logo, "PNG", logoX, logoY, logoW, logoH, undefined, "FAST");
     } catch {
       /* ignore */
     }
   }
 
   // University text block (next to the logo, left-aligned)
-  const textX = 110;
+  const textX = logoX + logoW + 18;
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.text("Aqaba University of Technology", textX, 40);
+  doc.setFontSize(15);
+  doc.text("Aqaba University of Technology", textX, headerH / 2 - 10);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.text("Faculty of Information Technology", textX, 56);
-  doc.text("Academic Course Equivalency Committee", textX, 72);
+  doc.text("Faculty of Information Technology", textX, headerH / 2 + 8);
+  doc.text("Academic Course Equivalency Committee", textX, headerH / 2 + 22);
 
   // Top badge (top-right)
   if (topBadge) {
