@@ -340,9 +340,8 @@ export default function Admin() {
     };
   };
 
-  const printPdf = (r: ReqRow, language: "en" | "ar" = "en") => {
+  const printPdf = (r: ReqRow, _language: "en" | "ar" = "en") => {
     const data = buildPdfData(r);
-    if (language === "ar") return exportDecisionDocxArabic(data);
     return exportDecisionPdf(data);
   };
 
