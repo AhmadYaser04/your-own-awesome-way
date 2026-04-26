@@ -927,7 +927,7 @@ export default function Admin() {
                         size="lg"
                         className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 flex-1 font-bold shadow-elegant"
                       >
-                        <Printer className="h-5 w-5" /> تنزيل الشهادة بالعربي (PDF)
+                        <Printer className="h-5 w-5" /> تنزيل الشهادة بالعربية (Word)
                       </Button>
                       <Button
                         onClick={() => printPdf(active, "en")}
