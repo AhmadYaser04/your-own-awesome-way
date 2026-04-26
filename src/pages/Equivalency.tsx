@@ -427,18 +427,18 @@ export default function Equivalency() {
                         <div className="text-xs text-muted-foreground font-heading">
                           {dir === "rtl" ? "حالة المعادلة" : "Equivalency status"}
                         </div>
-                        <Badge className="bg-amber-100 text-amber-900 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-200 text-xs md:text-sm px-2.5 py-1 font-semibold gap-1.5 border border-amber-300 dark:border-amber-800/60">
+                        <Badge className="bg-indigo-100 text-indigo-900 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-200 text-xs md:text-sm px-2.5 py-1 font-semibold gap-1.5 border border-indigo-300 dark:border-indigo-800/60">
                           <Loader2 className="h-3 w-3 animate-spin" />
                           {dir === "rtl" ? "بانتظار قرار المرشد الأكاديمي" : "Pending advisor decision"}
                         </Badge>
                       </div>
                       <div className={dir === "rtl" ? "text-center md:text-left" : "text-center md:text-right"}>
                         <div className="text-xs text-muted-foreground font-heading mb-0.5">{t("eq.overall")}</div>
-                        <div className="font-heading font-bold text-lg md:text-xl text-amber-700 dark:text-amber-400">{Math.round(c.overall_similarity)}%</div>
+                        <div className="font-heading font-bold text-lg md:text-xl text-indigo-700 dark:text-indigo-400">{Math.round(c.overall_similarity)}%</div>
                       </div>
                     </div>
-                    <Progress value={c.overall_similarity} className="h-2 mb-3 [&>div]:bg-amber-500" />
-                    <p className="text-xs md:text-sm text-foreground leading-relaxed bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 p-2.5 rounded-lg mb-4">
+                    <Progress value={c.overall_similarity} className="h-2 mb-3 [&>div]:bg-indigo-500" />
+                    <p className="text-xs md:text-sm text-foreground leading-relaxed bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200/60 dark:border-indigo-900/40 p-2.5 rounded-lg mb-4">
                       {c.summary}
                     </p>
                     <div className="space-y-2.5">
@@ -446,17 +446,17 @@ export default function Equivalency() {
                         {t("eq.bestMatches")} ({c.matches.length})
                       </div>
                       {c.matches.map((m, i) => (
-                        <div key={i} className={`p-2.5 rounded-lg bg-card border ${dir === "rtl" ? "border-r-2 border-r-amber-400" : "border-l-2 border-l-amber-400"}`}>
+                        <div key={i} className={`p-2.5 rounded-lg bg-card border ${dir === "rtl" ? "border-r-2 border-r-indigo-400" : "border-l-2 border-l-indigo-400"}`}>
                           <div className="flex items-start justify-between gap-3 mb-1.5">
                             <div>
                               <div className="font-heading font-bold text-xs md:text-sm text-foreground">{m.aut_name}</div>
                               <div className="text-[11px] text-muted-foreground mt-0.5">{m.aut_code}</div>
                             </div>
-                            <div className="font-heading font-bold text-sm md:text-base text-amber-700 dark:text-amber-400 shrink-0">
+                            <div className="font-heading font-bold text-sm md:text-base text-indigo-700 dark:text-indigo-400 shrink-0">
                               {Math.round(m.similarity)}%
                             </div>
                           </div>
-                          <Progress value={m.similarity} className="h-1 mb-1.5 [&>div]:bg-amber-400" />
+                          <Progress value={m.similarity} className="h-1 mb-1.5 [&>div]:bg-indigo-400" />
                           <p className="text-[11px] md:text-xs text-muted-foreground leading-relaxed">{m.reasoning}</p>
                         </div>
                       ))}
