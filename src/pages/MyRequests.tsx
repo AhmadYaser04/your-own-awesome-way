@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Loader2, FileText, CheckCircle2, XCircle, Clock, Calendar, BookOpen, MessageSquare, Plus, ChevronDown, ChevronUp, FolderKanban } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
@@ -110,8 +110,6 @@ export default function MyRequests() {
             const rejectedCount = batchCourses.filter((c) => c.decision?.status === "rejected").length;
             const pendingCount = batchCourses.length - approvedCount - rejectedCount;
             const isExpanded = expandedBatchId === r.id;
-            const summary = useMemo(() => ({ approvedCount, rejectedCount, pendingCount }), [approvedCount, rejectedCount, pendingCount]);
-
             return (
               <Card key={r.id} className="p-5 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
@@ -134,9 +132,9 @@ export default function MyRequests() {
                         <div className="text-xs text-muted-foreground mt-1">يمكنك معرفة المقبول والمرفوض لكل مادة من نفس الملف.</div>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <Badge className="bg-success/15 text-success border-success/30">مقبولة: {summary.approvedCount}</Badge>
-                        <Badge className="bg-destructive/15 text-destructive border-destructive/30">مرفوضة: {summary.rejectedCount}</Badge>
-                        <Badge className="bg-gold text-gold-foreground">قيد المراجعة: {summary.pendingCount}</Badge>
+                        <Badge className="bg-success/15 text-success border-success/30">مقبولة: {approvedCount}</Badge>
+                        <Badge className="bg-destructive/15 text-destructive border-destructive/30">مرفوضة: {rejectedCount}</Badge>
+                        <Badge className="bg-gold text-gold-foreground">قيد المراجعة: {pendingCount}</Badge>
                       </div>
                     </div>
 
