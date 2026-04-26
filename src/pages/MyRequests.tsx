@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/i18n/LanguageProvider";
 import { exportDecisionPdf } from "@/lib/exportDecisionPdf";
-import { exportDecisionPdfArabic } from "@/lib/exportDecisionPdfArabic";
+import { exportDecisionDocxArabic } from "@/lib/exportDecisionDocxArabic";
 
 interface Row {
   id: string;
@@ -278,10 +278,10 @@ export default function MyRequests() {
                     <div className="flex flex-col sm:flex-row gap-2">
                       <Button
                         size="sm"
-                        onClick={() => exportDecisionPdfArabic(buildDecisionData(r, batchCourses))}
+                        onClick={() => exportDecisionDocxArabic(buildDecisionData(r, batchCourses))}
                         className="gap-2 flex-1 bg-gold text-gold-foreground hover:bg-gold/90 font-bold"
                       >
-                        <Download className="h-4 w-4" /> تنزيل المعادل التي تمت معادلتها من قبل المشرف الأكاديمي
+                        <Download className="h-4 w-4" /> تنزيل الشهادة بالعربية (Word)
                       </Button>
                       <Button
                         size="sm"
@@ -289,7 +289,7 @@ export default function MyRequests() {
                         onClick={() => exportDecisionPdf(buildDecisionData(r, batchCourses))}
                         className="gap-2 flex-1"
                       >
-                        <Download className="h-4 w-4" /> تنزيل الشهادة بالإنجليزية
+                        <Download className="h-4 w-4" /> تنزيل الشهادة بالإنجليزية (PDF)
                       </Button>
                     </div>
                   </div>
