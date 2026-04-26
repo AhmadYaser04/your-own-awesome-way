@@ -9,6 +9,14 @@ import {
   drawInfoRow,
   formatDate,
   getLogoDataUrl,
+  resolveBatchDecisionBadge,
+  safePdfCourseSummary,
+  safePdfCourseTitle,
+  safePdfNotes,
+  safePdfReviewerName,
+  safePdfStudentName,
+  safePdfText,
+  safePdfUniversity,
 } from "./pdfHelpers";
 
 export interface DecisionPdfData {
@@ -57,6 +65,12 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
   const margin = 36;
   const contentW = pageW - margin * 2;
   const logo = await getLogoDataUrl();
+  const safeStudentName = safePdfStudentName(data.studentName, data.studentEmail);
+  const safeStudentEmail = safePdfText(data.studentEmail, "student@record.local");
+  const safeUniversity = safePdfUniversity(data.saudiUniversity);
+  const safeReviewer = safePdfReviewerName(data.reviewerName);
+  const isBatch = (data.batchCourses?.length ?? 0) > 1;
+  const batchBadge = resolveBatchDecisionBadge(data.batchCourses, data.status);
 
   // ============ HEADER ============
   let y = drawBrandedHeader({
@@ -68,11 +82,11 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
   });
 
   // Status badge (right) + request ID (left)
-  const statusLabel = STATUS_LABEL[data.status];
+  const statusLabel = isBatch ? batchBadge.label : STATUS_LABEL[data.status];
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   const sw = doc.getTextWidth(statusLabel) + 24;
-  drawStatusBadge(doc, pageW - margin - sw, y, statusLabel, data.status);
+  drawStatusBadge(doc, pageW - margin - sw, y, statusLabel, isBatch ? batchBadge.type : data.status);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
@@ -92,13 +106,11 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
   doc.text("Student Information", margin + 14, y + 18);
 
   let yy = y + 38;
-  yy = drawInfoRow(doc, "Full Name:", data.studentName, margin, yy, contentW);
-  yy = drawInfoRow(doc, "Email:", data.studentEmail, margin, yy, contentW);
-  yy = drawInfoRow(doc, "Saudi University:", data.saudiUniversity, margin, yy, contentW);
+  yy = drawInfoRow(doc, "Full Name:", safeStudentName, margin, yy, contentW);
+  yy = drawInfoRow(doc, "Email:", safeStudentEmail, margin, yy, contentW);
+  yy = drawInfoRow(doc, "Saudi University:", safeUniversity, margin, yy, contentW);
   yy = drawInfoRow(doc, "Submitted At:", formatDate(data.submittedAt), margin, yy, contentW);
   y = Math.max(y + studentBoxH, yy) + 12;
-
-  const isBatch = (data.batchCourses?.length ?? 0) > 1;
 
   if (isBatch) {
     // ============ BATCH TABLE ============
@@ -144,7 +156,7 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
       doc.setTextColor(40, 40, 60);
-      drawText(doc, `Source: ${c.saudi_course_name}`, margin + 14, y + 42, {
+      drawText(doc, `Source: ${safePdfCourseTitle(c.saudi_course_name, idx)}`, margin + 14, y + 42, {
         bold: true, maxWidth: contentW - 28,
       });
 
@@ -154,7 +166,7 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
       doc.setTextColor(20, 80, 160);
       drawText(
         doc,
-        `→ AUT Equivalent: ${c.matched_aut_name || "—"} (${c.matched_aut_code || "—"})`,
+        `→ AUT Equivalent: ${safePdfText(c.matched_aut_name, "No direct AUT match")} (${safePdfText(c.matched_aut_code, "—")})`,
         margin + 14, y + 60,
         { maxWidth: contentW - 28 }
       );
@@ -164,7 +176,7 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       doc.setTextColor(70, 70, 90);
-      const sumLine = (c.summary || "").slice(0, 160);
+      const sumLine = safePdfCourseSummary(c.summary, c.matched_aut_name, c.similarity).slice(0, 160);
       if (sumLine) {
         doc.text(sumLine, margin + 14, y + 102);
       }
@@ -188,7 +200,7 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
     doc.setTextColor(20, 30, 60);
-    drawText(doc, data.saudiCourseName || "(no name provided)", margin + 14, y + 40, {
+    drawText(doc, safePdfCourseTitle(data.saudiCourseName, 0), margin + 14, y + 40, {
       bold: true, maxWidth: contentW - 28,
     });
 
@@ -196,7 +208,7 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
     doc.setFontSize(9);
     doc.setTextColor(80, 80, 100);
     const descLines = doc.splitTextToSize(
-      (data.saudiCourseDescription || "").slice(0, 320),
+      safePdfCourseSummary(data.saudiCourseDescription, data.matchedName, data.similarity).slice(0, 320),
       contentW - 28
     ) as string[];
     let dy = y + 60;
@@ -219,7 +231,7 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
     doc.setTextColor(20, 30, 60);
-    drawText(doc, `${data.matchedName || "—"} (${data.matchedCode || "—"})`, margin + 14, y + 42, {
+    drawText(doc, `${safePdfText(data.matchedName, "No direct AUT match")} (${safePdfText(data.matchedCode, "—")})`, margin + 14, y + 42, {
       bold: true, maxWidth: contentW - 28,
     });
     drawSimilarityBar(doc, margin + 14, y + 60, contentW - 28, data.similarity, "Similarity");
@@ -233,13 +245,7 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
     y += 12;
     doc.setFillColor(252, 252, 254);
     doc.setDrawColor(210, 210, 220);
-    const notesText =
-      data.adminNotes?.trim() ||
-      (data.status === "approved"
-        ? "The equivalency was approved based on alignment of learning outcomes and content."
-        : data.status === "rejected"
-        ? "The equivalency was not approved due to insufficient alignment with required criteria."
-        : "No additional notes.");
+    const notesText = safePdfNotes(data.adminNotes, data.status);
     const notesLines = doc.splitTextToSize(notesText, contentW - 24) as string[];
     const notesH = Math.max(60, notesLines.length * 14 + 24);
     doc.roundedRect(margin, y, contentW, notesH, 6, 6, "FD");
@@ -270,13 +276,13 @@ export async function exportDecisionPdf(data: DecisionPdfData) {
   doc.setFontSize(11);
   doc.setTextColor(20, 30, 60);
   doc.text(
-    data.reviewerName?.trim() ? `Dr. ${data.reviewerName}` : "(not specified)",
+    `Dr. ${safeReviewer}`,
     margin, y + 30
   );
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(120, 120, 130);
-  doc.text(data.reviewerEmail || "", margin, y + 44);
+  doc.text(safePdfText(data.reviewerEmail, "committee@aut.edu.jo"), margin, y + 44);
   doc.text(`Decision date: ${formatDate(data.reviewedAt) || "—"}`, margin, y + 58);
 
   // Seal (right)
