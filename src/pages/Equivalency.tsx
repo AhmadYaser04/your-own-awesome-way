@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Sparkles, Loader2, AlertCircle, CheckCircle2, XCircle, AlertTriangle, Brain,
-  ArrowLeft, ArrowRight, FileText, Upload, Image as ImageIcon, FileType2, X, Save, LogIn, Download,
+  ArrowLeft, ArrowRight, FileText, Upload, Image as ImageIcon, FileType2, X, Save, LogIn,
 } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,6 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LanguageProvider";
 import { useAuth } from "@/hooks/useAuth";
-import { exportPreliminaryPdf } from "@/lib/exportPreliminaryPdf";
-import { exportPreliminaryPdfArabic } from "@/lib/exportPreliminaryPdfArabic";
 
 interface Match {
   aut_code: string;
