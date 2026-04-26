@@ -950,11 +950,18 @@ export default function Admin() {
                 {/* أزرار PDF + حذف العامة */}
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button
-                    onClick={() => printPdf(active)}
+                    onClick={() => printPdf(active, "ar")}
                     variant="outline"
                     className="gap-2 flex-1 border-gold/40 text-gold-foreground bg-gold/10 hover:bg-gold/20"
                   >
-                    <Printer className="h-4 w-4" /> {t("admin.printPdf")}
+                    <Printer className="h-4 w-4" /> PDF عربي
+                  </Button>
+                  <Button
+                    onClick={() => printPdf(active, "en")}
+                    variant="outline"
+                    className="gap-2 flex-1"
+                  >
+                    <Printer className="h-4 w-4" /> PDF EN
                   </Button>
                   <Button onClick={() => setConfirmDelete({ ids: [active.id] })} variant="outline" className="gap-2 text-destructive border-destructive/40 hover:bg-destructive/10">
                     <Trash2 className="h-4 w-4" /> {t("admin.delete")}
