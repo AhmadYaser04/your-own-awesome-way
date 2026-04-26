@@ -272,7 +272,7 @@ export default function MyRequests() {
                     <div className="flex items-center gap-2 text-xs font-heading">
                       <FileText className={`h-4 w-4 ${r.status === "approved" ? "text-success" : "text-destructive"}`} />
                       <span className="font-bold">
-                        {r.status === "approved" ? "تم اعتماد القرار من قبل المرشد" : "تم إصدار قرار من قبل المرشد"}
+                        {r.status === "approved" ? "تم اعتماد المعادلة بنجاح" : "تم إصدار قرار من قبل المرشد"}
                       </span>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2">
@@ -281,7 +281,7 @@ export default function MyRequests() {
                         onClick={() => exportDecisionPdfArabic(buildDecisionData(r, batchCourses))}
                         className="gap-2 flex-1 bg-gold text-gold-foreground hover:bg-gold/90 font-bold"
                       >
-                        <Download className="h-4 w-4" /> تحميل القرار النهائي (عربي)
+                        <Download className="h-4 w-4" /> تنزيل المعادل التي تمت معادلتها من قبل المشرف الأكاديمي
                       </Button>
                       <Button
                         size="sm"
@@ -289,7 +289,7 @@ export default function MyRequests() {
                         onClick={() => exportDecisionPdf(buildDecisionData(r, batchCourses))}
                         className="gap-2 flex-1"
                       >
-                        <Download className="h-4 w-4" /> Download (EN)
+                        <Download className="h-4 w-4" /> Download Official PDF (EN)
                       </Button>
                     </div>
                   </div>

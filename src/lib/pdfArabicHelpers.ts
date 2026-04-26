@@ -6,20 +6,13 @@ import { notoNaskhRegularBase64 } from "./fonts/notoNaskh_regular";
 import { notoNaskhBoldBase64 } from "./fonts/notoNaskh_bold";
 
 const FONT_FAMILY = "NotoNaskhArabic";
-let fontsRegistered = false;
 
-/** Register the embedded Noto Naskh Arabic fonts on a jsPDF document. */
+/** Register the embedded Noto Naskh Arabic fonts on a jsPDF document.
+ * Must be called per-document; jsPDF stores both VFS and font registrations
+ * on the document instance, so we always re-register. */
 export function registerArabicFont(doc: jsPDF) {
-  // jsPDF caches VFS globally; we still need to call addFont per-doc.
-  if (!fontsRegistered) {
-    doc.addFileToVFS("NotoNaskhArabic-Regular.ttf", notoNaskhRegularBase64);
-    doc.addFileToVFS("NotoNaskhArabic-Bold.ttf", notoNaskhBoldBase64);
-    fontsRegistered = true;
-  } else {
-    // Ensure VFS contains the files for this doc instance too.
-    doc.addFileToVFS("NotoNaskhArabic-Regular.ttf", notoNaskhRegularBase64);
-    doc.addFileToVFS("NotoNaskhArabic-Bold.ttf", notoNaskhBoldBase64);
-  }
+  doc.addFileToVFS("NotoNaskhArabic-Regular.ttf", notoNaskhRegularBase64);
+  doc.addFileToVFS("NotoNaskhArabic-Bold.ttf", notoNaskhBoldBase64);
   doc.addFont("NotoNaskhArabic-Regular.ttf", FONT_FAMILY, "normal");
   doc.addFont("NotoNaskhArabic-Bold.ttf", FONT_FAMILY, "bold");
   doc.setFont(FONT_FAMILY, "normal");
