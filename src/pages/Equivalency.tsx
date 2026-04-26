@@ -410,7 +410,6 @@ export default function Equivalency() {
                   summary: result.summary,
                 } as CourseResult,
               ]).map((c, idx) => {
-                const v = verdictConfig(c.verdict);
                 return (
                   <Card key={idx} className="p-6 md:p-7 border-2 shadow-elegant">
                     {isBatch && (
