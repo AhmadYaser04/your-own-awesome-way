@@ -471,24 +471,16 @@ export default function Equivalency() {
                   <AlertTitle className="text-primary font-bold">
                     تم إرسال طلبك إلى المرشد الأكاديمي
                   </AlertTitle>
-                  <AlertDescription className="text-sm leading-relaxed">
-                    سيتم إصدار <span className="font-bold">الملف النهائي الرسمي (PDF)</span> فور قبول أو رفض المشرف الأكاديمي للمعادلة، وسيظهر لك مباشرةً داخل صفحة <span className="font-bold">طلباتي</span> ليُحمَّل بنسختين (عربي وإنجليزي).
+                  <AlertDescription className="text-sm leading-relaxed space-y-3">
+                    <div>
+                      سيتم إصدار <span className="font-bold">الملف النهائي الرسمي (PDF)</span> فور قبول أو رفض المشرف الأكاديمي للمعادلة، وسيظهر لك مباشرةً داخل صفحة <span className="font-bold">طلباتي</span> ليُحمَّل بنسختين (عربي وإنجليزي).
+                    </div>
+                    <Button asChild size="sm" variant="outline" className="gap-2">
+                      <Link to="/my-requests"><Save className="h-3.5 w-3.5" /> {t("auth.myReqs")}</Link>
+                    </Button>
                   </AlertDescription>
                 </Alert>
               )}
-
-            {user && savedId && (
-              <Alert className="border-success/40 bg-success/5">
-                <Save className="h-4 w-4 text-success" />
-                <AlertTitle className="text-success">{t("eq.saved")}</AlertTitle>
-                <AlertDescription className="flex items-center justify-between gap-3 flex-wrap">
-                  <span>{t("eq.savedDesc")}</span>
-                  <Button asChild size="sm" variant="outline">
-                    <Link to="/my-requests">{t("auth.myReqs")}</Link>
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            )}
             {!user && (
               <Alert>
                 <LogIn className="h-4 w-4" />
