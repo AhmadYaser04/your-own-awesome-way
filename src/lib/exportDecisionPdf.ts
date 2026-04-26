@@ -319,13 +319,13 @@ function drawSupervisorMessagePage(
 /**
  * Official equivalency certificate (English-only output).
  */
-export async function exportDecisionPdf(data: DecisionPdfData) {
+export function exportDecisionPdf(data: DecisionPdfData) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 36;
   const contentW = pageW - margin * 2;
-  const logo = await getLogoDataUrl();
+  const logo = getLogoDataUrl();
   const safeStudentName = safePdfStudentName(data.studentName, data.studentEmail);
   const safeStudentEmail = safePdfText(data.studentEmail, "student@record.local");
   const safeUniversity = safePdfUniversity(data.saudiUniversity);

@@ -1,6 +1,6 @@
 // Arabic-aware PDF helpers (mirrors pdfHelpers.ts) using a real Arabic font.
 import jsPDF from "jspdf";
-import logoUrl from "@/assets/aut-logo-official.png";
+import logoDataUrl from "@/assets/aut-logo-official.png?inline";
 import { shapeArabic, containsArabic } from "./arabicText";
 import { notoNaskhRegularBase64 } from "./fonts/notoNaskh_regular";
 import { notoNaskhBoldBase64 } from "./fonts/notoNaskh_bold";
@@ -47,25 +47,8 @@ export function formatDateAr(iso: string | Date): string {
   }
 }
 
-// Logo cache (separate from English helper to avoid cross-imports).
-let cachedLogo: string | null = null;
-export async function getLogoDataUrlAr(): Promise<string | null> {
-  if (cachedLogo) return cachedLogo;
-  try {
-    const res = await fetch(logoUrl);
-    const blob = await res.blob();
-    return await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        cachedLogo = reader.result as string;
-        resolve(cachedLogo);
-      };
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return null;
-  }
+export function getLogoDataUrlAr(): string | null {
+  return logoDataUrl || null;
 }
 
 export interface BrandedHeaderArOpts {

@@ -281,7 +281,7 @@ function drawSupervisorMessagePageAr(
 }
 
 /** Official equivalency certificate — Arabic version. */
-export async function exportDecisionPdfArabic(data: DecisionPdfData) {
+export function exportDecisionPdfArabic(data: DecisionPdfData) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   registerArabicFont(doc);
 
@@ -290,7 +290,7 @@ export async function exportDecisionPdfArabic(data: DecisionPdfData) {
   const margin = 36;
   const contentW = pageW - margin * 2;
   const rightX = pageW - margin;
-  const logo = await getLogoDataUrlAr();
+  const logo = getLogoDataUrlAr();
 
   const studentName = data.studentName?.trim() || data.studentEmail || "—";
   const studentEmail = data.studentEmail || "—";

@@ -645,12 +645,6 @@ export default function Admin() {
                         <div className="text-[10px] text-muted-foreground">{t("admin.aiSimilarity")}</div>
                       </div>
                     )}
-                    <Button size="sm" variant="outline" className="gap-1 border-gold/50 text-gold-foreground bg-gold/15 hover:bg-gold/25" onClick={() => printPdf(r, "ar")}>
-                      <Printer className="h-4 w-4" /> PDF عربي
-                    </Button>
-                    <Button size="sm" variant="outline" className="gap-1" onClick={() => printPdf(r, "en")}>
-                      <Printer className="h-4 w-4" /> PDF EN
-                    </Button>
                     <Button size="sm" variant="outline" className="gap-1" onClick={() => { setActive(r); setNotes(r.admin_notes || ""); setReviewerName(r.reviewer_name || ""); setDescExpanded(false); }}>
                       <Eye className="h-4 w-4" /> {t("admin.review")}
                     </Button>
@@ -947,22 +941,8 @@ export default function Admin() {
                   </div>
                 )}
 
-                {/* أزرار PDF + حذف العامة */}
+                {/* حذف الطلب */}
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <Button
-                    onClick={() => printPdf(active, "ar")}
-                    variant="outline"
-                    className="gap-2 flex-1 border-gold/40 text-gold-foreground bg-gold/10 hover:bg-gold/20"
-                  >
-                    <Printer className="h-4 w-4" /> PDF عربي
-                  </Button>
-                  <Button
-                    onClick={() => printPdf(active, "en")}
-                    variant="outline"
-                    className="gap-2 flex-1"
-                  >
-                    <Printer className="h-4 w-4" /> PDF EN
-                  </Button>
                   <Button onClick={() => setConfirmDelete({ ids: [active.id] })} variant="outline" className="gap-2 text-destructive border-destructive/40 hover:bg-destructive/10">
                     <Trash2 className="h-4 w-4" /> {t("admin.delete")}
                   </Button>

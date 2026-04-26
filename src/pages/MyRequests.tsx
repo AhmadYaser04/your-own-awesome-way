@@ -289,7 +289,7 @@ export default function MyRequests() {
                         onClick={() => exportDecisionPdf(buildDecisionData(r, batchCourses))}
                         className="gap-2 flex-1"
                       >
-                        <Download className="h-4 w-4" /> Download Official PDF (EN)
+                        <Download className="h-4 w-4" /> تنزيل الشهادة بالإنجليزية
                       </Button>
                     </div>
                   </div>
