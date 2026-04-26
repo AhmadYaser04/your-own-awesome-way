@@ -645,8 +645,11 @@ export default function Admin() {
                         <div className="text-[10px] text-muted-foreground">{t("admin.aiSimilarity")}</div>
                       </div>
                     )}
-                    <Button size="sm" variant="outline" className="gap-1 border-gold/50 text-gold-foreground bg-gold/15 hover:bg-gold/25" onClick={() => printPdf(r)}>
-                      <Printer className="h-4 w-4" /> PDF
+                    <Button size="sm" variant="outline" className="gap-1 border-gold/50 text-gold-foreground bg-gold/15 hover:bg-gold/25" onClick={() => printPdf(r, "ar")}>
+                      <Printer className="h-4 w-4" /> PDF عربي
+                    </Button>
+                    <Button size="sm" variant="outline" className="gap-1" onClick={() => printPdf(r, "en")}>
+                      <Printer className="h-4 w-4" /> PDF EN
                     </Button>
                     <Button size="sm" variant="outline" className="gap-1" onClick={() => { setActive(r); setNotes(r.admin_notes || ""); setReviewerName(r.reviewer_name || ""); setDescExpanded(false); }}>
                       <Eye className="h-4 w-4" /> {t("admin.review")}
@@ -924,13 +927,23 @@ export default function Admin() {
                     <p className="text-xs text-muted-foreground mb-3">
                       اضغط على الزر أدناه لتنزيل شهادة المعادلة الرسمية بصيغة PDF (مختومة وموقّعة).
                     </p>
-                    <Button
-                      onClick={() => printPdf(active)}
-                      size="lg"
-                      className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 w-full font-bold shadow-elegant"
-                    >
-                      <Printer className="h-5 w-5" /> تنزيل شهادة المعادلة الرسمية (PDF)
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        onClick={() => printPdf(active, "ar")}
+                        size="lg"
+                        className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 flex-1 font-bold shadow-elegant"
+                      >
+                        <Printer className="h-5 w-5" /> تنزيل الشهادة بالعربي (PDF)
+                      </Button>
+                      <Button
+                        onClick={() => printPdf(active, "en")}
+                        size="lg"
+                        variant="outline"
+                        className="gap-2 flex-1 border-gold/40 text-gold-foreground bg-gold/10 hover:bg-gold/20 font-bold"
+                      >
+                        <Printer className="h-5 w-5" /> Download Official PDF (EN)
+                      </Button>
+                    </div>
                   </div>
                 )}
 
