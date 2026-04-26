@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Brain, Sparkles, Target, Zap, BookOpen, Search, ArrowLeft, ArrowRight, GraduationCap, ScrollText, FileSearch, CheckCircle2, ShieldCheck, LogIn, Lightbulb, Rocket, Heart } from "lucide-react";
+import { Brain, Sparkles, Target, Zap, BookOpen, Search, ArrowLeft, ArrowRight, GraduationCap, ScrollText, FileSearch, CheckCircle2, ShieldCheck, LogIn, Lightbulb, Rocket, Heart, Users, Award } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -191,6 +191,64 @@ export default function Home() {
             <div className="font-heading font-bold">{dir === "rtl" ? "موثوق ورسمي" : "Official & trusted"}</div>
             <div className="text-xs opacity-90 mt-1">{dir === "rtl" ? "ختم لجنة المعادلات وتقرير PDF." : "Committee seal & PDF report."}</div>
           </div>
+        </div>
+      </section>
+
+      {/* Project team — supervisor & students */}
+      <section className="container mx-auto px-4 pb-16 max-w-5xl">
+        <div className="text-center mb-8 space-y-2">
+          <span className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 text-primary text-xs md:text-sm font-heading font-bold px-4 py-1.5 rounded-full">
+            <Users className="h-3.5 w-3.5" />
+            {dir === "rtl" ? "فريق مشروع التخرج" : "Graduation Project Team"}
+          </span>
+          <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
+            {dir === "rtl" ? "القائمون على المشروع" : "Project Contributors"}
+          </h2>
+        </div>
+
+        {/* Supervisor */}
+        <Card className="p-6 md:p-8 mb-5 bg-gradient-to-br from-primary via-primary to-primary/85 text-primary-foreground border-0 shadow-elegant relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-44 h-44 bg-gold/30 rounded-full blur-3xl" />
+          <div className="relative z-10 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-start">
+            <div className="bg-gold text-gold-foreground p-4 rounded-2xl shrink-0 shadow-warm">
+              <Award className="h-10 w-10" />
+            </div>
+            <div className="flex-1 space-y-1">
+              <span className="inline-block text-[11px] font-bold bg-primary-foreground/20 backdrop-blur-md px-3 py-1 rounded-full">
+                {dir === "rtl" ? "المشرف على المشروع" : "Project Supervisor"}
+              </span>
+              <h3 className="font-heading text-2xl md:text-3xl font-bold">
+                {dir === "rtl" ? "د. يزن الوقفي" : "Dr. Yazan Al-Waqfi"}
+              </h3>
+              <p className="text-primary-foreground/85 text-sm">
+                {dir === "rtl" ? "كلية علوم الحاسب — جامعة العقبة للتكنولوجيا" : "College of Computer Science — Aqaba University of Technology"}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Students */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { name: dir === "rtl" ? "أحمد ياسر" : "Ahmad Yasser", initials: "أي" },
+            { name: dir === "rtl" ? "أحمد بهلول" : "Ahmad Bahloul", initials: "أب" },
+            { name: dir === "rtl" ? "زيد زبدة" : "Zaid Zubdeh", initials: "زز" },
+            { name: dir === "rtl" ? "عبدالرحمن عطيوة" : "Abdulrahman Atiweh", initials: "عع" },
+          ].map((s, i) => (
+            <Card
+              key={s.name}
+              className="p-5 text-center bg-gradient-to-b from-card to-accent/30 border-2 hover:shadow-elegant transition-all hover:-translate-y-1 animate-fade-up"
+              style={{ animationDelay: `${i * 80}ms` }}
+            >
+              <div className="bg-gradient-to-br from-secondary to-primary text-primary-foreground rounded-full w-16 h-16 mx-auto flex items-center justify-center mb-3 shadow-elegant font-heading font-bold text-xl">
+                {s.initials}
+              </div>
+              <div className="font-heading font-bold text-foreground">{s.name}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {dir === "rtl" ? "عضو فريق المشروع" : "Project Team Member"}
+              </div>
+            </Card>
+          ))}
         </div>
       </section>
     </SiteLayout>
