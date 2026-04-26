@@ -33,7 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/i18n/LanguageProvider";
 import { exportDecisionPdf } from "@/lib/exportDecisionPdf";
-import { exportDecisionPdfArabic } from "@/lib/exportDecisionPdfArabic";
+import { exportDecisionDocxArabic } from "@/lib/exportDecisionDocxArabic";
 import campus from "@/assets/aut-campus-bright.png";
 import logo from "@/assets/aut-logo-official.png";
 
@@ -342,7 +342,7 @@ export default function Admin() {
 
   const printPdf = (r: ReqRow, language: "en" | "ar" = "en") => {
     const data = buildPdfData(r);
-    if (language === "ar") return exportDecisionPdfArabic(data);
+    if (language === "ar") return exportDecisionDocxArabic(data);
     return exportDecisionPdf(data);
   };
 
@@ -927,7 +927,7 @@ export default function Admin() {
                         size="lg"
                         className="bg-gold hover:bg-gold/90 text-gold-foreground gap-2 flex-1 font-bold shadow-elegant"
                       >
-                        <Printer className="h-5 w-5" /> تنزيل الشهادة بالعربي (PDF)
+                        <Printer className="h-5 w-5" /> تنزيل الشهادة بالعربية (Word)
                       </Button>
                       <Button
                         onClick={() => printPdf(active, "en")}
