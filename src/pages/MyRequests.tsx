@@ -261,6 +261,39 @@ export default function MyRequests() {
                     </div>
                   </div>
                 )}
+
+                {/* أزرار تحميل الشهادة الرسمية بعد قرار المشرف */}
+                {r.status !== "pending" && (
+                  <div className={`rounded-lg border-2 p-3 space-y-2 ${
+                    r.status === "approved"
+                      ? "border-success/40 bg-success/5"
+                      : "border-destructive/40 bg-destructive/5"
+                  }`}>
+                    <div className="flex items-center gap-2 text-xs font-heading">
+                      <FileText className={`h-4 w-4 ${r.status === "approved" ? "text-success" : "text-destructive"}`} />
+                      <span className="font-bold">
+                        {r.status === "approved" ? "تم اعتماد القرار من قبل المرشد" : "تم إصدار قرار من قبل المرشد"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => exportDecisionPdfArabic(buildDecisionData(r, batchCourses))}
+                        className="gap-2 flex-1 bg-gold text-gold-foreground hover:bg-gold/90 font-bold"
+                      >
+                        <Download className="h-4 w-4" /> تحميل القرار النهائي (عربي)
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => exportDecisionPdf(buildDecisionData(r, batchCourses))}
+                        className="gap-2 flex-1"
+                      >
+                        <Download className="h-4 w-4" /> Download (EN)
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </Card>
             );
           })
