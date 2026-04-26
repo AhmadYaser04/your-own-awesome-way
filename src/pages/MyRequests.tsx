@@ -275,21 +275,13 @@ export default function MyRequests() {
                         {r.status === "approved" ? "تم اعتماد المعادلة بنجاح" : "تم إصدار قرار من قبل المرشد"}
                       </span>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex">
                       <Button
                         size="sm"
-                        onClick={() => exportDecisionDocxArabic(buildDecisionData(r, batchCourses))}
+                        onClick={() => exportDecisionPdf(buildDecisionData(r, batchCourses))}
                         className="gap-2 flex-1 bg-gold text-gold-foreground hover:bg-gold/90 font-bold"
                       >
-                        <Download className="h-4 w-4" /> تنزيل الشهادة بالعربية (Word)
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => exportDecisionPdf(buildDecisionData(r, batchCourses))}
-                        className="gap-2 flex-1"
-                      >
-                        <Download className="h-4 w-4" /> تنزيل الشهادة بالإنجليزية (PDF)
+                        <Download className="h-4 w-4" /> Download Certificate (PDF)
                       </Button>
                     </div>
                   </div>
