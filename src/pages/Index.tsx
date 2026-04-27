@@ -9,6 +9,7 @@ import teamAhmadYasser from "@/assets/team-ahmad-yasser.jpeg";
 import teamAhmadBahloul from "@/assets/team-ahmad-bahloul.jpeg";
 import teamZaidZubdeh from "@/assets/team-zaid-zubdeh.jpeg";
 import teamAbdulrahmanAtiweh from "@/assets/team-abdulrahman-atiweh.jpeg";
+import teamDrYazan from "@/assets/team-dr-yazan.jpeg";
 
 export default function Home() {
   const { t, dir } = useLang();
@@ -217,8 +218,18 @@ export default function Home() {
         <Card className="p-6 md:p-8 mb-5 bg-gradient-to-br from-primary via-primary to-primary/85 text-primary-foreground border-0 shadow-elegant relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-44 h-44 bg-gold/30 rounded-full blur-3xl" />
           <div className="relative z-10 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-start">
-            <div className="bg-gold text-gold-foreground p-4 rounded-2xl shrink-0 shadow-warm">
-              <Award className="h-10 w-10" />
+            <div className="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0">
+              <div className="absolute inset-0 rounded-2xl bg-gold p-[3px] shadow-warm">
+                <img
+                  src={teamDrYazan}
+                  alt={dir === "rtl" ? "د. يزن الوقفي" : "Dr. Yazan Al-Waqfi"}
+                  className="w-full h-full rounded-2xl object-cover bg-card"
+                  loading="lazy"
+                />
+              </div>
+              <div className="absolute -bottom-2 -end-2 bg-gold text-gold-foreground p-1.5 rounded-full shadow-warm">
+                <Award className="h-4 w-4" />
+              </div>
             </div>
             <div className="flex-1 space-y-1">
               <span className="inline-block text-[11px] font-bold bg-primary-foreground/20 backdrop-blur-md px-3 py-1 rounded-full">
@@ -228,7 +239,9 @@ export default function Home() {
                 {dir === "rtl" ? "د. يزن الوقفي" : "Dr. Yazan Al-Waqfi"}
               </h3>
               <p className="text-primary-foreground/85 text-sm">
-                {dir === "rtl" ? "كلية علوم الحاسب — جامعة العقبة للتكنولوجيا" : "College of Computer Science — Aqaba University of Technology"}
+                {dir === "rtl"
+                  ? "قسم الذكاء الاصطناعي وعلم البيانات — جامعة العقبة للتكنولوجيا"
+                  : "Department of AI & Data Science — Aqaba University of Technology"}
               </p>
             </div>
           </div>
@@ -237,10 +250,10 @@ export default function Home() {
         {/* Students */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { name: dir === "rtl" ? "أحمد ياسر" : "Ahmad Yasser", photo: teamAhmadYasser },
-            { name: dir === "rtl" ? "أحمد بهلول" : "Ahmad Bahloul", photo: teamAhmadBahloul },
-            { name: dir === "rtl" ? "زيد زبدة" : "Zaid Zubdeh", photo: teamZaidZubdeh },
-            { name: dir === "rtl" ? "عبدالرحمن عطيوة" : "Abdulrahman Atiweh", photo: teamAbdulrahmanAtiweh },
+            { name: dir === "rtl" ? "م. أحمد ياسر" : "Eng. Ahmad Yasser", photo: teamAhmadYasser },
+            { name: dir === "rtl" ? "م. أحمد بهلول" : "Eng. Ahmad Bahloul", photo: teamAhmadBahloul },
+            { name: dir === "rtl" ? "م. زيد زبدة" : "Eng. Zaid Zubdeh", photo: teamZaidZubdeh },
+            { name: dir === "rtl" ? "م. عبدالرحمن عطيوة" : "Eng. Abdulrahman Atiweh", photo: teamAbdulrahmanAtiweh },
           ].map((s, i) => (
             <Card
               key={s.name}
