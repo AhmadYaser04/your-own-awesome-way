@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useLang } from "@/i18n/LanguageProvider";
 import heroBg from "@/assets/aut-campus-bright.png";
+import teamAhmadYasser from "@/assets/team-ahmad-yasser.jpeg";
+import teamAhmadBahloul from "@/assets/team-ahmad-bahloul.jpeg";
+import teamZaidZubdeh from "@/assets/team-zaid-zubdeh.jpeg";
+import teamAbdulrahmanAtiweh from "@/assets/team-abdulrahman-atiweh.jpeg";
 
 export default function Home() {
   const { t, dir } = useLang();
