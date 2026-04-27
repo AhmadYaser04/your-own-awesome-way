@@ -122,7 +122,7 @@ export default function MyRequests() {
 
   return (
     <SiteLayout>
-      <section className="relative text-primary-foreground py-12 overflow-hidden">
+      <section className="relative text-primary-foreground py-24 md:py-32 min-h-[360px] md:min-h-[440px] flex items-center overflow-hidden">
         <img
           src={myRequestsBg}
           alt="Aqaba University of Technology"
@@ -130,7 +130,8 @@ export default function MyRequests() {
           loading="eager"
           fetchPriority="high"
         />
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-primary/85 via-primary/70 to-primary/85" />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-primary/70 via-primary/40 to-primary/75" />
+        <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-background/40 to-transparent" />
         <div className="container mx-auto px-4 max-w-5xl relative z-10">
           <Link to="/" className="inline-block text-primary-foreground/80 hover:text-primary-foreground text-sm mb-3">
             {t("eq.back")}

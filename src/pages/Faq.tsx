@@ -116,7 +116,7 @@ export default function Faq() {
   return (
     <SiteLayout>
       {/* Hero — UNMISTAKABLY an FAQ page */}
-      <section className="relative text-primary-foreground py-20 overflow-hidden">
+      <section className="relative text-primary-foreground py-10 md:py-12 overflow-hidden">
         {/* University campus background image */}
         <img
           src={autFaqBg}
@@ -139,17 +139,17 @@ export default function Faq() {
         <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-primary/30 rounded-full blur-3xl" />
 
         <div className="container mx-auto px-4 max-w-4xl relative z-10">
-          <div className="text-center space-y-5">
-            {/* Big circular question icon */}
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gold text-gold-foreground shadow-warm border-4 border-gold/30 mb-2">
-              <CircleHelp className="h-11 w-11" strokeWidth={2.5} />
+          <div className="text-center space-y-3">
+            {/* Smaller circular question icon */}
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gold text-gold-foreground shadow-warm border-2 border-gold/30 mb-1">
+              <CircleHelp className="h-8 w-8" strokeWidth={2.5} />
             </div>
 
-            <span className="inline-flex items-center gap-2 bg-card/15 border border-card/30 text-primary-foreground text-xs md:text-sm font-heading font-bold px-4 py-1.5 rounded-full backdrop-blur-md">
+            <span className="inline-flex items-center gap-2 bg-card/15 border border-card/30 text-primary-foreground text-xs font-heading font-bold px-3 py-1 rounded-full backdrop-blur-md">
               FAQ • {isRtl ? "الأسئلة الشائعة" : "Frequently Asked Questions"}
             </span>
 
-            <h1 className="font-heading text-4xl md:text-6xl font-black leading-tight">
+            <h1 className="font-heading text-2xl md:text-4xl font-black leading-tight">
               {isRtl ? (
                 <>
                   أسئلة <span className="text-gold">يطرحها</span> زوّار الموقع
@@ -160,10 +160,10 @@ export default function Faq() {
                 </>
               )}
             </h1>
-            <p className="text-primary-foreground/90 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+            <p className="text-primary-foreground/90 text-xs md:text-sm max-w-xl mx-auto leading-relaxed">
               {isRtl
-                ? `إجابات مباشرة على ${totalQuestions} من أكثر الأسئلة شيوعاً بين زوّار الموقع — من نظرة عامة، إلى التحويل، إلى الجانب التقني للنظام.`
-                : `Direct answers to the ${totalQuestions} most common questions visitors ask — from overview, to transferring, to the technical side.`}
+                ? `إجابات مباشرة على ${totalQuestions} من أكثر الأسئلة شيوعاً بين زوّار الموقع.`
+                : `Direct answers to the ${totalQuestions} most common questions visitors ask.`}
             </p>
           </div>
         </div>
