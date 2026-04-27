@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import SiteLayout from "@/components/SiteLayout";
+import campusBg from "@/assets/aut-campus-bright.jpg";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
