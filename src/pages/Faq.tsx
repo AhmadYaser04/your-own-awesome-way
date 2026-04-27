@@ -126,7 +126,9 @@ export default function Faq() {
           fetchPriority="high"
         />
         {/* Color overlay to keep text legible */}
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-secondary/95 via-secondary/90 to-primary/95" />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-secondary/55 via-secondary/40 to-primary/55" />
+        {/* Bottom shade so text stays legible */}
+        <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background/80 to-transparent" />
         {/* Big background ? marks for visual identity */}
         <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.07]">
           <div className="absolute top-8 right-12 font-heading font-black text-[180px] leading-none">?</div>
