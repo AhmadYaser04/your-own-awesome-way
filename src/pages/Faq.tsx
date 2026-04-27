@@ -102,9 +102,9 @@ export default function Faq() {
             </div>
           </Card>
           <Card className="p-4 text-center bg-card border-2 shadow-elegant">
-            <div className="font-heading font-bold text-2xl text-gold">100%</div>
+            <div className="font-heading font-bold text-2xl text-gold">24/7</div>
             <div className="text-[10px] md:text-xs text-muted-foreground font-heading mt-1">
-              {dir === "rtl" ? "مجاني للطلاب" : "Free for students"}
+              {dir === "rtl" ? "متاح دائماً" : "Always available"}
             </div>
           </Card>
         </div>
