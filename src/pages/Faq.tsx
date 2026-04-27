@@ -139,18 +139,18 @@ export default function Faq() {
             <h1 className="font-heading text-4xl md:text-6xl font-black leading-tight">
               {isRtl ? (
                 <>
-                  أسئلة <span className="text-gold">يسأل عنها</span> الطلاب
+                  أسئلة <span className="text-gold">يطرحها</span> زوّار الموقع
                 </>
               ) : (
                 <>
-                  Questions <span className="text-gold">students</span> ask
+                  Questions <span className="text-gold">visitors</span> ask
                 </>
               )}
             </h1>
             <p className="text-primary-foreground/90 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
               {isRtl
-                ? `إجابات مباشرة على ${totalQuestions} من أكثر الأسئلة تكراراً حول معادلة المواد والتحويل إلى جامعة العقبة للتكنولوجيا.`
-                : `Direct answers to the ${totalQuestions} most-asked questions about course equivalency and transferring to Aqaba University of Technology.`}
+                ? `إجابات مباشرة على ${totalQuestions} من أكثر الأسئلة شيوعاً بين زوّار الموقع — من نظرة عامة، إلى التحويل، إلى الجانب التقني للنظام.`
+                : `Direct answers to the ${totalQuestions} most common questions visitors ask — from overview, to transferring, to the technical side.`}
             </p>
           </div>
         </div>
