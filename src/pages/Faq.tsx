@@ -72,15 +72,15 @@ export default function Faq() {
           <div className="text-center space-y-4">
             <span className="inline-flex items-center gap-2 bg-gold/25 border border-gold/50 text-gold-foreground text-xs md:text-sm font-heading font-bold px-4 py-1.5 rounded-full backdrop-blur-md">
               <MessagesSquare className="h-3.5 w-3.5" />
-              {dir === "rtl" ? "ركن الطالب" : "Student Corner"}
+              {dir === "rtl" ? "الأسئلة الشائعة" : "Frequently Asked Questions"}
             </span>
             <h1 className="font-heading text-3xl md:text-5xl font-bold leading-tight">
-              {dir === "rtl" ? "كل ما يدور في بالك — مُجاب عليه هنا" : "All your questions — answered here"}
+              {dir === "rtl" ? "أسئلة الطلاب الأكثر شيوعاً" : "The Most Common Student Questions"}
             </h1>
             <p className="text-primary-foreground/90 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
               {dir === "rtl"
-                ? "إجابات صريحة ومباشرة على أكثر الأسئلة التي يطرحها الطلاب الراغبون بمعادلة موادهم في جامعة العقبة للتكنولوجيا."
-                : "Honest answers to the most common student questions about course equivalency at Aqaba University of Technology."}
+                ? "مجموعة من أبرز الأسئلة التي يطرحها الطلاب حول نظام معادلة المواد في جامعة العقبة للتكنولوجيا، مع إجابات مباشرة وواضحة."
+                : "The top questions students ask about course equivalency at Aqaba University of Technology — with direct, clear answers."}
             </p>
           </div>
         </div>
