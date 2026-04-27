@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useLang } from "@/i18n/LanguageProvider";
 import heroBg from "@/assets/aut-campus-bright.png";
+import teamAhmadYasser from "@/assets/team-ahmad-yasser.jpeg";
+import teamAhmadBahloul from "@/assets/team-ahmad-bahloul.jpeg";
+import teamZaidZubdeh from "@/assets/team-zaid-zubdeh.jpeg";
+import teamAbdulrahmanAtiweh from "@/assets/team-abdulrahman-atiweh.jpeg";
 
 export default function Home() {
   const { t, dir } = useLang();
@@ -233,18 +237,25 @@ export default function Home() {
         {/* Students */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { name: dir === "rtl" ? "أحمد ياسر" : "Ahmad Yasser", initials: "أي" },
-            { name: dir === "rtl" ? "أحمد بهلول" : "Ahmad Bahloul", initials: "أب" },
-            { name: dir === "rtl" ? "زيد زبدة" : "Zaid Zubdeh", initials: "زز" },
-            { name: dir === "rtl" ? "عبدالرحمن عطيوة" : "Abdulrahman Atiweh", initials: "عع" },
+            { name: dir === "rtl" ? "أحمد ياسر" : "Ahmad Yasser", photo: teamAhmadYasser },
+            { name: dir === "rtl" ? "أحمد بهلول" : "Ahmad Bahloul", photo: teamAhmadBahloul },
+            { name: dir === "rtl" ? "زيد زبدة" : "Zaid Zubdeh", photo: teamZaidZubdeh },
+            { name: dir === "rtl" ? "عبدالرحمن عطيوة" : "Abdulrahman Atiweh", photo: teamAbdulrahmanAtiweh },
           ].map((s, i) => (
             <Card
               key={s.name}
               className="p-5 text-center bg-gradient-to-b from-card to-accent/30 border-2 hover:shadow-elegant transition-all hover:-translate-y-1 animate-fade-up"
               style={{ animationDelay: `${i * 80}ms` }}
             >
-              <div className="bg-gradient-to-br from-secondary to-primary text-primary-foreground rounded-full w-16 h-16 mx-auto flex items-center justify-center mb-3 shadow-elegant font-heading font-bold text-xl">
-                {s.initials}
+              <div className="relative w-20 h-20 mx-auto mb-3">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-secondary to-primary p-[3px] shadow-elegant">
+                  <img
+                    src={s.photo}
+                    alt={s.name}
+                    className="w-full h-full rounded-full object-cover bg-card"
+                    loading="lazy"
+                  />
+                </div>
               </div>
               <div className="font-heading font-bold text-foreground">{s.name}</div>
               <div className="text-xs text-muted-foreground mt-1">
