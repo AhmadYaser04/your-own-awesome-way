@@ -1,13 +1,18 @@
 import { Link } from "react-router-dom";
-import { Brain, Target, Sparkles, Code2, Database, Zap, ShieldCheck, ArrowLeft } from "lucide-react";
+import { Brain, Target, Sparkles, Code2, Database, Zap, ShieldCheck, ArrowLeft, Users, Award } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/i18n/LanguageProvider";
+import teamAhmadYasser from "@/assets/team-ahmad-yasser.jpeg";
+import teamAhmadBahloul from "@/assets/team-ahmad-bahloul.jpeg";
+import teamZaidZubdeh from "@/assets/team-zaid-zubdeh.jpeg";
+import teamAbdulrahmanAtiweh from "@/assets/team-abdulrahman-atiweh.jpeg";
+import teamDrYazan from "@/assets/team-dr-yazan.jpeg";
 
 export default function About() {
-  const { t } = useLang();
+  const { t, dir } = useLang();
   return (
     <SiteLayout>
       <section className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground py-14">
