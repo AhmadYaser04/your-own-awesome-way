@@ -160,10 +160,10 @@ export default function Faq() {
                 </>
               )}
             </h1>
-            <p className="text-primary-foreground/90 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+            <p className="text-primary-foreground/90 text-xs md:text-sm max-w-xl mx-auto leading-relaxed">
               {isRtl
-                ? `إجابات مباشرة على ${totalQuestions} من أكثر الأسئلة شيوعاً بين زوّار الموقع — من نظرة عامة، إلى التحويل، إلى الجانب التقني للنظام.`
-                : `Direct answers to the ${totalQuestions} most common questions visitors ask — from overview, to transferring, to the technical side.`}
+                ? `إجابات مباشرة على ${totalQuestions} من أكثر الأسئلة شيوعاً بين زوّار الموقع.`
+                : `Direct answers to the ${totalQuestions} most common questions visitors ask.`}
             </p>
           </div>
         </div>
