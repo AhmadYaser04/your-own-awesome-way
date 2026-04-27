@@ -8,104 +8,110 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { HelpCircle, Brain, Sparkles, Code2, Database, ShieldCheck, Zap, ArrowLeft, Cpu, Layers, Target, BookOpen } from "lucide-react";
+import {
+  MessagesSquare,
+  GraduationCap,
+  Clock,
+  FileText,
+  Wallet,
+  ScrollText,
+  Phone,
+  Mail,
+  MapPin,
+  ArrowLeft,
+  Sparkles,
+  HelpCircle,
+  Users,
+} from "lucide-react";
 import { useLang } from "@/i18n/LanguageProvider";
 
-// Top 5 essential questions for the project defense
+// Real student-oriented questions — no technical jargon
 const FAQ = [
   {
-    icon: Target,
-    q: "ما فكرة المشروع باختصار؟",
-    a: "نظام ويب يستخدم الذكاء الاصطناعي (نماذج اللغة الكبيرة) لمعادلة وصف المواد الدراسية بين الجامعات السعودية وخطة بكالوريوس الذكاء الاصطناعي في جامعة العقبة للتكنولوجيا. الطالب يلصق وصف المادة فيحصل على نسبة تطابق دلالية، أفضل المواد المُعادِلة، وحكم نهائي خلال ثوانٍ.",
+    icon: GraduationCap,
+    q: "أنا طالب في جامعة سعودية وأرغب بالتحويل إلى جامعة العقبة للتكنولوجيا، كيف يساعدني هذا النظام؟",
+    a: "النظام مصمّم خصيصاً لك. كل ما عليك فعله هو لصق وصف المادة من خطتك الدراسية السعودية، أو رفع ملف PDF أو حتى صورة من الكاميرا للوصف، ثم النظام سيخبرك خلال ثوانٍ: هل هذه المادة تُعادَل بمادة في جامعة العقبة؟ ما هي المادة المقابلة؟ وكم نسبة التطابق بينهما؟",
   },
   {
-    icon: Cpu,
-    q: "كيف يعمل محرك المعادلة فعلياً؟",
-    a: "1) الطالب يدخل وصف المادة (نص / PDF / صورة). 2) الواجهة ترسل النص إلى Edge Function آمنة. 3) الـ Function تبني Prompt يحوي وصف المادة + كامل خطة AI في AUT. 4) Gemini يقارن دلالياً ويُرجع نتيجة منظّمة عبر Tool Calling (JSON صارم). 5) النتيجة تُعرض: نسبة، أفضل المواد، تبرير، وحكم نهائي.",
+    icon: ScrollText,
+    q: "هل قرار النظام رسمي ومُعتمَد من الجامعة؟",
+    a: "لا، النظام يعطيك رأياً أولياً واسترشادياً فقط ليساعدك على تكوين فكرة سريعة عن فرصك. القرار الرسمي والنهائي يبقى دائماً بيد لجنة المعادلات الأكاديمية في جامعة العقبة للتكنولوجيا. لكن إن كانت نتيجة النظام إيجابية، فهذا مؤشر جيد جداً لك قبل تقديم طلبك الرسمي.",
   },
   {
-    icon: Brain,
-    q: "كيف تحسب نسبة التطابق؟ هل هي مجرد تشابه نصي؟",
-    a: "لا، إنها تشابه دلالي (Semantic Similarity) وليس نصي حرفي. النموذج يفهم المعنى، فيعرف أن 'Backpropagation' و'الانتشار الخلفي' نفس المفهوم. كما يأخذ بعين الاعتبار: تقاطع المخرجات التعليمية، عمق التغطية، الساعات المعتمدة، والمواضيع المشتركة.",
+    icon: Clock,
+    q: "كم تستغرق عملية معادلة المادة؟",
+    a: "أقل من 10 ثوانٍ لكل مادة. مقارنةً بالطريقة التقليدية التي قد تستغرق أسابيع من المراجعة اليدوية في لجان المعادلات، النظام يوفر عليك وقتاً كبيراً ويمنحك صورة فورية عن وضعك الأكاديمي.",
   },
   {
-    icon: ShieldCheck,
-    q: "كيف ضمنت أمن النظام؟",
-    a: "1) مفتاح Lovable AI لا يُسرَّب للعميل أبداً، كل الاستدعاءات تتم من Edge Function. 2) RLS مفعّل على كل الجداول. 3) صلاحيات الإدمن في جدول منفصل (user_roles) لمنع هجمات تصعيد الصلاحية. 4) Input Validation عبر Zod. 5) معالجة Rate Limit (429) و Payment (402) برسائل واضحة.",
+    icon: FileText,
+    q: "ما هي التخصصات التي يدعمها النظام حالياً؟",
+    a: "النظام مخصّص حالياً لتخصص بكالوريوس الذكاء الاصطناعي في كلية تكنولوجيا المعلومات بجامعة العقبة للتكنولوجيا فقط. إذا كنت طالباً في تخصص علم الحاسوب أو الذكاء الاصطناعي في جامعة سعودية وترغب بالتحويل لهذا التخصص تحديداً، النظام مناسب لك تماماً.",
   },
   {
-    icon: Sparkles,
-    q: "هل يمكن للنظام أن يحل محل لجنة المعادلة في الجامعة؟",
-    a: "لا، الهدف ليس استبدال اللجنة بل مساعدتها. النظام يُقدم رأياً أولياً سريعاً (خلال ثوانٍ) يساعد الطالب على معرفة فرصه، ويُقدم للجنة تحليلاً جاهزاً يختصر وقت المراجعة. القرار النهائي يبقى بيد اللجنة الأكاديمية المختصة، ولوحة الإدمن مصمّمة لاعتماد/رفض/تعديل القرارات.",
-  },
-];
-
-const TECH_STACK = [
-  { icon: Code2, label: "React 18 + TypeScript", color: "text-primary" },
-  { icon: Layers, label: "TailwindCSS + shadcn/ui", color: "text-secondary" },
-  { icon: Database, label: "Lovable Cloud (Supabase)", color: "text-success" },
-  { icon: Brain, label: "Google Gemini 2.5 Flash", color: "text-gold" },
-];
-
-const HIGHLIGHTS = [
-  {
-    icon: Zap,
-    title: "سرعة فائقة",
-    desc: "أقل من 10 ثوانٍ لكل عملية معادلة كاملة، مع تحليل دلالي عميق.",
-    color: "from-primary to-primary/80",
-    iconColor: "text-gold",
+    icon: Wallet,
+    q: "هل استخدام النظام مجاني؟",
+    a: "نعم، النظام مجاني بالكامل للطلاب. لا يوجد أي رسوم على استخدامه أو على عدد المواد التي ترغب بمعادلتها. تستطيع تجربته على كل مواد خطتك الدراسية دون قلق.",
   },
   {
-    icon: ShieldCheck,
-    title: "أمان متعدد الطبقات",
-    desc: "RLS + جدول صلاحيات منفصل + Edge Functions + معالجة آمنة لمفاتيح API.",
-    color: "from-secondary to-secondary/80",
-    iconColor: "text-primary-foreground",
-  },
-  {
-    icon: BookOpen,
-    title: "خطة كاملة موثّقة",
-    desc: "أكثر من 15 مادة من خطة AI الرسمية في AUT (تأسس البرنامج 2019).",
-    color: "from-gold to-gold/80",
-    iconColor: "text-primary",
+    icon: HelpCircle,
+    q: "ماذا أفعل إذا كانت نتيجة المعادلة غير دقيقة أو غير متوقعة؟",
+    a: "تأكد أولاً من أن وصف المادة الذي أدخلته كامل وواضح ويحتوي على: اسم المادة، عدد الساعات المعتمدة، المخرجات التعليمية، والمواضيع التي تغطيها. كلما كان الوصف أدق، كانت النتيجة أقرب للواقع. وإذا بقيت النتيجة غريبة، يمكنك التواصل مع لجنة المعادلات مباشرة لمراجعة الحالة.",
   },
 ];
 
 export default function Faq() {
-  const { t, dir } = useLang();
-  const Arrow = dir === "rtl" ? ArrowLeft : ArrowLeft;
+  const { dir } = useLang();
 
   return (
     <SiteLayout>
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground py-12">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="flex items-center gap-4">
-            <div className="bg-primary-foreground/15 backdrop-blur-md p-4 rounded-2xl">
-              <HelpCircle className="h-10 w-10" />
-            </div>
-            <div>
-              <h1 className="font-heading text-2xl md:text-3xl font-bold">{t("faq.title")}</h1>
-              <p className="text-primary-foreground/85 text-sm md:text-base mt-1">
-                {t("faq.subtitle")}
-              </p>
-            </div>
+      {/* Hero — friendly student-focused */}
+      <section className="relative bg-gradient-to-br from-secondary via-secondary/95 to-primary text-primary-foreground py-16 overflow-hidden">
+        <div className="absolute -top-20 -right-20 w-80 h-80 bg-gold/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-primary/30 rounded-full blur-3xl" />
+        <div className="container mx-auto px-4 max-w-4xl relative z-10">
+          <div className="text-center space-y-4">
+            <span className="inline-flex items-center gap-2 bg-gold/25 border border-gold/50 text-gold-foreground text-xs md:text-sm font-heading font-bold px-4 py-1.5 rounded-full backdrop-blur-md">
+              <MessagesSquare className="h-3.5 w-3.5" />
+              {dir === "rtl" ? "ركن الطالب" : "Student Corner"}
+            </span>
+            <h1 className="font-heading text-3xl md:text-5xl font-bold leading-tight">
+              {dir === "rtl" ? "كل ما يدور في بالك — مُجاب عليه هنا" : "All your questions — answered here"}
+            </h1>
+            <p className="text-primary-foreground/90 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+              {dir === "rtl"
+                ? "إجابات صريحة ومباشرة على أكثر الأسئلة التي يطرحها الطلاب الراغبون بمعادلة موادهم في جامعة العقبة للتكنولوجيا."
+                : "Honest answers to the most common student questions about course equivalency at Aqaba University of Technology."}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Top 5 essential questions */}
-      <section className="container mx-auto px-4 pt-10 max-w-4xl">
-        <div className="text-center mb-6 space-y-2">
-          <span className="inline-flex items-center gap-2 bg-gold/20 border border-gold/40 text-gold-foreground text-xs font-heading font-bold px-4 py-1.5 rounded-full">
-            <Sparkles className="h-3.5 w-3.5" />
-            أهم 5 أسئلة للمناقشة
-          </span>
-          <h2 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            الأكثر تكراراً في مناقشة المشروع
-          </h2>
+      {/* Quick stats strip */}
+      <section className="container mx-auto px-4 -mt-8 max-w-4xl relative z-20">
+        <div className="grid grid-cols-3 gap-3">
+          <Card className="p-4 text-center bg-card border-2 shadow-elegant">
+            <div className="font-heading font-bold text-2xl text-primary">6</div>
+            <div className="text-[10px] md:text-xs text-muted-foreground font-heading mt-1">
+              {dir === "rtl" ? "أسئلة شائعة" : "Common questions"}
+            </div>
+          </Card>
+          <Card className="p-4 text-center bg-card border-2 shadow-elegant">
+            <div className="font-heading font-bold text-2xl text-secondary">&lt;10s</div>
+            <div className="text-[10px] md:text-xs text-muted-foreground font-heading mt-1">
+              {dir === "rtl" ? "وقت المعادلة" : "Time per check"}
+            </div>
+          </Card>
+          <Card className="p-4 text-center bg-card border-2 shadow-elegant">
+            <div className="font-heading font-bold text-2xl text-gold">100%</div>
+            <div className="text-[10px] md:text-xs text-muted-foreground font-heading mt-1">
+              {dir === "rtl" ? "مجاني للطلاب" : "Free for students"}
+            </div>
+          </Card>
         </div>
+      </section>
 
+      {/* Questions */}
+      <section className="container mx-auto px-4 pt-10 max-w-4xl">
         <Card className="p-4 md:p-6 border-2 shadow-elegant">
           <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
             {FAQ.map((item, i) => {
@@ -114,13 +120,13 @@ export default function Faq() {
                 <AccordionItem key={i} value={`item-${i}`}>
                   <AccordionTrigger className="text-right hover:no-underline font-heading font-bold text-foreground">
                     <span className="flex items-start gap-3 text-base md:text-lg">
-                      <span className="bg-primary/10 text-primary p-1.5 rounded-lg shrink-0 mt-0.5">
+                      <span className="bg-secondary/15 text-secondary p-2 rounded-xl shrink-0 mt-0.5">
                         <Icon className="h-4 w-4" />
                       </span>
-                      <span className="flex-1">{item.q}</span>
+                      <span className="flex-1 leading-relaxed">{item.q}</span>
                     </span>
                   </AccordionTrigger>
-                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed pr-12">
+                  <AccordionContent className="text-sm md:text-base text-muted-foreground leading-loose pr-14">
                     {item.a}
                   </AccordionContent>
                 </AccordionItem>
@@ -130,93 +136,79 @@ export default function Faq() {
         </Card>
       </section>
 
-      {/* Highlights — 3 colored cards */}
-      <section className="container mx-auto px-4 py-10 max-w-5xl">
-        <div className="text-center mb-6 space-y-1">
+      {/* Still have a question? Contact strip */}
+      <section className="container mx-auto px-4 py-10 max-w-4xl">
+        <div className="text-center mb-5 space-y-1">
           <h2 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            ما يميّز هذا النظام؟
+            {dir === "rtl" ? "لم تجد إجابتك؟" : "Didn't find your answer?"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            ثلاث ركائز أساسية تجعل النظام جاهزاً للاستخدام الأكاديمي الفعلي.
+            {dir === "rtl"
+              ? "تواصل مباشرة مع لجنة المعادلات في جامعة العقبة للتكنولوجيا"
+              : "Reach out to the equivalency committee directly"}
           </p>
         </div>
-        <div className="grid sm:grid-cols-3 gap-4">
-          {HIGHLIGHTS.map((h, i) => {
-            const Icon = h.icon;
-            return (
-              <Card
-                key={h.title}
-                className={`p-6 text-center bg-gradient-to-br ${h.color} text-primary-foreground border-0 shadow-elegant hover:-translate-y-1 transition-all animate-fade-up`}
-                style={{ animationDelay: `${i * 80}ms` }}
-              >
-                <div className="bg-primary-foreground/15 backdrop-blur-md w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-3">
-                  <Icon className={`h-7 w-7 ${h.iconColor}`} />
-                </div>
-                <h3 className="font-heading font-bold text-lg mb-1">{h.title}</h3>
-                <p className="text-xs opacity-90 leading-relaxed">{h.desc}</p>
-              </Card>
-            );
-          })}
+        <div className="grid sm:grid-cols-3 gap-3">
+          <Card className="p-5 border-2 hover:shadow-elegant transition-all hover:-translate-y-1 text-center">
+            <div className="bg-primary/10 text-primary w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <Phone className="h-5 w-5" />
+            </div>
+            <div className="font-heading font-bold text-sm text-foreground mb-1">
+              {dir === "rtl" ? "اتصال" : "Phone"}
+            </div>
+            <div className="text-xs text-muted-foreground font-mono" dir="ltr">
+              +962 3 209 0500
+            </div>
+          </Card>
+          <Card className="p-5 border-2 hover:shadow-elegant transition-all hover:-translate-y-1 text-center">
+            <div className="bg-secondary/10 text-secondary w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <Mail className="h-5 w-5" />
+            </div>
+            <div className="font-heading font-bold text-sm text-foreground mb-1">
+              {dir === "rtl" ? "البريد الإلكتروني" : "Email"}
+            </div>
+            <div className="text-xs text-muted-foreground font-mono break-all" dir="ltr">
+              admission@aut.edu.jo
+            </div>
+          </Card>
+          <Card className="p-5 border-2 hover:shadow-elegant transition-all hover:-translate-y-1 text-center">
+            <div className="bg-gold/15 text-gold-foreground w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <div className="font-heading font-bold text-sm text-foreground mb-1">
+              {dir === "rtl" ? "الموقع" : "Location"}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {dir === "rtl" ? "العقبة، الأردن" : "Aqaba, Jordan"}
+            </div>
+          </Card>
         </div>
       </section>
 
-      {/* Tech stack ribbon */}
-      <section className="container mx-auto px-4 pb-10 max-w-5xl">
-        <Card className="p-6 md:p-7 border-2 bg-gradient-to-br from-card to-accent/30">
-          <div className="flex items-center gap-2 mb-4">
-            <Code2 className="h-5 w-5 text-primary" />
-            <h3 className="font-heading font-bold text-foreground">المعمارية التقنية</h3>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {TECH_STACK.map((s) => {
-              const Icon = s.icon;
-              return (
-                <div
-                  key={s.label}
-                  className="flex items-center gap-2 bg-card border rounded-xl px-3 py-2.5 hover:shadow-elegant transition"
-                >
-                  <Icon className={`h-5 w-5 ${s.color} shrink-0`} />
-                  <span className="text-xs font-heading font-bold text-foreground truncate">
-                    {s.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </Card>
-      </section>
-
-      {/* Final CTA — try it now */}
+      {/* Final CTA */}
       <section className="container mx-auto px-4 pb-14 max-w-4xl">
-        <Card className="p-7 md:p-9 bg-gradient-to-br from-primary via-primary to-secondary/90 text-primary-foreground border-0 shadow-elegant relative overflow-hidden">
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-gold/30 rounded-full blur-3xl" />
-          <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-primary-foreground/10 rounded-full blur-3xl" />
+        <Card className="p-7 md:p-9 bg-gradient-to-br from-gold via-gold to-gold/85 text-gold-foreground border-0 shadow-warm relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/20 rounded-full blur-3xl" />
           <div className="relative z-10 flex flex-col md:flex-row items-center gap-5 text-center md:text-start">
-            <div className="bg-gold text-gold-foreground p-4 rounded-2xl shrink-0 shadow-warm">
+            <div className="bg-primary text-primary-foreground p-4 rounded-2xl shrink-0 shadow-elegant">
               <Sparkles className="h-12 w-12" />
             </div>
             <div className="flex-1 space-y-2">
               <h3 className="font-heading text-xl md:text-2xl font-bold">
-                لديك سؤال آخر؟ جرّب النظام مباشرة
+                {dir === "rtl" ? "جاهز لتعرف وضع موادك؟" : "Ready to check your courses?"}
               </h3>
-              <p className="text-primary-foreground/85 text-sm md:text-base leading-relaxed">
-                أفضل طريقة لفهم المشروع هي تجربته بنفسك — ألصق وصف مادة من ميثاقك السعودي واحصل على معادلة فورية.
+              <p className="text-gold-foreground/85 text-sm md:text-base leading-relaxed">
+                {dir === "rtl"
+                  ? "خذ خطوتك الأولى نحو التحويل — جرّب معادلة مادة واحدة الآن مجاناً وبدون تسجيل."
+                  : "Take the first step — try one equivalency right now, free and no signup needed."}
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2 shrink-0">
-              <Button asChild size="lg" className="bg-gold text-gold-foreground hover:bg-gold/90 font-bold gap-2">
-                <Link to="/equivalency">
-                  <Zap className="h-4 w-4" />
-                  جرّب الآن
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="secondary" className="gap-2">
-                <Link to="/about">
-                  <BookOpen className="h-4 w-4" />
-                  حول المشروع
-                </Link>
-              </Button>
-            </div>
+            <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold gap-2 shrink-0">
+              <Link to="/equivalency">
+                {dir === "rtl" ? "ابدأ المعادلة" : "Start Now"}
+                <ArrowLeft className={dir === "rtl" ? "h-4 w-4" : "h-4 w-4 rotate-180"} />
+              </Link>
+            </Button>
           </div>
         </Card>
       </section>
