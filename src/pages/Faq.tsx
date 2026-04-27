@@ -11,7 +11,6 @@ import {
 import {
   GraduationCap,
   Clock,
-  FileText,
   ScrollText,
   Phone,
   Mail,
@@ -21,42 +20,53 @@ import {
   Users,
   CircleHelp,
   Search,
+  Cpu,
+  Navigation,
+  ExternalLink,
 } from "lucide-react";
 import { useLang } from "@/i18n/LanguageProvider";
 
-// Categories that visually communicate "this is an FAQ page"
+// Visitor-focused FAQ — what someone landing on the site would actually wonder
 const CATEGORIES = [
+  {
+    id: "general",
+    icon: HelpCircle,
+    titleAr: "نظرة عامة",
+    titleEn: "Overview",
+    color: "primary",
+    questions: [
+      {
+        q: "ما هو هذا الموقع باختصار؟",
+        a: "موقع يساعد الطلاب الراغبين بالتحويل إلى جامعة العقبة للتكنولوجيا — تخصص بكالوريوس الذكاء الاصطناعي — على معرفة أي من موادهم السابقة قابلة للمعادلة بمواد جامعة العقبة، خلال ثوانٍ وبدون انتظار لجان المعادلات.",
+      },
+      {
+        q: "لمن هذا الموقع موجّه؟",
+        a: "بشكل أساسي للطلاب القادمين من الجامعات السعودية الذين يدرسون علم الحاسوب أو الذكاء الاصطناعي ويرغبون بالتحويل إلى جامعة العقبة للتكنولوجيا. كذلك مفيد للمرشدين الأكاديميين ولأولياء الأمور لأخذ فكرة مبدئية قبل بدء إجراءات التحويل الرسمية.",
+      },
+      {
+        q: "كيف أبدأ باستخدام الموقع؟",
+        a: "اضغط على زر «ابدأ المعادلة» في الصفحة الرئيسية، ثم الصق وصف المادة من خطتك الدراسية أو ارفع ملف PDF أو صورة، وستظهر النتيجة فوراً. لا حاجة لإنشاء حساب لتجربة المعادلة.",
+      },
+    ],
+  },
   {
     id: "transfer",
     icon: GraduationCap,
     titleAr: "التحويل والمعادلة",
     titleEn: "Transfer & Equivalency",
-    color: "primary",
-    questions: [
-      {
-        q: "أنا طالب في جامعة سعودية وأرغب بالتحويل إلى جامعة العقبة للتكنولوجيا، كيف يساعدني هذا النظام؟",
-        a: "النظام مصمّم خصيصاً لك. كل ما عليك فعله هو لصق وصف المادة من خطتك الدراسية السعودية، أو رفع ملف PDF أو حتى صورة من الكاميرا للوصف، ثم النظام سيخبرك خلال ثوانٍ: هل هذه المادة تُعادَل بمادة في جامعة العقبة؟ ما هي المادة المقابلة؟ وكم نسبة التطابق بينهما؟",
-      },
-      {
-        q: "هل قرار النظام رسمي ومُعتمَد من الجامعة؟",
-        a: "لا، النظام يعطيك رأياً أولياً واسترشادياً فقط ليساعدك على تكوين فكرة سريعة عن فرصك. القرار الرسمي والنهائي يبقى دائماً بيد لجنة المعادلات الأكاديمية في جامعة العقبة للتكنولوجيا. لكن إن كانت نتيجة النظام إيجابية، فهذا مؤشر جيد جداً لك قبل تقديم طلبك الرسمي.",
-      },
-    ],
-  },
-  {
-    id: "system",
-    icon: Clock,
-    titleAr: "حول النظام",
-    titleEn: "About the System",
     color: "secondary",
     questions: [
       {
-        q: "كم تستغرق عملية معادلة المادة؟",
-        a: "أقل من 10 ثوانٍ لكل مادة. مقارنةً بالطريقة التقليدية التي قد تستغرق أسابيع من المراجعة اليدوية في لجان المعادلات، النظام يوفر عليك وقتاً كبيراً ويمنحك صورة فورية عن وضعك الأكاديمي.",
+        q: "كيف يساعدني الموقع إذا كنت طالباً في جامعة سعودية؟",
+        a: "كل ما عليك فعله هو لصق وصف المادة من خطتك الدراسية، أو رفع ملف PDF أو حتى صورة من الكاميرا للوصف، ثم النظام سيخبرك خلال ثوانٍ: هل هذه المادة تُعادَل بمادة في جامعة العقبة؟ ما هي المادة المقابلة؟ وكم نسبة التطابق بينهما؟",
       },
       {
-        q: "ما هي التخصصات التي يدعمها النظام حالياً؟",
-        a: "النظام مخصّص حالياً لتخصص بكالوريوس الذكاء الاصطناعي في كلية تكنولوجيا المعلومات بجامعة العقبة للتكنولوجيا فقط. إذا كنت طالباً في تخصص علم الحاسوب أو الذكاء الاصطناعي في جامعة سعودية وترغب بالتحويل لهذا التخصص تحديداً، النظام مناسب لك تماماً.",
+        q: "هل قرار النظام رسمي ومُعتمَد من الجامعة؟",
+        a: "لا، النظام يعطيك رأياً أولياً واسترشادياً فقط. القرار الرسمي والنهائي يبقى دائماً بيد لجنة المعادلات الأكاديمية في جامعة العقبة للتكنولوجيا. لكن إن كانت نتيجة النظام إيجابية، فهذا مؤشر جيد جداً قبل تقديم طلبك الرسمي.",
+      },
+      {
+        q: "كم تستغرق عملية معادلة المادة؟",
+        a: "أقل من 10 ثوانٍ لكل مادة. مقارنةً بالطريقة التقليدية التي قد تستغرق أسابيع من المراجعة اليدوية في لجان المعادلات، النظام يوفر عليك وقتاً كبيراً ويمنحك صورة فورية عن وضعك الأكاديمي.",
       },
     ],
   },
@@ -68,12 +78,29 @@ const CATEGORIES = [
     color: "gold",
     questions: [
       {
-        q: "هل أحتاج لإنشاء حساب لاستخدام النظام؟",
+        q: "هل أحتاج لإنشاء حساب لاستخدام الموقع؟",
         a: "لا، يمكنك تجربة معادلة المواد مباشرة دون تسجيل دخول. الحساب مفيد فقط إذا أردت حفظ سجل المعادلات السابقة والرجوع إليها لاحقاً، أو لمتابعة طلباتك الرسمية مع لجنة المعادلات.",
       },
       {
         q: "ماذا أفعل إذا كانت نتيجة المعادلة غير دقيقة أو غير متوقعة؟",
-        a: "تأكد أولاً من أن وصف المادة الذي أدخلته كامل وواضح ويحتوي على: اسم المادة، عدد الساعات المعتمدة، المخرجات التعليمية، والمواضيع التي تغطيها. كلما كان الوصف أدق، كانت النتيجة أقرب للواقع. وإذا بقيت النتيجة غريبة، يمكنك التواصل مع لجنة المعادلات مباشرة لمراجعة الحالة.",
+        a: "تأكد أولاً من أن وصف المادة كامل وواضح ويحتوي على: اسم المادة، عدد الساعات المعتمدة، المخرجات التعليمية، والمواضيع التي تغطيها. كلما كان الوصف أدق، كانت النتيجة أقرب للواقع. وإذا بقيت النتيجة غريبة، يمكنك التواصل مع لجنة المعادلات مباشرة.",
+      },
+    ],
+  },
+  {
+    id: "technical",
+    icon: Cpu,
+    titleAr: "الجانب التقني",
+    titleEn: "Technical Details",
+    color: "secondary",
+    questions: [
+      {
+        q: "ما هي التقنيات المستخدمة في بناء النظام؟",
+        a: "الواجهة الأمامية مبنية باستخدام React 18 مع TypeScript و Tailwind CSS لضمان واجهة سريعة وتجربة مستخدم متجاوبة. الـ Backend يعتمد على Supabase الذي يوفر قاعدة بيانات PostgreSQL مع نظام مصادقة آمن وسياسات Row-Level Security (RLS) لحماية البيانات. أما محرّك المعادلة الذكي فيستخدم نموذج Google Gemini 2.5 Flash عبر Lovable AI Gateway لتحليل وصف المواد ومقارنتها دلالياً بمواد خطة جامعة العقبة، مما يتيح كشف التطابق حتى لو اختلفت أسماء المواد بين الجامعتين.",
+      },
+      {
+        q: "كيف يحسب النظام نسبة التطابق بين المادتين؟",
+        a: "العملية تمر بثلاث مراحل: (1) استخراج المعلومات الجوهرية من وصف المادة المُدخَلة كاسم المادة والمخرجات التعليمية والمواضيع وعدد الساعات، (2) مقارنة دلالية (Semantic Comparison) بين المادة المُدخلة وكل مواد خطة جامعة العقبة باستخدام نموذج Gemini الذي يفهم المعنى وليس فقط الكلمات المتطابقة، (3) إعطاء نسبة تطابق من 0 إلى 100% بناءً على معايير: تطابق المحتوى التعليمي، تطابق عدد الساعات، تطابق مستوى المادة (تأسيسية / متقدمة)، وتطابق التطبيقات العملية. تُعتمَد المادة كمعادَلة عند تجاوز نسبة 75% غالباً.",
       },
     ],
   },
@@ -112,18 +139,18 @@ export default function Faq() {
             <h1 className="font-heading text-4xl md:text-6xl font-black leading-tight">
               {isRtl ? (
                 <>
-                  أسئلة <span className="text-gold">يسأل عنها</span> الطلاب
+                  أسئلة <span className="text-gold">يطرحها</span> زوّار الموقع
                 </>
               ) : (
                 <>
-                  Questions <span className="text-gold">students</span> ask
+                  Questions <span className="text-gold">visitors</span> ask
                 </>
               )}
             </h1>
             <p className="text-primary-foreground/90 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
               {isRtl
-                ? `إجابات مباشرة على ${totalQuestions} من أكثر الأسئلة تكراراً حول معادلة المواد والتحويل إلى جامعة العقبة للتكنولوجيا.`
-                : `Direct answers to the ${totalQuestions} most-asked questions about course equivalency and transferring to Aqaba University of Technology.`}
+                ? `إجابات مباشرة على ${totalQuestions} من أكثر الأسئلة شيوعاً بين زوّار الموقع — من نظرة عامة، إلى التحويل، إلى الجانب التقني للنظام.`
+                : `Direct answers to the ${totalQuestions} most common questions visitors ask — from overview, to transferring, to the technical side.`}
             </p>
           </div>
         </div>
@@ -131,7 +158,7 @@ export default function Faq() {
 
       {/* Category navigator — reinforces the FAQ structure */}
       <section className="container mx-auto px-4 -mt-10 max-w-5xl relative z-20">
-        <div className="grid sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon;
             const colorClass =
@@ -276,6 +303,68 @@ export default function Faq() {
             </div>
           </Card>
         </div>
+      </section>
+
+      {/* University location map */}
+      <section className="container mx-auto px-4 pb-10 max-w-5xl">
+        <div className="text-center mb-6 space-y-2">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 text-primary mb-1">
+            <MapPin className="h-7 w-7" />
+          </div>
+          <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
+            {isRtl ? "موقع الجامعة على الخريطة" : "University Location on Map"}
+          </h2>
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+            {isRtl
+              ? "جامعة العقبة للتكنولوجيا — العقبة، المملكة الأردنية الهاشمية"
+              : "Aqaba University of Technology — Aqaba, Hashemite Kingdom of Jordan"}
+          </p>
+        </div>
+
+        <Card className="overflow-hidden border-2 shadow-elegant">
+          <div className="relative w-full aspect-[16/9] bg-muted">
+            <iframe
+              title={isRtl ? "خريطة جامعة العقبة للتكنولوجيا" : "Aqaba University of Technology Map"}
+              src="https://www.google.com/maps?q=Aqaba+University+of+Technology,+Aqaba,+Jordan&output=embed"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="absolute inset-0 w-full h-full border-0"
+              allowFullScreen
+            />
+          </div>
+          <div className="p-4 md:p-5 bg-card border-t flex flex-col sm:flex-row items-center gap-3 justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-gold/15 text-gold-foreground w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
+                <Navigation className="h-5 w-5" />
+              </div>
+              <div className={isRtl ? "text-right" : "text-left"}>
+                <div className="font-heading font-bold text-sm text-foreground">
+                  {isRtl ? "العنوان" : "Address"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {isRtl
+                    ? "جامعة العقبة للتكنولوجيا، العقبة، الأردن"
+                    : "Aqaba University of Technology, Aqaba, Jordan"}
+                </div>
+              </div>
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="gap-2 font-heading font-bold w-full sm:w-auto"
+            >
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=Aqaba+University+of+Technology+Jordan"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {isRtl ? "افتح في خرائط Google" : "Open in Google Maps"}
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </Button>
+          </div>
+        </Card>
       </section>
 
       {/* Final CTA */}
