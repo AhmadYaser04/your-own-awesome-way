@@ -158,7 +158,7 @@ export default function Faq() {
 
       {/* Category navigator — reinforces the FAQ structure */}
       <section className="container mx-auto px-4 -mt-10 max-w-5xl relative z-20">
-        <div className="grid sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon;
             const colorClass =
