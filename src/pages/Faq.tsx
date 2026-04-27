@@ -268,7 +268,7 @@ export default function Faq() {
               : "Reach out to the equivalency committee directly for a personalized answer."}
           </p>
         </div>
-        <div className="grid sm:grid-cols-3 gap-3">
+        <div className="grid sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
           <Card className="p-5 border-2 hover:shadow-elegant transition-all hover:-translate-y-1 text-center">
             <div className="bg-primary/10 text-primary w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3">
               <Phone className="h-5 w-5" />
@@ -289,17 +289,6 @@ export default function Faq() {
             </div>
             <div className="text-xs text-muted-foreground font-mono break-all" dir="ltr">
               admission@aut.edu.jo
-            </div>
-          </Card>
-          <Card className="p-5 border-2 hover:shadow-elegant transition-all hover:-translate-y-1 text-center">
-            <div className="bg-gold/15 text-gold-foreground w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <MapPin className="h-5 w-5" />
-            </div>
-            <div className="font-heading font-bold text-sm text-foreground mb-1">
-              {isRtl ? "الموقع" : "Location"}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {isRtl ? "العقبة، الأردن" : "Aqaba, Jordan"}
             </div>
           </Card>
         </div>
