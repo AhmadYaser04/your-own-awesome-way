@@ -49,6 +49,9 @@ export default function Home() {
               className="w-full h-[280px] md:h-[460px] object-cover"
               width={1920}
               height={1080}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
             />
             {/* Light gradient only at bottom for text legibility */}
             <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-primary/85 via-primary/40 to-transparent" />
