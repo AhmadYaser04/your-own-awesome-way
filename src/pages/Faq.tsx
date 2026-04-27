@@ -13,7 +13,7 @@ import {
   GraduationCap,
   Clock,
   FileText,
-  Wallet,
+  
   ScrollText,
   Phone,
   Mail,
