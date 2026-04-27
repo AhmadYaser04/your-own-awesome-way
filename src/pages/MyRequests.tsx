@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/i18n/LanguageProvider";
 import { exportDecisionPdf } from "@/lib/exportDecisionPdf";
 import { exportDecisionDocxArabic } from "@/lib/exportDecisionDocxArabic";
-import myRequestsBg from "@/assets/aut-myrequests-bg.jpg";
+
 
 interface Row {
   id: string;
@@ -122,29 +122,20 @@ export default function MyRequests() {
 
   return (
     <SiteLayout>
-      <section className="relative text-primary-foreground py-24 md:py-32 min-h-[360px] md:min-h-[440px] flex items-center overflow-hidden">
-        <img
-          src={myRequestsBg}
-          alt="Aqaba University of Technology"
-          className="absolute inset-0 w-full h-full object-cover"
-          loading="eager"
-          fetchPriority="high"
-        />
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-primary/70 via-primary/40 to-primary/75" />
-        <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-background/40 to-transparent" />
-        <div className="container mx-auto px-4 max-w-5xl relative z-10">
-          <Link to="/" className="inline-block text-primary-foreground/80 hover:text-primary-foreground text-sm mb-3">
+      <section className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground py-10">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <Link to="/" className="inline-block text-primary-foreground/70 hover:text-primary-foreground text-sm mb-3">
             {t("eq.back")}
           </Link>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div className="flex items-center gap-4">
-              <div className="bg-primary-foreground/20 backdrop-blur-md p-3 rounded-2xl border border-primary-foreground/20"><FileText className="h-8 w-8" /></div>
+              <div className="bg-primary-foreground/15 backdrop-blur-md p-3 rounded-2xl"><FileText className="h-8 w-8" /></div>
               <div>
-                <h1 className="font-heading text-2xl md:text-3xl font-bold drop-shadow-md">{t("myReq.title")}</h1>
-                <p className="text-primary-foreground/90 text-sm mt-1 drop-shadow">{t("myReq.subtitle")}</p>
+                <h1 className="font-heading text-2xl md:text-3xl font-bold">{t("myReq.title")}</h1>
+                <p className="text-primary-foreground/85 text-sm mt-1">{t("myReq.subtitle")}</p>
               </div>
             </div>
-            <Button asChild variant="secondary" className="gap-2 shadow-lg">
+            <Button asChild variant="secondary" className="gap-2">
               <Link to="/equivalency"><Plus className="h-4 w-4" /> {t("myReq.new")}</Link>
             </Button>
           </div>
