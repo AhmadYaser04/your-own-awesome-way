@@ -1,13 +1,18 @@
 import { Link } from "react-router-dom";
-import { Brain, Target, Sparkles, Code2, Database, Zap, ShieldCheck, ArrowLeft } from "lucide-react";
+import { Brain, Target, Sparkles, Code2, Database, Zap, ShieldCheck, ArrowLeft, Users, Award } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/i18n/LanguageProvider";
+import teamAhmadYasser from "@/assets/team-ahmad-yasser.jpeg";
+import teamAhmadBahloul from "@/assets/team-ahmad-bahloul.jpeg";
+import teamZaidZubdeh from "@/assets/team-zaid-zubdeh.jpeg";
+import teamAbdulrahmanAtiweh from "@/assets/team-abdulrahman-atiweh.jpeg";
+import teamDrYazan from "@/assets/team-dr-yazan.jpeg";
 
 export default function About() {
-  const { t } = useLang();
+  const { t, dir } = useLang();
   return (
     <SiteLayout>
       <section className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground py-14">
@@ -114,6 +119,83 @@ export default function About() {
             </Button>
           </div>
         </Card>
+      </section>
+
+      {/* Project team — supervisor & students */}
+      <section className="container mx-auto px-4 pb-16 max-w-5xl">
+        <div className="text-center mb-8 space-y-2">
+          <span className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 text-primary text-xs md:text-sm font-heading font-bold px-4 py-1.5 rounded-full">
+            <Users className="h-3.5 w-3.5" />
+            {dir === "rtl" ? "فريق مشروع التخرج" : "Graduation Project Team"}
+          </span>
+          <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
+            {dir === "rtl" ? "القائمون على المشروع" : "Project Contributors"}
+          </h2>
+        </div>
+
+        {/* Supervisor */}
+        <Card className="p-6 md:p-8 mb-5 bg-gradient-to-br from-primary via-primary to-primary/85 text-primary-foreground border-0 shadow-elegant relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-44 h-44 bg-gold/30 rounded-full blur-3xl" />
+          <div className="relative z-10 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-start">
+            <div className="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0">
+              <div className="absolute inset-0 rounded-2xl bg-gold p-[3px] shadow-warm">
+                <img
+                  src={teamDrYazan}
+                  alt={dir === "rtl" ? "د. يزن الوقفي" : "Dr. Yazan Al-Waqfi"}
+                  className="w-full h-full rounded-2xl object-cover bg-card"
+                  loading="lazy"
+                />
+              </div>
+              <div className="absolute -bottom-2 -end-2 bg-gold text-gold-foreground p-1.5 rounded-full shadow-warm">
+                <Award className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="flex-1 space-y-1">
+              <span className="inline-block text-[11px] font-bold bg-primary-foreground/20 backdrop-blur-md px-3 py-1 rounded-full">
+                {dir === "rtl" ? "المشرف على المشروع" : "Project Supervisor"}
+              </span>
+              <h3 className="font-heading text-2xl md:text-3xl font-bold">
+                {dir === "rtl" ? "د. يزن الوقفي" : "Dr. Yazan Al-Waqfi"}
+              </h3>
+              <p className="text-primary-foreground/85 text-sm">
+                {dir === "rtl"
+                  ? "قسم الذكاء الاصطناعي وعلم البيانات — جامعة العقبة للتكنولوجيا"
+                  : "Department of AI & Data Science — Aqaba University of Technology"}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Students */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { name: dir === "rtl" ? "م. أحمد ياسر" : "Eng. Ahmad Yasser", photo: teamAhmadYasser },
+            { name: dir === "rtl" ? "م. أحمد بهلول" : "Eng. Ahmad Bahloul", photo: teamAhmadBahloul },
+            { name: dir === "rtl" ? "م. زيد زبدة" : "Eng. Zaid Zubdeh", photo: teamZaidZubdeh },
+            { name: dir === "rtl" ? "م. عبدالرحمن عطيوة" : "Eng. Abdulrahman Atiweh", photo: teamAbdulrahmanAtiweh },
+          ].map((s, i) => (
+            <Card
+              key={s.name}
+              className="p-5 text-center bg-gradient-to-b from-card to-accent/30 border-2 hover:shadow-elegant transition-all hover:-translate-y-1 animate-fade-up"
+              style={{ animationDelay: `${i * 80}ms` }}
+            >
+              <div className="relative w-20 h-20 mx-auto mb-3">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-secondary to-primary p-[3px] shadow-elegant">
+                  <img
+                    src={s.photo}
+                    alt={s.name}
+                    className="w-full h-full rounded-full object-cover bg-card"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+              <div className="font-heading font-bold text-foreground">{s.name}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {dir === "rtl" ? "عضو فريق المشروع" : "Project Team Member"}
+              </div>
+            </Card>
+          ))}
+        </div>
       </section>
     </SiteLayout>
   );
