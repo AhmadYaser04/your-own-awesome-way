@@ -154,6 +154,89 @@ export default function Auth() {
       </section>
 
       <section className="container mx-auto px-4 py-10 max-w-xl">
+        {/* DEMO ACCOUNTS — quick access for project discussion */}
+        <Card className="mb-5 p-5 border-2 border-gold/50 bg-gradient-to-br from-gold/10 via-card to-primary/5 shadow-warm">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="bg-gold text-gold-foreground p-1.5 rounded-lg">
+              <KeyRound className="h-4 w-4" />
+            </div>
+            <h3 className="font-heading font-bold text-foreground text-sm md:text-base">
+              {dir === "rtl" ? "حسابات تجريبية للمناقشة" : "Demo accounts for review"}
+            </h3>
+            <span className="text-[10px] font-bold bg-gold/20 text-gold-foreground px-2 py-0.5 rounded-full">
+              {dir === "rtl" ? "اختصار" : "Shortcut"}
+            </span>
+          </div>
+          <div className="space-y-2.5">
+            {DEMO_ACCOUNTS.map((acc) => (
+              <div
+                key={acc.email}
+                className="rounded-xl border bg-card/80 backdrop-blur-sm p-3 flex flex-col sm:flex-row sm:items-center gap-2.5"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    {acc.role === "admin" ? (
+                      <ShieldCheck className="h-3.5 w-3.5 text-gold shrink-0" />
+                    ) : (
+                      <UserIcon className="h-3.5 w-3.5 text-primary shrink-0" />
+                    )}
+                    <span className="font-heading font-bold text-xs text-foreground">
+                      {dir === "rtl" ? acc.labelAr : acc.labelEn}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => copyText(acc.email, `${acc.role}-email`)}
+                      className="text-[11px] font-mono text-start truncate bg-muted hover:bg-accent px-2 py-1 rounded flex items-center justify-between gap-1 transition"
+                      dir="ltr"
+                    >
+                      <span className="truncate">{acc.email}</span>
+                      {copied === `${acc.role}-email` ? (
+                        <Check className="h-3 w-3 text-success shrink-0" />
+                      ) : (
+                        <Copy className="h-3 w-3 opacity-50 shrink-0" />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => copyText(acc.password, `${acc.role}-pwd`)}
+                      className="text-[11px] font-mono text-start truncate bg-muted hover:bg-accent px-2 py-1 rounded flex items-center justify-between gap-1 transition"
+                      dir="ltr"
+                    >
+                      <span className="truncate">{acc.password}</span>
+                      {copied === `${acc.role}-pwd` ? (
+                        <Check className="h-3 w-3 text-success shrink-0" />
+                      ) : (
+                        <Copy className="h-3 w-3 opacity-50 shrink-0" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => fillAndLogin(acc.email, acc.password)}
+                  disabled={busy}
+                  className={
+                    acc.role === "admin"
+                      ? "bg-gold text-gold-foreground hover:bg-gold/90 gap-1.5 shrink-0"
+                      : "gap-1.5 shrink-0"
+                  }
+                >
+                  <Zap className="h-3.5 w-3.5" />
+                  {dir === "rtl" ? "دخول سريع" : "Quick login"}
+                </Button>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-3 leading-relaxed">
+            {dir === "rtl"
+              ? "اضغط على البريد أو كلمة السر لنسخها، أو على «دخول سريع» للدخول مباشرة."
+              : "Tap email/password to copy, or use \"Quick login\" to sign in instantly."}
+          </p>
+        </Card>
+
         {adminFlow && (
           <Alert className="mb-5 border-2 border-gold/60 bg-gold/10">
             <ShieldCheck className="h-4 w-4 text-gold" />
