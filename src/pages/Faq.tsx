@@ -13,7 +13,7 @@ import {
   GraduationCap,
   Clock,
   FileText,
-  Wallet,
+  
   ScrollText,
   Phone,
   Mail,
@@ -48,9 +48,9 @@ const FAQ = [
     a: "النظام مخصّص حالياً لتخصص بكالوريوس الذكاء الاصطناعي في كلية تكنولوجيا المعلومات بجامعة العقبة للتكنولوجيا فقط. إذا كنت طالباً في تخصص علم الحاسوب أو الذكاء الاصطناعي في جامعة سعودية وترغب بالتحويل لهذا التخصص تحديداً، النظام مناسب لك تماماً.",
   },
   {
-    icon: Wallet,
-    q: "هل استخدام النظام مجاني؟",
-    a: "نعم، النظام مجاني بالكامل للطلاب. لا يوجد أي رسوم على استخدامه أو على عدد المواد التي ترغب بمعادلتها. تستطيع تجربته على كل مواد خطتك الدراسية دون قلق.",
+    icon: Users,
+    q: "هل أحتاج لإنشاء حساب لاستخدام النظام؟",
+    a: "لا، يمكنك تجربة معادلة المواد مباشرة دون تسجيل دخول. الحساب مفيد فقط إذا أردت حفظ سجل المعادلات السابقة والرجوع إليها لاحقاً، أو لمتابعة طلباتك الرسمية مع لجنة المعادلات.",
   },
   {
     icon: HelpCircle,
@@ -72,15 +72,15 @@ export default function Faq() {
           <div className="text-center space-y-4">
             <span className="inline-flex items-center gap-2 bg-gold/25 border border-gold/50 text-gold-foreground text-xs md:text-sm font-heading font-bold px-4 py-1.5 rounded-full backdrop-blur-md">
               <MessagesSquare className="h-3.5 w-3.5" />
-              {dir === "rtl" ? "ركن الطالب" : "Student Corner"}
+              {dir === "rtl" ? "الأسئلة الشائعة" : "Frequently Asked Questions"}
             </span>
             <h1 className="font-heading text-3xl md:text-5xl font-bold leading-tight">
-              {dir === "rtl" ? "كل ما يدور في بالك — مُجاب عليه هنا" : "All your questions — answered here"}
+              {dir === "rtl" ? "أسئلة الطلاب الأكثر شيوعاً" : "The Most Common Student Questions"}
             </h1>
             <p className="text-primary-foreground/90 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
               {dir === "rtl"
-                ? "إجابات صريحة ومباشرة على أكثر الأسئلة التي يطرحها الطلاب الراغبون بمعادلة موادهم في جامعة العقبة للتكنولوجيا."
-                : "Honest answers to the most common student questions about course equivalency at Aqaba University of Technology."}
+                ? "مجموعة من أبرز الأسئلة التي يطرحها الطلاب حول نظام معادلة المواد في جامعة العقبة للتكنولوجيا، مع إجابات مباشرة وواضحة."
+                : "The top questions students ask about course equivalency at Aqaba University of Technology — with direct, clear answers."}
             </p>
           </div>
         </div>
@@ -102,9 +102,9 @@ export default function Faq() {
             </div>
           </Card>
           <Card className="p-4 text-center bg-card border-2 shadow-elegant">
-            <div className="font-heading font-bold text-2xl text-gold">100%</div>
+            <div className="font-heading font-bold text-2xl text-gold">24/7</div>
             <div className="text-[10px] md:text-xs text-muted-foreground font-heading mt-1">
-              {dir === "rtl" ? "مجاني للطلاب" : "Free for students"}
+              {dir === "rtl" ? "متاح دائماً" : "Always available"}
             </div>
           </Card>
         </div>
@@ -199,8 +199,8 @@ export default function Faq() {
               </h3>
               <p className="text-gold-foreground/85 text-sm md:text-base leading-relaxed">
                 {dir === "rtl"
-                  ? "خذ خطوتك الأولى نحو التحويل — جرّب معادلة مادة واحدة الآن مجاناً وبدون تسجيل."
-                  : "Take the first step — try one equivalency right now, free and no signup needed."}
+                  ? "خذ خطوتك الأولى نحو التحويل — جرّب معادلة مادة واحدة الآن واحصل على نتيجة فورية."
+                  : "Take the first step — try one equivalency right now and get an instant result."}
               </p>
             </div>
             <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold gap-2 shrink-0">
