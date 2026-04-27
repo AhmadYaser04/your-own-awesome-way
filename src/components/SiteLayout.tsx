@@ -258,25 +258,22 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <footer className="bg-primary py-7 mt-12">
-        <div className="container mx-auto px-4 text-center text-primary-foreground/85 text-sm font-heading space-y-2">
-          <div className="flex items-center justify-center gap-3 mb-3">
+      <footer className="bg-primary py-8 mt-12">
+        <div className="container mx-auto px-4 text-center text-primary-foreground/90 text-sm font-heading space-y-3">
+          <div className="flex items-center justify-center gap-4 mb-2">
             <a href={AUT_URL} target="_blank" rel="noopener noreferrer">
-              <img src={logo} alt="" className="h-10 w-auto rounded-md bg-card object-contain px-1.5 py-1" />
+              <img
+                src={logo}
+                alt={lang === "ar" ? "شعار جامعة العقبة للتكنولوجيا" : "Aqaba University of Technology logo"}
+                className="h-20 md:h-24 w-auto rounded-xl bg-card object-contain px-3 py-2 shadow-lg"
+              />
             </a>
-            <span className="font-bold">{t("footer.uni")}</span>
+            <span className="font-bold text-base md:text-lg">{t("footer.uni")}</span>
           </div>
-          <p>{t("footer.copy")}</p>
-          <p className="text-xs opacity-75">
-            {t("footer.poweredBy")} ·{" "}
-            <a
-              href={AUT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-gold transition-colors"
-            >
-              {t("footer.officialSite")}
-            </a>
+          <p className="text-sm md:text-base font-bold">
+            {lang === "ar"
+              ? "مشروعنا لتخصص الذكاء الاصطناعي"
+              : "Our graduation project — AI specialization"}
           </p>
         </div>
       </footer>
