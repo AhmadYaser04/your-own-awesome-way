@@ -199,8 +199,8 @@ export default function Faq() {
               </h3>
               <p className="text-gold-foreground/85 text-sm md:text-base leading-relaxed">
                 {dir === "rtl"
-                  ? "خذ خطوتك الأولى نحو التحويل — جرّب معادلة مادة واحدة الآن مجاناً وبدون تسجيل."
-                  : "Take the first step — try one equivalency right now, free and no signup needed."}
+                  ? "خذ خطوتك الأولى نحو التحويل — جرّب معادلة مادة واحدة الآن واحصل على نتيجة فورية."
+                  : "Take the first step — try one equivalency right now and get an instant result."}
               </p>
             </div>
             <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold gap-2 shrink-0">
