@@ -115,8 +115,19 @@ export default function Faq() {
 
   return (
     <SiteLayout>
+      {/* Page-wide campus background */}
+      <div className="relative">
+        {/* Fixed background image layer */}
+        <div
+          aria-hidden
+          className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${campusBg})` }}
+        />
+        {/* Overlay for legibility */}
+        <div aria-hidden className="fixed inset-0 -z-10 bg-background/85 backdrop-blur-sm" />
+
       {/* Hero — UNMISTAKABLY an FAQ page */}
-      <section className="relative bg-gradient-to-br from-secondary via-secondary/95 to-primary text-primary-foreground py-20 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-secondary/95 via-secondary/90 to-primary/95 text-primary-foreground py-20 overflow-hidden">
         {/* Big background ? marks for visual identity */}
         <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.07]">
           <div className="absolute top-8 right-12 font-heading font-black text-[180px] leading-none">?</div>
