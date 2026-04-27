@@ -395,6 +395,7 @@ export default function Faq() {
           </div>
         </Card>
       </section>
+      </div>
     </SiteLayout>
   );
 }
