@@ -34,7 +34,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/i18n/LanguageProvider";
 import { exportDecisionPdf } from "@/lib/exportDecisionPdf";
 import { exportDecisionDocxArabic } from "@/lib/exportDecisionDocxArabic";
-import campus from "@/assets/aut-campus-bright.png";
+import campus from "@/assets/aut-campus-bright.jpg";
 import logo from "@/assets/aut-logo-official.png";
 
 type Status = "pending" | "approved" | "rejected";
