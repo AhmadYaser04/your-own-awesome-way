@@ -305,6 +305,68 @@ export default function Faq() {
         </div>
       </section>
 
+      {/* University location map */}
+      <section className="container mx-auto px-4 pb-10 max-w-5xl">
+        <div className="text-center mb-6 space-y-2">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 text-primary mb-1">
+            <MapPin className="h-7 w-7" />
+          </div>
+          <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
+            {isRtl ? "موقع الجامعة على الخريطة" : "University Location on Map"}
+          </h2>
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+            {isRtl
+              ? "جامعة العقبة للتكنولوجيا — العقبة، المملكة الأردنية الهاشمية"
+              : "Aqaba University of Technology — Aqaba, Hashemite Kingdom of Jordan"}
+          </p>
+        </div>
+
+        <Card className="overflow-hidden border-2 shadow-elegant">
+          <div className="relative w-full aspect-[16/9] bg-muted">
+            <iframe
+              title={isRtl ? "خريطة جامعة العقبة للتكنولوجيا" : "Aqaba University of Technology Map"}
+              src="https://www.google.com/maps?q=Aqaba+University+of+Technology,+Aqaba,+Jordan&output=embed"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="absolute inset-0 w-full h-full border-0"
+              allowFullScreen
+            />
+          </div>
+          <div className="p-4 md:p-5 bg-card border-t flex flex-col sm:flex-row items-center gap-3 justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-gold/15 text-gold-foreground w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
+                <Navigation className="h-5 w-5" />
+              </div>
+              <div className={isRtl ? "text-right" : "text-left"}>
+                <div className="font-heading font-bold text-sm text-foreground">
+                  {isRtl ? "العنوان" : "Address"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {isRtl
+                    ? "جامعة العقبة للتكنولوجيا، العقبة، الأردن"
+                    : "Aqaba University of Technology, Aqaba, Jordan"}
+                </div>
+              </div>
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="gap-2 font-heading font-bold w-full sm:w-auto"
+            >
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=Aqaba+University+of+Technology+Jordan"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {isRtl ? "افتح في خرائط Google" : "Open in Google Maps"}
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </Button>
+          </div>
+        </Card>
+      </section>
+
       {/* Final CTA */}
       <section className="container mx-auto px-4 pb-14 max-w-4xl">
         <Card className="p-7 md:p-9 bg-gradient-to-br from-gold via-gold to-gold/85 text-gold-foreground border-0 shadow-warm relative overflow-hidden">
