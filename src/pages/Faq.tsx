@@ -25,6 +25,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useLang } from "@/i18n/LanguageProvider";
+import autFaqBg from "@/assets/aut-faq-bg.webp";
 
 // Visitor-focused FAQ — what someone landing on the site would actually wonder
 const CATEGORIES = [
@@ -115,7 +116,17 @@ export default function Faq() {
   return (
     <SiteLayout>
       {/* Hero — UNMISTAKABLY an FAQ page */}
-      <section className="relative bg-gradient-to-br from-secondary via-secondary/95 to-primary text-primary-foreground py-20 overflow-hidden">
+      <section className="relative text-primary-foreground py-20 overflow-hidden">
+        {/* University campus background image */}
+        <img
+          src={autFaqBg}
+          alt={isRtl ? "جامعة العقبة للتكنولوجيا" : "Aqaba University of Technology"}
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
+          fetchPriority="high"
+        />
+        {/* Color overlay to keep text legible */}
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-secondary/95 via-secondary/90 to-primary/95" />
         {/* Big background ? marks for visual identity */}
         <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.07]">
           <div className="absolute top-8 right-12 font-heading font-black text-[180px] leading-none">?</div>
