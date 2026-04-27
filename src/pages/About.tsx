@@ -47,7 +47,9 @@ export default function About() {
                   src={teamDrYazan}
                   alt={dir === "rtl" ? "د. يزن الوقفي" : "Dr. Yazan Al-Waqfi"}
                   className="w-full h-full rounded-2xl object-cover bg-card"
-                  loading="lazy"
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
                 />
               </div>
               <div className="absolute -bottom-2 -end-2 bg-gold text-gold-foreground p-1.5 rounded-full shadow-warm">
@@ -89,7 +91,9 @@ export default function About() {
                     src={s.photo}
                     alt={s.name}
                     className="w-full h-full rounded-full object-cover bg-card"
-                    loading="lazy"
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority="high"
                   />
                 </div>
               </div>
