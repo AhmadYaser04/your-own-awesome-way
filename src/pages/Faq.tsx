@@ -9,143 +9,236 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  MessagesSquare,
   GraduationCap,
   Clock,
   FileText,
-  
   ScrollText,
   Phone,
   Mail,
   MapPin,
   ArrowLeft,
-  Sparkles,
   HelpCircle,
   Users,
+  CircleHelp,
+  Search,
 } from "lucide-react";
 import { useLang } from "@/i18n/LanguageProvider";
 
-// Real student-oriented questions — no technical jargon
-const FAQ = [
+// Categories that visually communicate "this is an FAQ page"
+const CATEGORIES = [
   {
+    id: "transfer",
     icon: GraduationCap,
-    q: "أنا طالب في جامعة سعودية وأرغب بالتحويل إلى جامعة العقبة للتكنولوجيا، كيف يساعدني هذا النظام؟",
-    a: "النظام مصمّم خصيصاً لك. كل ما عليك فعله هو لصق وصف المادة من خطتك الدراسية السعودية، أو رفع ملف PDF أو حتى صورة من الكاميرا للوصف، ثم النظام سيخبرك خلال ثوانٍ: هل هذه المادة تُعادَل بمادة في جامعة العقبة؟ ما هي المادة المقابلة؟ وكم نسبة التطابق بينهما؟",
+    titleAr: "التحويل والمعادلة",
+    titleEn: "Transfer & Equivalency",
+    color: "primary",
+    questions: [
+      {
+        q: "أنا طالب في جامعة سعودية وأرغب بالتحويل إلى جامعة العقبة للتكنولوجيا، كيف يساعدني هذا النظام؟",
+        a: "النظام مصمّم خصيصاً لك. كل ما عليك فعله هو لصق وصف المادة من خطتك الدراسية السعودية، أو رفع ملف PDF أو حتى صورة من الكاميرا للوصف، ثم النظام سيخبرك خلال ثوانٍ: هل هذه المادة تُعادَل بمادة في جامعة العقبة؟ ما هي المادة المقابلة؟ وكم نسبة التطابق بينهما؟",
+      },
+      {
+        q: "هل قرار النظام رسمي ومُعتمَد من الجامعة؟",
+        a: "لا، النظام يعطيك رأياً أولياً واسترشادياً فقط ليساعدك على تكوين فكرة سريعة عن فرصك. القرار الرسمي والنهائي يبقى دائماً بيد لجنة المعادلات الأكاديمية في جامعة العقبة للتكنولوجيا. لكن إن كانت نتيجة النظام إيجابية، فهذا مؤشر جيد جداً لك قبل تقديم طلبك الرسمي.",
+      },
+    ],
   },
   {
-    icon: ScrollText,
-    q: "هل قرار النظام رسمي ومُعتمَد من الجامعة؟",
-    a: "لا، النظام يعطيك رأياً أولياً واسترشادياً فقط ليساعدك على تكوين فكرة سريعة عن فرصك. القرار الرسمي والنهائي يبقى دائماً بيد لجنة المعادلات الأكاديمية في جامعة العقبة للتكنولوجيا. لكن إن كانت نتيجة النظام إيجابية، فهذا مؤشر جيد جداً لك قبل تقديم طلبك الرسمي.",
-  },
-  {
+    id: "system",
     icon: Clock,
-    q: "كم تستغرق عملية معادلة المادة؟",
-    a: "أقل من 10 ثوانٍ لكل مادة. مقارنةً بالطريقة التقليدية التي قد تستغرق أسابيع من المراجعة اليدوية في لجان المعادلات، النظام يوفر عليك وقتاً كبيراً ويمنحك صورة فورية عن وضعك الأكاديمي.",
+    titleAr: "حول النظام",
+    titleEn: "About the System",
+    color: "secondary",
+    questions: [
+      {
+        q: "كم تستغرق عملية معادلة المادة؟",
+        a: "أقل من 10 ثوانٍ لكل مادة. مقارنةً بالطريقة التقليدية التي قد تستغرق أسابيع من المراجعة اليدوية في لجان المعادلات، النظام يوفر عليك وقتاً كبيراً ويمنحك صورة فورية عن وضعك الأكاديمي.",
+      },
+      {
+        q: "ما هي التخصصات التي يدعمها النظام حالياً؟",
+        a: "النظام مخصّص حالياً لتخصص بكالوريوس الذكاء الاصطناعي في كلية تكنولوجيا المعلومات بجامعة العقبة للتكنولوجيا فقط. إذا كنت طالباً في تخصص علم الحاسوب أو الذكاء الاصطناعي في جامعة سعودية وترغب بالتحويل لهذا التخصص تحديداً، النظام مناسب لك تماماً.",
+      },
+    ],
   },
   {
-    icon: FileText,
-    q: "ما هي التخصصات التي يدعمها النظام حالياً؟",
-    a: "النظام مخصّص حالياً لتخصص بكالوريوس الذكاء الاصطناعي في كلية تكنولوجيا المعلومات بجامعة العقبة للتكنولوجيا فقط. إذا كنت طالباً في تخصص علم الحاسوب أو الذكاء الاصطناعي في جامعة سعودية وترغب بالتحويل لهذا التخصص تحديداً، النظام مناسب لك تماماً.",
-  },
-  {
+    id: "account",
     icon: Users,
-    q: "هل أحتاج لإنشاء حساب لاستخدام النظام؟",
-    a: "لا، يمكنك تجربة معادلة المواد مباشرة دون تسجيل دخول. الحساب مفيد فقط إذا أردت حفظ سجل المعادلات السابقة والرجوع إليها لاحقاً، أو لمتابعة طلباتك الرسمية مع لجنة المعادلات.",
-  },
-  {
-    icon: HelpCircle,
-    q: "ماذا أفعل إذا كانت نتيجة المعادلة غير دقيقة أو غير متوقعة؟",
-    a: "تأكد أولاً من أن وصف المادة الذي أدخلته كامل وواضح ويحتوي على: اسم المادة، عدد الساعات المعتمدة، المخرجات التعليمية، والمواضيع التي تغطيها. كلما كان الوصف أدق، كانت النتيجة أقرب للواقع. وإذا بقيت النتيجة غريبة، يمكنك التواصل مع لجنة المعادلات مباشرة لمراجعة الحالة.",
+    titleAr: "الحساب والاستخدام",
+    titleEn: "Account & Usage",
+    color: "gold",
+    questions: [
+      {
+        q: "هل أحتاج لإنشاء حساب لاستخدام النظام؟",
+        a: "لا، يمكنك تجربة معادلة المواد مباشرة دون تسجيل دخول. الحساب مفيد فقط إذا أردت حفظ سجل المعادلات السابقة والرجوع إليها لاحقاً، أو لمتابعة طلباتك الرسمية مع لجنة المعادلات.",
+      },
+      {
+        q: "ماذا أفعل إذا كانت نتيجة المعادلة غير دقيقة أو غير متوقعة؟",
+        a: "تأكد أولاً من أن وصف المادة الذي أدخلته كامل وواضح ويحتوي على: اسم المادة، عدد الساعات المعتمدة، المخرجات التعليمية، والمواضيع التي تغطيها. كلما كان الوصف أدق، كانت النتيجة أقرب للواقع. وإذا بقيت النتيجة غريبة، يمكنك التواصل مع لجنة المعادلات مباشرة لمراجعة الحالة.",
+      },
+    ],
   },
 ];
 
+const totalQuestions = CATEGORIES.reduce((acc, c) => acc + c.questions.length, 0);
+
 export default function Faq() {
   const { dir } = useLang();
+  const isRtl = dir === "rtl";
 
   return (
     <SiteLayout>
-      {/* Hero — friendly student-focused */}
-      <section className="relative bg-gradient-to-br from-secondary via-secondary/95 to-primary text-primary-foreground py-16 overflow-hidden">
+      {/* Hero — UNMISTAKABLY an FAQ page */}
+      <section className="relative bg-gradient-to-br from-secondary via-secondary/95 to-primary text-primary-foreground py-20 overflow-hidden">
+        {/* Big background ? marks for visual identity */}
+        <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.07]">
+          <div className="absolute top-8 right-12 font-heading font-black text-[180px] leading-none">?</div>
+          <div className="absolute bottom-4 left-16 font-heading font-black text-[140px] leading-none">?</div>
+          <div className="absolute top-1/2 left-1/3 font-heading font-black text-[100px] leading-none">?</div>
+        </div>
         <div className="absolute -top-20 -right-20 w-80 h-80 bg-gold/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-primary/30 rounded-full blur-3xl" />
+
         <div className="container mx-auto px-4 max-w-4xl relative z-10">
-          <div className="text-center space-y-4">
-            <span className="inline-flex items-center gap-2 bg-gold/25 border border-gold/50 text-gold-foreground text-xs md:text-sm font-heading font-bold px-4 py-1.5 rounded-full backdrop-blur-md">
-              <MessagesSquare className="h-3.5 w-3.5" />
-              {dir === "rtl" ? "الأسئلة الشائعة" : "Frequently Asked Questions"}
+          <div className="text-center space-y-5">
+            {/* Big circular question icon */}
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gold text-gold-foreground shadow-warm border-4 border-gold/30 mb-2">
+              <CircleHelp className="h-11 w-11" strokeWidth={2.5} />
+            </div>
+
+            <span className="inline-flex items-center gap-2 bg-card/15 border border-card/30 text-primary-foreground text-xs md:text-sm font-heading font-bold px-4 py-1.5 rounded-full backdrop-blur-md">
+              FAQ • {isRtl ? "الأسئلة الشائعة" : "Frequently Asked Questions"}
             </span>
-            <h1 className="font-heading text-3xl md:text-5xl font-bold leading-tight">
-              {dir === "rtl" ? "أسئلة الطلاب الأكثر شيوعاً" : "The Most Common Student Questions"}
+
+            <h1 className="font-heading text-4xl md:text-6xl font-black leading-tight">
+              {isRtl ? (
+                <>
+                  أسئلة <span className="text-gold">يسأل عنها</span> الطلاب
+                </>
+              ) : (
+                <>
+                  Questions <span className="text-gold">students</span> ask
+                </>
+              )}
             </h1>
             <p className="text-primary-foreground/90 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-              {dir === "rtl"
-                ? "مجموعة من أبرز الأسئلة التي يطرحها الطلاب حول نظام معادلة المواد في جامعة العقبة للتكنولوجيا، مع إجابات مباشرة وواضحة."
-                : "The top questions students ask about course equivalency at Aqaba University of Technology — with direct, clear answers."}
+              {isRtl
+                ? `إجابات مباشرة على ${totalQuestions} من أكثر الأسئلة تكراراً حول معادلة المواد والتحويل إلى جامعة العقبة للتكنولوجيا.`
+                : `Direct answers to the ${totalQuestions} most-asked questions about course equivalency and transferring to Aqaba University of Technology.`}
             </p>
           </div>
         </div>
       </section>
 
-      {/* Quick stats strip */}
-      <section className="container mx-auto px-4 -mt-8 max-w-4xl relative z-20">
-        <div className="grid grid-cols-3 gap-3">
-          <Card className="p-4 text-center bg-card border-2 shadow-elegant">
-            <div className="font-heading font-bold text-2xl text-primary">6</div>
-            <div className="text-[10px] md:text-xs text-muted-foreground font-heading mt-1">
-              {dir === "rtl" ? "أسئلة شائعة" : "Common questions"}
-            </div>
-          </Card>
-          <Card className="p-4 text-center bg-card border-2 shadow-elegant">
-            <div className="font-heading font-bold text-2xl text-secondary">&lt;10s</div>
-            <div className="text-[10px] md:text-xs text-muted-foreground font-heading mt-1">
-              {dir === "rtl" ? "وقت المعادلة" : "Time per check"}
-            </div>
-          </Card>
-          <Card className="p-4 text-center bg-card border-2 shadow-elegant">
-            <div className="font-heading font-bold text-2xl text-gold">24/7</div>
-            <div className="text-[10px] md:text-xs text-muted-foreground font-heading mt-1">
-              {dir === "rtl" ? "متاح دائماً" : "Always available"}
-            </div>
-          </Card>
+      {/* Category navigator — reinforces the FAQ structure */}
+      <section className="container mx-auto px-4 -mt-10 max-w-5xl relative z-20">
+        <div className="grid sm:grid-cols-3 gap-3">
+          {CATEGORIES.map((cat) => {
+            const Icon = cat.icon;
+            const colorClass =
+              cat.color === "primary"
+                ? "bg-primary/10 text-primary"
+                : cat.color === "secondary"
+                ? "bg-secondary/15 text-secondary"
+                : "bg-gold/20 text-gold-foreground";
+            return (
+              <a
+                key={cat.id}
+                href={`#cat-${cat.id}`}
+                className="group"
+              >
+                <Card className="p-5 border-2 hover:border-primary/50 hover:shadow-elegant transition-all hover:-translate-y-1 bg-card h-full">
+                  <div className="flex items-center gap-3">
+                    <div className={`${colorClass} w-12 h-12 rounded-2xl flex items-center justify-center shrink-0`}>
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-heading font-bold text-sm text-foreground leading-tight">
+                        {isRtl ? cat.titleAr : cat.titleEn}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {cat.questions.length} {isRtl ? "أسئلة" : "questions"}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </a>
+            );
+          })}
         </div>
       </section>
 
-      {/* Questions */}
-      <section className="container mx-auto px-4 pt-10 max-w-4xl">
-        <Card className="p-4 md:p-6 border-2 shadow-elegant">
-          <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
-            {FAQ.map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <AccordionItem key={i} value={`item-${i}`}>
-                  <AccordionTrigger className="text-right hover:no-underline font-heading font-bold text-foreground">
-                    <span className="flex items-start gap-3 text-base md:text-lg">
-                      <span className="bg-secondary/15 text-secondary p-2 rounded-xl shrink-0 mt-0.5">
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <span className="flex-1 leading-relaxed">{item.q}</span>
-                    </span>
-                  </AccordionTrigger>
-                  <AccordionContent className="text-sm md:text-base text-muted-foreground leading-loose pr-14">
-                    {item.a}
-                  </AccordionContent>
-                </AccordionItem>
-              );
-            })}
-          </Accordion>
-        </Card>
+      {/* Sectioned questions — each block is clearly an FAQ category */}
+      <section className="container mx-auto px-4 pt-14 pb-6 max-w-4xl space-y-10">
+        {CATEGORIES.map((cat) => {
+          const CatIcon = cat.icon;
+          const headerColor =
+            cat.color === "primary"
+              ? "text-primary"
+              : cat.color === "secondary"
+              ? "text-secondary"
+              : "text-gold-foreground";
+          return (
+            <div key={cat.id} id={`cat-${cat.id}`} className="scroll-mt-24">
+              {/* Category header */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className={`${headerColor}`}>
+                  <CatIcon className="h-6 w-6" />
+                </div>
+                <h2 className="font-heading text-xl md:text-2xl font-bold text-foreground">
+                  {isRtl ? cat.titleAr : cat.titleEn}
+                </h2>
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs font-heading font-bold text-muted-foreground">
+                  {cat.questions.length} {isRtl ? "أسئلة" : "Q's"}
+                </span>
+              </div>
+
+              <Card className="p-2 md:p-4 border-2 shadow-elegant">
+                <Accordion type="single" collapsible className="w-full">
+                  {cat.questions.map((item, i) => {
+                    const value = `${cat.id}-${i}`;
+                    return (
+                      <AccordionItem key={value} value={value}>
+                        <AccordionTrigger className={`${isRtl ? "text-right" : "text-left"} hover:no-underline font-heading font-bold text-foreground py-4 px-2`}>
+                          <span className="flex items-start gap-3 text-base md:text-lg w-full">
+                            {/* Big Q badge — universal FAQ symbol */}
+                            <span className="bg-primary text-primary-foreground font-heading font-black text-sm w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-elegant">
+                              Q
+                            </span>
+                            <span className="flex-1 leading-relaxed pt-1">{item.q}</span>
+                          </span>
+                        </AccordionTrigger>
+                        <AccordionContent className={`text-sm md:text-base text-muted-foreground leading-loose ${isRtl ? "pr-12" : "pl-12"} pb-4`}>
+                          <div className="flex items-start gap-3">
+                            <span className="bg-gold/20 text-gold-foreground font-heading font-black text-sm w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+                              A
+                            </span>
+                            <span className="flex-1 pt-1">{item.a}</span>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                </Accordion>
+              </Card>
+            </div>
+          );
+        })}
       </section>
 
-      {/* Still have a question? Contact strip */}
+      {/* Still have a question? */}
       <section className="container mx-auto px-4 py-10 max-w-4xl">
-        <div className="text-center mb-5 space-y-1">
-          <h2 className="font-heading text-xl md:text-2xl font-bold text-foreground">
-            {dir === "rtl" ? "لم تجد إجابتك؟" : "Didn't find your answer?"}
+        <div className="text-center mb-6 space-y-2">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-secondary/10 text-secondary mb-1">
+            <Search className="h-7 w-7" />
+          </div>
+          <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">
+            {isRtl ? "سؤالك ليس هنا؟" : "Your question isn't here?"}
           </h2>
-          <p className="text-sm text-muted-foreground">
-            {dir === "rtl"
-              ? "تواصل مباشرة مع لجنة المعادلات في جامعة العقبة للتكنولوجيا"
-              : "Reach out to the equivalency committee directly"}
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+            {isRtl
+              ? "تواصل مباشرة مع لجنة المعادلات في جامعة العقبة للتكنولوجيا للحصول على إجابة شخصية."
+              : "Reach out to the equivalency committee directly for a personalized answer."}
           </p>
         </div>
         <div className="grid sm:grid-cols-3 gap-3">
@@ -154,7 +247,7 @@ export default function Faq() {
               <Phone className="h-5 w-5" />
             </div>
             <div className="font-heading font-bold text-sm text-foreground mb-1">
-              {dir === "rtl" ? "اتصال" : "Phone"}
+              {isRtl ? "اتصال" : "Phone"}
             </div>
             <div className="text-xs text-muted-foreground font-mono" dir="ltr">
               +962 3 209 0500
@@ -165,7 +258,7 @@ export default function Faq() {
               <Mail className="h-5 w-5" />
             </div>
             <div className="font-heading font-bold text-sm text-foreground mb-1">
-              {dir === "rtl" ? "البريد الإلكتروني" : "Email"}
+              {isRtl ? "البريد الإلكتروني" : "Email"}
             </div>
             <div className="text-xs text-muted-foreground font-mono break-all" dir="ltr">
               admission@aut.edu.jo
@@ -176,10 +269,10 @@ export default function Faq() {
               <MapPin className="h-5 w-5" />
             </div>
             <div className="font-heading font-bold text-sm text-foreground mb-1">
-              {dir === "rtl" ? "الموقع" : "Location"}
+              {isRtl ? "الموقع" : "Location"}
             </div>
             <div className="text-xs text-muted-foreground">
-              {dir === "rtl" ? "العقبة، الأردن" : "Aqaba, Jordan"}
+              {isRtl ? "العقبة، الأردن" : "Aqaba, Jordan"}
             </div>
           </Card>
         </div>
@@ -191,22 +284,22 @@ export default function Faq() {
           <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/20 rounded-full blur-3xl" />
           <div className="relative z-10 flex flex-col md:flex-row items-center gap-5 text-center md:text-start">
             <div className="bg-primary text-primary-foreground p-4 rounded-2xl shrink-0 shadow-elegant">
-              <Sparkles className="h-12 w-12" />
+              <HelpCircle className="h-12 w-12" />
             </div>
             <div className="flex-1 space-y-2">
               <h3 className="font-heading text-xl md:text-2xl font-bold">
-                {dir === "rtl" ? "جاهز لتعرف وضع موادك؟" : "Ready to check your courses?"}
+                {isRtl ? "هل قرأت الأسئلة وجاهز للتجربة؟" : "Read the FAQ and ready to try?"}
               </h3>
               <p className="text-gold-foreground/85 text-sm md:text-base leading-relaxed">
-                {dir === "rtl"
-                  ? "خذ خطوتك الأولى نحو التحويل — جرّب معادلة مادة واحدة الآن واحصل على نتيجة فورية."
-                  : "Take the first step — try one equivalency right now and get an instant result."}
+                {isRtl
+                  ? "ابدأ بمعادلة مادة واحدة من خطتك الدراسية واحصل على نتيجة فورية."
+                  : "Start by checking one course from your study plan and get an instant result."}
               </p>
             </div>
             <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold gap-2 shrink-0">
               <Link to="/equivalency">
-                {dir === "rtl" ? "ابدأ المعادلة" : "Start Now"}
-                <ArrowLeft className={dir === "rtl" ? "h-4 w-4" : "h-4 w-4 rotate-180"} />
+                {isRtl ? "ابدأ المعادلة" : "Start Now"}
+                <ArrowLeft className={isRtl ? "h-4 w-4" : "h-4 w-4 rotate-180"} />
               </Link>
             </Button>
           </div>
