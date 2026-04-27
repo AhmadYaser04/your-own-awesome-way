@@ -11,7 +11,6 @@ import {
 import {
   GraduationCap,
   Clock,
-  FileText,
   ScrollText,
   Phone,
   Mail,
@@ -21,6 +20,9 @@ import {
   Users,
   CircleHelp,
   Search,
+  Cpu,
+  Navigation,
+  ExternalLink,
 } from "lucide-react";
 import { useLang } from "@/i18n/LanguageProvider";
 
