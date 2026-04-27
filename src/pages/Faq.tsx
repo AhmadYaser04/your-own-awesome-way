@@ -25,7 +25,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useLang } from "@/i18n/LanguageProvider";
-import autFaqBg from "@/assets/aut-faq-bg.webp";
+import autFaqBg from "@/assets/aut-faq-bg.jpg";
 
 // Visitor-focused FAQ — what someone landing on the site would actually wonder
 const CATEGORIES = [
