@@ -60,10 +60,9 @@ export default function Auth() {
     if (!loading && user) navigate(from, { replace: true });
   }, [user, loading, navigate, from]);
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const doSignIn = async (email: string, password: string) => {
     setErr(null);
-    const parsed = signInSchema.safeParse({ email: siEmail, password: siPwd });
+    const parsed = signInSchema.safeParse({ email, password });
     if (!parsed.success) {
       setErr(parsed.error.issues[0].message);
       return;
@@ -80,6 +79,25 @@ export default function Auth() {
     }
     toast({ title: t("auth.welcomeBack") });
     navigate(from, { replace: true });
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await doSignIn(siEmail, siPwd);
+  };
+
+  const fillAndLogin = async (email: string, password: string) => {
+    setSiEmail(email);
+    setSiPwd(password);
+    setTab("signin");
+    await doSignIn(email, password);
+  };
+
+  const [copied, setCopied] = useState<string | null>(null);
+  const copyText = async (text: string, key: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 1200);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
