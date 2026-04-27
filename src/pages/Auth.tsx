@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { Loader2, LogIn, UserPlus, ArrowLeft, ArrowRight, ShieldCheck, Mail, Lock, User as UserIcon, Building2 } from "lucide-react";
+import { Loader2, LogIn, UserPlus, ArrowLeft, ArrowRight, ShieldCheck, Mail, Lock, User as UserIcon, Building2, KeyRound, Copy, Check, Zap } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,6 +13,11 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/i18n/LanguageProvider";
+
+const DEMO_ACCOUNTS = [
+  { role: "admin" as const, email: "admin@aut.test", password: "admin123", labelAr: "مسؤول لجنة المعادلات", labelEn: "Committee Admin" },
+  { role: "student" as const, email: "student@aut.test", password: "student123", labelAr: "حساب طالب", labelEn: "Student Account" },
+];
 
 const signInSchema = z.object({
   email: z.string().trim().email().max(255),
