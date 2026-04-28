@@ -24,6 +24,7 @@ export type Database = {
           credits: number
           description_ar: string | null
           description_en: string | null
+          display_order: number
           id: string
           is_active: boolean
           prerequisites: string[] | null
@@ -38,6 +39,7 @@ export type Database = {
           credits?: number
           description_ar?: string | null
           description_en?: string | null
+          display_order?: number
           id?: string
           is_active?: boolean
           prerequisites?: string[] | null
@@ -52,6 +54,7 @@ export type Database = {
           credits?: number
           description_ar?: string | null
           description_en?: string | null
+          display_order?: number
           id?: string
           is_active?: boolean
           prerequisites?: string[] | null
@@ -129,6 +132,8 @@ export type Database = {
           source_course_name: string
           source_credits: number
           source_grade: string | null
+          source_grade_letter: string | null
+          source_semester: string | null
         }
         Insert: {
           created_at?: string
@@ -139,6 +144,8 @@ export type Database = {
           source_course_name: string
           source_credits?: number
           source_grade?: string | null
+          source_grade_letter?: string | null
+          source_semester?: string | null
         }
         Update: {
           created_at?: string
@@ -149,6 +156,8 @@ export type Database = {
           source_course_name?: string
           source_credits?: number
           source_grade?: string | null
+          source_grade_letter?: string | null
+          source_semester?: string | null
         }
         Relationships: [
           {
@@ -169,11 +178,15 @@ export type Database = {
           credits_cap: number
           cumulative_gpa: number | null
           diploma_gpa: number | null
+          extraction_raw_text: string | null
+          extraction_status: string
           id: string
           input_mode: string
           matched_aut_code: string | null
           matched_aut_name: string | null
           previous_diploma_source: string | null
+          previous_major_name: string | null
+          previous_university: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           reviewer_name: string | null
@@ -187,6 +200,8 @@ export type Database = {
           student_id: string | null
           student_major: string | null
           student_type: string
+          transfer_semester: string | null
+          transfer_type: string | null
           updated_at: string
           uploaded_file_url: string | null
           user_id: string
@@ -200,11 +215,15 @@ export type Database = {
           credits_cap?: number
           cumulative_gpa?: number | null
           diploma_gpa?: number | null
+          extraction_raw_text?: string | null
+          extraction_status?: string
           id?: string
           input_mode?: string
           matched_aut_code?: string | null
           matched_aut_name?: string | null
           previous_diploma_source?: string | null
+          previous_major_name?: string | null
+          previous_university?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           reviewer_name?: string | null
@@ -218,6 +237,8 @@ export type Database = {
           student_id?: string | null
           student_major?: string | null
           student_type?: string
+          transfer_semester?: string | null
+          transfer_type?: string | null
           updated_at?: string
           uploaded_file_url?: string | null
           user_id: string
@@ -231,11 +252,15 @@ export type Database = {
           credits_cap?: number
           cumulative_gpa?: number | null
           diploma_gpa?: number | null
+          extraction_raw_text?: string | null
+          extraction_status?: string
           id?: string
           input_mode?: string
           matched_aut_code?: string | null
           matched_aut_name?: string | null
           previous_diploma_source?: string | null
+          previous_major_name?: string | null
+          previous_university?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           reviewer_name?: string | null
@@ -249,6 +274,8 @@ export type Database = {
           student_id?: string | null
           student_major?: string | null
           student_type?: string
+          transfer_semester?: string | null
+          transfer_type?: string | null
           updated_at?: string
           uploaded_file_url?: string | null
           user_id?: string
