@@ -162,9 +162,33 @@ export default function AdminReview() {
     () => matches.filter((m) => m.verdict === "approved").reduce((s, m) => s + (Number(m.total_source_credits) || 0), 0),
     [matches]
   );
-  const cap = req?.credits_cap ?? 30;
+  const cap = req?.credits_cap ?? 132;
   const capPct = Math.min(100, (approvedAutCredits / cap) * 100);
   const overCap = approvedAutCredits > cap;
+
+  // === تتبع متطلبات الـ132 ساعة عبر 5 فئات ===
+  const CATEGORY_LIMITS: Record<string, { ar: string; en: string; max: number }> = {
+    university_compulsory: { ar: "متطلبات جامعة إجبارية", en: "University Compulsory", max: 15 },
+    university_elective:   { ar: "متطلبات جامعة اختيارية", en: "University Elective",   max: 12 },
+    major_compulsory:      { ar: "متطلبات تخصص إجبارية",   en: "Major Compulsory",      max: 72 },
+    major_elective:        { ar: "متطلبات تخصص اختيارية",  en: "Major Elective",        max: 12 },
+    remedial:              { ar: "مواد استدراكية",          en: "Remedial",              max: 9  },
+  };
+  const categoryTotals = useMemo(() => {
+    const totals: Record<string, number> = {
+      university_compulsory: 0, university_elective: 0,
+      major_compulsory: 0, major_elective: 0, remedial: 0,
+    };
+    const autById = new Map(autCourses.map((c) => [c.id, c] as const));
+    matches.filter((m) => m.verdict === "approved").forEach((m) => {
+      if (!m.aut_course_id) return;
+      const aut = autById.get(m.aut_course_id);
+      if (!aut) return;
+      const key = (aut.category || "").trim();
+      if (key in totals) totals[key] += aut.credits || 0;
+    });
+    return totals;
+  }, [matches, autCourses]);
 
   const toggleItem = (itemId: string) => {
     if (linkedItemIds.has(itemId)) return; // ignore — already linked
