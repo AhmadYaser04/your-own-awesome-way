@@ -356,17 +356,17 @@ export default function Equivalency() {
             <div>
               <Label>{isAr ? "الاسم الرباعي *" : "Full Name *"}</Label>
               <Input value={studentFullName} onChange={(e) => setStudentFullName(e.target.value)}
-                placeholder={isAr ? "كما يظهر في الهوية" : "As on official ID"} />
+                placeholder={isAr ? "مثال: محمد أحمد سالم العتيبي" : "e.g. Mohammed Ahmed S. Al-Otaibi"} />
             </div>
             <div>
               <Label>{isAr ? "الكلية في AUT *" : "AUT College *"}</Label>
               <Input value={studentCollege} onChange={(e) => setStudentCollege(e.target.value)}
-                placeholder={isAr ? "كلية تكنولوجيا المعلومات" : "College of IT"} />
+                placeholder={isAr ? "مثال: كلية تكنولوجيا المعلومات" : "e.g. College of IT"} />
             </div>
             <div>
               <Label>{isAr ? "التخصص الجديد *" : "New Major *"}</Label>
               <Input value={studentMajor} onChange={(e) => setStudentMajor(e.target.value)}
-                placeholder={isAr ? "علم الحاسوب / الذكاء الاصطناعي" : "CS / AI"} />
+                placeholder={isAr ? "مثال: الذكاء الاصطناعي" : "e.g. Artificial Intelligence"} />
             </div>
             <div>
               <Label>{isAr ? "نوع الانتقال *" : "Transfer Type *"}</Label>
@@ -383,17 +383,17 @@ export default function Equivalency() {
             <div>
               <Label>{isAr ? "الجامعة / الدبلوم السابق *" : "Previous University / Diploma *"}</Label>
               <Input value={previousUniversity} onChange={(e) => setPreviousUniversity(e.target.value)}
-                placeholder={isAr ? "جامعة الملك سعود" : "King Saud University"} />
+                placeholder={isAr ? "مثال: جامعة الملك سعود" : "e.g. King Saud University"} />
             </div>
             <div>
               <Label>{isAr ? "التخصص السابق" : "Previous Major"}</Label>
               <Input value={previousMajorName} onChange={(e) => setPreviousMajorName(e.target.value)}
-                placeholder={isAr ? "علوم حاسوب" : "Computer Science"} />
+                placeholder={isAr ? "مثال: علوم الحاسب" : "e.g. Computer Science"} />
             </div>
             <div>
-              <Label>{isAr ? "فصل الانتقال" : "Transfer Semester"}</Label>
+              <Label>{isAr ? "فصل / سنة الانتقال" : "Transfer Semester / Year"}</Label>
               <Input value={transferSemester} onChange={(e) => setTransferSemester(e.target.value)}
-                placeholder={isAr ? "20251" : "Fall 2025"} />
+                placeholder={isAr ? "مثال: الفصل الأول 2025-2026" : "e.g. Fall 2025-2026"} />
             </div>
           </div>
         </Card>
