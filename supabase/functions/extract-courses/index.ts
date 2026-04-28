@@ -86,7 +86,9 @@ Deno.serve(async (req: Request) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-pro",
+        max_tokens: 8000,
+        temperature: 0.1,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           {
@@ -94,7 +96,7 @@ Deno.serve(async (req: Request) => {
             content: [
               {
                 type: "text",
-                text: "استخرج كل المواد من هذا الكشف وأعد JSON فقط.",
+                text: "استخرج كل المواد المُجتازة من هذا الكشف بدقة عالية، ولا تخترع رموزاً لمواد ليس لها رمز ظاهر. أعد JSON فقط.",
               },
               {
                 type: "image_url",
