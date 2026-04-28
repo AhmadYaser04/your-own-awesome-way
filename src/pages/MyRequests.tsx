@@ -15,6 +15,7 @@ import { useLang } from "@/i18n/LanguageProvider";
 
 interface ReqRow {
   id: string;
+  user_id: string;
   student_full_name: string | null;
   previous_diploma_source: string | null;
   student_type: string;
@@ -24,6 +25,8 @@ interface ReqRow {
   reviewer_name: string | null;
   created_at: string;
   reviewed_at: string | null;
+  owner_email?: string | null;
+  owner_name?: string | null;
 }
 
 interface ItemRow {
