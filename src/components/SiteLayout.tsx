@@ -73,12 +73,12 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
             <img
               src={logo}
               alt={lang === "ar" ? "شعار جامعة العقبة للتكنولوجيا" : "Aqaba University of Technology logo"}
-              width={36}
-              height={36}
-              className="h-8 w-auto rounded-md bg-card object-contain shrink-0 px-1 py-0.5 group-hover:scale-105 transition-transform"
+              width={28}
+              height={28}
+              className="h-6 w-auto rounded bg-card object-contain shrink-0 px-0.5 py-0.5 group-hover:scale-105 transition-transform"
             />
             <div className="text-primary-foreground min-w-0 hidden sm:block">
-              <h1 className="font-heading text-sm md:text-base font-bold leading-tight truncate">
+              <h1 className="font-heading text-xs md:text-sm font-bold leading-tight truncate">
                 {lang === "ar" ? "موقع معادلة المواد الذكي" : "Smart Course Equivalency"}
               </h1>
             </div>
@@ -273,11 +273,6 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
             {lang === "ar"
               ? "© 2026 موقع معادلة المواد الذكي — جميع الحقوق محفوظة."
               : "© 2026 Smart Course Equivalency — All rights reserved."}
-          </p>
-          <p className="text-[10px] md:text-xs opacity-75">
-            {lang === "ar"
-              ? "مشروع تخرج — تخصص الذكاء الاصطناعي · جامعة العقبة للتكنولوجيا"
-              : "Graduation project — AI specialization · Aqaba University of Technology"}
           </p>
         </div>
       </footer>
