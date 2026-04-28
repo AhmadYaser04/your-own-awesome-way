@@ -801,12 +801,8 @@ export default function AdminReview() {
                       </div>
                     </div>
 
-                    <Textarea
-                      value={matchNotes[m.id] ?? ""}
-                      onChange={(e) => setMatchNotes((prev) => ({ ...prev, [m.id]: e.target.value }))}
-                      placeholder={lang === "ar" ? "ملاحظات على هذه المعادلة (اختياري)" : "Notes on this match (optional)"}
-                      className="text-sm min-h-[60px]"
-                    />
+
+
 
                     <div className="flex flex-wrap gap-2 justify-end">
                       <Button variant="outline" size="sm" onClick={() => setMatchVerdict(m.id, "pending")} disabled={busy} className="gap-1">
