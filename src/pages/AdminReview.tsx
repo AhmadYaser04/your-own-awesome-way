@@ -110,9 +110,13 @@ export default function AdminReview() {
   // Per-match note dialog state
   const [matchNotes, setMatchNotes] = useState<Record<string, string>>({});
 
-  const loadAll = async () => {
+  // True only on the very first load — prevents subsequent refreshes from
+  // overwriting reviewer_name / admin_notes that the advisor is currently typing.
+  const [initialized, setInitialized] = useState(false);
+
+  const loadAll = async (opts: { preserveInputs?: boolean } = {}) => {
     if (!id) return;
-    setLoading(true);
+    if (!opts.preserveInputs) setLoading(true);
     const [{ data: r }, { data: it }, { data: aut }, { data: ms }] = await Promise.all([
       supabase.from("equivalency_requests").select("*").eq("id", id).single(),
       supabase.from("equivalency_request_items").select("*").eq("request_id", id).order("display_order"),
@@ -121,8 +125,13 @@ export default function AdminReview() {
     ]);
     if (r) {
       setReq(r as ReqRow);
-      setReviewerName((r as ReqRow).reviewer_name || "");
-      setOverallNotes((r as ReqRow).admin_notes || "");
+      // Only seed reviewer/notes inputs on the FIRST load. Later refreshes must
+      // not blow away what the advisor has typed (this is what was forcing them
+      // to re-enter the name after every decision).
+      if (!initialized && !opts.preserveInputs) {
+        setReviewerName((r as ReqRow).reviewer_name || "");
+        setOverallNotes((r as ReqRow).admin_notes || "");
+      }
     }
     let itemsList = (it ?? []) as ItemRow[];
 
