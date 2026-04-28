@@ -415,9 +415,9 @@ export default function AdminReview() {
                 </p>
               </div>
             </div>
-            <div className="flex flex-col items-stretch sm:items-end gap-2 min-w-[280px]">
+            <div className="flex flex-col items-stretch sm:items-end gap-2 min-w-[300px] w-full md:w-auto">
               <div className="flex items-center justify-between text-xs">
-                <span>{lang === "ar" ? "الساعات المعتمَدة" : "Approved credits"}</span>
+                <span>{lang === "ar" ? "إجمالي الساعات المعتمَدة" : "Total approved credits"}</span>
                 <span className="font-bold">{approvedAutCredits} / {cap} {lang === "ar" ? "س" : "h"}</span>
               </div>
               <Progress
@@ -430,6 +430,38 @@ export default function AdminReview() {
                   {lang === "ar" ? `تجاوز السقف بـ ${approvedAutCredits - cap} ساعة!` : `Over cap by ${approvedAutCredits - cap}h!`}
                 </div>
               )}
+
+              {/* ===== الأشرطة التفصيلية لكل فئة (قابلة للطي) ===== */}
+              <Collapsible className="w-full">
+                <CollapsibleTrigger className="flex items-center justify-between w-full text-xs bg-primary-foreground/10 hover:bg-primary-foreground/20 px-2 py-1.5 rounded transition-colors">
+                  <span className="flex items-center gap-1">
+                    <Layers className="h-3 w-3" />
+                    {lang === "ar" ? "تفاصيل الفئات الخمس" : "Category breakdown"}
+                  </span>
+                  <ChevronDown className="h-3 w-3 transition-transform data-[state=open]:rotate-180" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-2 mt-2 bg-primary-foreground/10 p-2 rounded">
+                  {Object.entries(CATEGORY_LIMITS).map(([key, info]) => {
+                    const used = categoryTotals[key] || 0;
+                    const pct = Math.min(100, (used / info.max) * 100);
+                    const over = used > info.max;
+                    return (
+                      <div key={key}>
+                        <div className="flex items-center justify-between text-[11px] mb-0.5">
+                          <span className="truncate">{lang === "ar" ? info.ar : info.en}</span>
+                          <span className={`font-bold ${over ? "text-destructive-foreground bg-destructive/40 px-1 rounded" : ""}`}>
+                            {used} / {info.max}
+                          </span>
+                        </div>
+                        <Progress
+                          value={pct}
+                          className={`h-1.5 bg-primary-foreground/20 ${over ? "[&>div]:bg-destructive" : pct >= 100 ? "[&>div]:bg-gold" : "[&>div]:bg-success"}`}
+                        />
+                      </div>
+                    );
+                  })}
+                </CollapsibleContent>
+              </Collapsible>
             </div>
           </div>
         </div>
