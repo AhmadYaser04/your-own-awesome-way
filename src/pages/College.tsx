@@ -1,21 +1,98 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Brain, Award, Users, Target, BookOpen, Code2, Database, Sparkles } from "lucide-react";
+import {
+  Brain, Award, Users, Target, BookOpen, Sparkles, Loader2,
+  GraduationCap, Layers, BookMarked, Wrench, RefreshCw, Briefcase,
+  ChevronDown, ChevronUp,
+} from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AI_COURSES } from "@/data/aiCourses";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LanguageProvider";
 
-const totalCredits = AI_COURSES.reduce((s, c) => s + c.credits, 0);
+type Category =
+  | "university_required"
+  | "university_elective"
+  | "department_required"
+  | "department_elective"
+  | "supporting"
+  | "remedial"
+  | "training";
+
+interface AutCourse {
+  id: string;
+  course_code: string;
+  course_name_ar: string;
+  course_name_en: string | null;
+  credits: number;
+  category: Category;
+  description_ar: string | null;
+  description_en: string | null;
+  prerequisites: string[] | null;
+}
+
+const CATEGORY_META: Record<Category, { ar: string; en: string; icon: typeof Brain; color: string }> = {
+  university_required:  { ar: "متطلبات جامعة إجبارية", en: "University Required",   icon: GraduationCap, color: "text-primary" },
+  university_elective:  { ar: "متطلبات جامعة اختيارية", en: "University Electives",  icon: Layers,        color: "text-secondary" },
+  department_required:  { ar: "متطلبات تخصص إجبارية",  en: "Department Required",   icon: Brain,         color: "text-primary" },
+  department_elective:  { ar: "متطلبات تخصص اختيارية", en: "Department Electives",  icon: BookMarked,    color: "text-gold" },
+  supporting:           { ar: "مواد مساندة",           en: "Supporting",            icon: Wrench,        color: "text-success" },
+  remedial:             { ar: "مواد استدراكية",        en: "Remedial",              icon: RefreshCw,     color: "text-muted-foreground" },
+  training:             { ar: "تدريب عملي / مشروع",   en: "Training / Project",    icon: Briefcase,     color: "text-secondary" },
+};
+
+const CATEGORY_ORDER: Category[] = [
+  "department_required",
+  "department_elective",
+  "university_required",
+  "university_elective",
+  "supporting",
+  "training",
+  "remedial",
+];
 
 export default function College() {
-  const { t } = useLang();
-  const groups = [
-    { key: "تخصص" as const, label: t("college.group.major"), icon: Brain },
-    { key: "متطلب كلية" as const, label: t("college.group.faculty"), icon: Code2 },
-    { key: "رياضيات" as const, label: t("college.group.math"), icon: Database },
-  ];
+  const { t, lang } = useLang();
+  const [courses, setCourses] = useState<AutCourse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<Category>("department_required");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("aut_courses")
+        .select("id, course_code, course_name_ar, course_name_en, credits, category, description_ar, description_en, prerequisites")
+        .eq("is_active", true)
+        .order("category", { ascending: true })
+        .order("course_code", { ascending: true });
+      if (!error && data) setCourses(data as AutCourse[]);
+      setLoading(false);
+    })();
+  }, []);
+
+  const grouped = useMemo(() => {
+    const m = new Map<Category, AutCourse[]>();
+    for (const c of courses) {
+      const arr = m.get(c.category) ?? [];
+      arr.push(c);
+      m.set(c.category, arr);
+    }
+    return m;
+  }, [courses]);
+
+  const totalCredits = useMemo(() => courses.reduce((s, c) => s + (c.credits || 0), 0), [courses]);
+
+  const toggle = (id: string) => {
+    const next = new Set(expanded);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setExpanded(next);
+  };
+
   return (
     <SiteLayout>
       {/* Hero */}
@@ -31,12 +108,8 @@ export default function College() {
             </div>
             <div className="flex-1 space-y-3">
               <Badge className="bg-gold text-gold-foreground hover:bg-gold/90 border-0">{t("college.facBadge")}</Badge>
-              <h1 className="font-heading text-3xl md:text-4xl font-bold">
-                {t("college.title")}
-              </h1>
-              <p className="text-primary-foreground/85 max-w-3xl leading-relaxed">
-                {t("college.intro")}
-              </p>
+              <h1 className="font-heading text-3xl md:text-4xl font-bold">{t("college.title")}</h1>
+              <p className="text-primary-foreground/85 max-w-3xl leading-relaxed">{t("college.intro")}</p>
             </div>
           </div>
         </div>
@@ -46,8 +119,8 @@ export default function College() {
       <section className="container mx-auto px-4 py-10 max-w-5xl grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { icon: Award, label: t("college.founded"), value: "2019" },
-          { icon: BookOpen, label: t("college.totalCourses"), value: AI_COURSES.length },
-          { icon: Sparkles, label: t("college.totalCredits"), value: totalCredits },
+          { icon: BookOpen, label: t("college.totalCourses"), value: loading ? "…" : courses.length },
+          { icon: Sparkles, label: t("college.totalCredits"), value: loading ? "…" : totalCredits },
           { icon: Users, label: t("college.faculty"), value: "PhD" },
         ].map((s) => (
           <Card key={s.label} className="p-5 text-center bg-gradient-to-b from-card to-accent/40">
@@ -65,59 +138,101 @@ export default function College() {
             <Target className="h-5 w-5 text-secondary" />
             {t("college.vision")}
           </h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {t("college.visionTxt")}
-          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{t("college.visionTxt")}</p>
         </Card>
         <Card className="p-6 border-r-4 border-r-gold">
           <h3 className="font-heading text-lg font-bold mb-2 flex items-center gap-2 text-foreground">
             <Award className="h-5 w-5 text-gold" />
             {t("college.mission")}
           </h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {t("college.missionTxt")}
-          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{t("college.missionTxt")}</p>
         </Card>
       </section>
 
       {/* Curriculum */}
-      <section className="container mx-auto px-4 py-8 max-w-5xl">
+      <section className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="text-center mb-8 space-y-2">
           <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">{t("college.plan")}</h2>
-          <p className="text-muted-foreground text-sm">
-            {t("college.planSub")}
-          </p>
+          <p className="text-muted-foreground text-sm">{t("college.planSub")}</p>
         </div>
 
-        <div className="space-y-8">
-          {groups.map((g) => {
-            const list = AI_COURSES.filter((c) => c.category === g.key);
-            return (
-              <div key={g.key}>
-                <div className="flex items-center gap-2 mb-4">
-                  <g.icon className="h-5 w-5 text-primary" />
-                  <h3 className="font-heading text-lg font-bold text-foreground">{g.label}</h3>
-                  <Badge variant="secondary">{list.length} {t("college.courseCount")}</Badge>
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {list.map((c) => (
-                    <Card key={c.code} className="p-5 hover:shadow-elegant transition-all hover:border-primary/40">
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <div>
-                          <div className="font-heading font-bold text-foreground">{c.name}</div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            {c.code} · {c.credits} {t("college.creditsLabel")}
+        {loading ? (
+          <div className="flex items-center justify-center py-20 text-muted-foreground">
+            <Loader2 className="h-6 w-6 animate-spin mr-2" />
+            {lang === "ar" ? "جارٍ تحميل الخطة..." : "Loading curriculum..."}
+          </div>
+        ) : courses.length === 0 ? (
+          <Card className="p-10 text-center text-muted-foreground">
+            {lang === "ar" ? "لا توجد مواد محمّلة بعد." : "No courses available yet."}
+          </Card>
+        ) : (
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Category)}>
+            <TabsList className="flex flex-wrap h-auto justify-center gap-1 bg-accent/40 p-1.5 mb-6">
+              {CATEGORY_ORDER.filter((cat) => (grouped.get(cat)?.length ?? 0) > 0).map((cat) => {
+                const meta = CATEGORY_META[cat];
+                const list = grouped.get(cat) ?? [];
+                const credits = list.reduce((s, c) => s + c.credits, 0);
+                const Icon = meta.icon;
+                return (
+                  <TabsTrigger key={cat} value={cat} className="gap-2 data-[state=active]:bg-card data-[state=active]:shadow-sm text-xs md:text-sm">
+                    <Icon className={`h-4 w-4 ${meta.color}`} />
+                    <span>{lang === "ar" ? meta.ar : meta.en}</span>
+                    <Badge variant="outline" className="ml-1 text-[10px]">{list.length} · {credits}{lang === "ar" ? "س" : "h"}</Badge>
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+
+            {CATEGORY_ORDER.map((cat) => {
+              const list = grouped.get(cat) ?? [];
+              if (!list.length) return null;
+              return (
+                <TabsContent key={cat} value={cat} className="mt-0">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {list.map((c) => {
+                      const isOpen = expanded.has(c.id);
+                      const desc = lang === "ar" ? (c.description_ar || c.description_en) : (c.description_en || c.description_ar);
+                      const name = lang === "ar" ? c.course_name_ar : (c.course_name_en || c.course_name_ar);
+                      return (
+                        <Card key={c.id} className="p-5 hover:shadow-elegant transition-all hover:border-primary/40">
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="font-heading font-bold text-foreground">{name}</div>
+                              <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
+                                <Badge variant="outline" className="text-[10px] font-mono">{c.course_code}</Badge>
+                                <span>{c.credits} {t("college.creditsLabel")}</span>
+                                {c.prerequisites && c.prerequisites.length > 0 && (
+                                  <span className="text-[10px]">
+                                    · {lang === "ar" ? "متطلب سابق" : "Prereq"}: {c.prerequisites.join(", ")}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{c.description}</p>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                          {desc && (
+                            <>
+                              <p className={`text-sm text-muted-foreground leading-relaxed ${isOpen ? "" : "line-clamp-3"}`}>{desc}</p>
+                              {desc.length > 140 && (
+                                <button
+                                  onClick={() => toggle(c.id)}
+                                  className="mt-2 text-xs text-primary hover:underline flex items-center gap-1 font-bold"
+                                >
+                                  {isOpen
+                                    ? (<>{lang === "ar" ? "إخفاء" : "Hide"} <ChevronUp className="h-3 w-3" /></>)
+                                    : (<>{lang === "ar" ? "المزيد" : "More"} <ChevronDown className="h-3 w-3" /></>)}
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+              );
+            })}
+          </Tabs>
+        )}
 
         <div className="mt-10 text-center">
           <Button asChild size="lg" className="gap-2 shadow-elegant">
