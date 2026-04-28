@@ -63,12 +63,27 @@ export default function MyRequests() {
     if (!user) return;
     (async () => {
       setLoading(true);
-      const { data: reqs } = await supabase
+      const isAdmin = role === "admin";
+      let query = supabase
         .from("equivalency_requests")
-        .select("id, student_full_name, previous_diploma_source, student_type, credits_cap, status, admin_notes, reviewer_name, created_at, reviewed_at")
-        .eq("user_id", user.id)
+        .select("id, user_id, student_full_name, previous_diploma_source, student_type, credits_cap, status, admin_notes, reviewer_name, created_at, reviewed_at")
         .order("created_at", { ascending: false });
+      if (!isAdmin) query = query.eq("user_id", user.id);
+      const { data: reqs } = await query;
       const list = (reqs ?? []) as ReqRow[];
+
+      // Enrich with owner profile when admin
+      if (isAdmin && list.length) {
+        const uids = Array.from(new Set(list.map((r) => r.user_id)));
+        const { data: profs } = await supabase
+          .from("profiles").select("id, full_name, email").in("id", uids);
+        const pmap = new Map((profs ?? []).map((p) => [p.id, p]));
+        for (const r of list) {
+          const p = pmap.get(r.user_id);
+          r.owner_email = p?.email ?? null;
+          r.owner_name = p?.full_name ?? null;
+        }
+      }
       setRows(list);
 
       if (list.length) {
