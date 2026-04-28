@@ -675,7 +675,17 @@ export default function AdminReview() {
                 </span>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="secondary"
+                onClick={handleAutoMatch}
+                disabled={busy || items.length === 0}
+                className="gap-2"
+                title={lang === "ar" ? "اقتراح معادلات تلقائية بالذكاء الاصطناعي" : "AI auto-match"}
+              >
+                <Sparkles className="h-4 w-4" />
+                {lang === "ar" ? "معادلة تلقائية (AI)" : "Auto-match (AI)"}
+              </Button>
               {(selectedItemIds.size > 0 || selectedAutId) && (
                 <Button
                   variant="outline"
