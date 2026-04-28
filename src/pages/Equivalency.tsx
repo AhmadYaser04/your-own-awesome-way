@@ -533,7 +533,7 @@ export default function Equivalency() {
           <Button variant="outline" asChild>
             <Link to="/my-requests"><Arrow className="me-2 h-4 w-4" /> {isAr ? "طلباتي" : "My Requests"}</Link>
           </Button>
-          <Button onClick={handleSubmit} disabled={submitting || !extractionDone}>
+          <Button onClick={handleSubmit} disabled={submitting} type="button">
             {submitting ? (
               <><Loader2 className="me-2 h-4 w-4 animate-spin" /> {isAr ? "جاري الإرسال..." : "Submitting..."}</>
             ) : (
