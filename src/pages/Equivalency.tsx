@@ -281,13 +281,16 @@ export default function Equivalency() {
         throw itemsErr;
       }
 
+      const isAdmin = role === "admin";
       toast({
-        title: isAr ? "تم إرسال الطلب" : "Request submitted",
-        description: isAr
-          ? "سيراجعه المرشد الأكاديمي قريباً."
-          : "Your academic advisor will review it soon.",
+        title: isAdmin
+          ? (isAr ? "تم إنشاء الطلب — انتقال للمعادلة" : "Request created — opening review")
+          : (isAr ? "تم إرسال الطلب" : "Request submitted"),
+        description: isAdmin
+          ? (isAr ? "ابدأ المعادلة التلقائية الآن." : "Starting auto-match.")
+          : (isAr ? "سيراجعه المرشد الأكاديمي قريباً." : "Your academic advisor will review it soon."),
       });
-      nav("/my-requests");
+      nav(isAdmin ? `/admin/review/${req.id}` : "/my-requests");
     } catch (e: any) {
       const msg = e?.message ?? String(e);
       console.error("[Equivalency] Submit failed:", e);
@@ -523,6 +526,8 @@ export default function Equivalency() {
           <Button onClick={handleSubmit} disabled={submitting} type="button">
             {submitting ? (
               <><Loader2 className="me-2 h-4 w-4 animate-spin" /> {isAr ? "جاري الإرسال..." : "Submitting..."}</>
+            ) : role === "admin" ? (
+              <><Sparkles className="me-2 h-4 w-4" /> {isAr ? "بدء المعادلة التلقائية" : "Start Auto-match"}</>
             ) : (
               <><Save className="me-2 h-4 w-4" /> {isAr ? "إرسال الطلب للمرشد" : "Submit to Advisor"}</>
             )}
