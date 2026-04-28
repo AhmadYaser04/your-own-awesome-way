@@ -50,7 +50,7 @@ const SAMPLE = `اسم المادة: مقدمة في الذكاء الاصطنا
 
 type Mode = "text" | "pdf" | "image";
 
-const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50MB
 
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -90,7 +90,7 @@ export default function Equivalency() {
     if (f.size > MAX_FILE_BYTES) {
       toast({
         title: t("eq.error"),
-        description: "Max 10MB",
+        description: "Max 50MB",
         variant: "destructive",
       });
       return;
