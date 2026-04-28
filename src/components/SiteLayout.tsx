@@ -73,13 +73,13 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
             <img
               src={logo}
               alt={lang === "ar" ? "شعار جامعة العقبة للتكنولوجيا" : "Aqaba University of Technology logo"}
-              width={28}
-              height={28}
-              className="h-6 w-auto rounded bg-card object-contain shrink-0 px-0.5 py-0.5 group-hover:scale-105 transition-transform"
+              width={48}
+              height={48}
+              className="h-11 md:h-12 w-auto rounded-md bg-card object-contain shrink-0 px-1 py-0.5 group-hover:scale-105 transition-transform"
             />
             <div className="text-primary-foreground min-w-0 hidden sm:block">
-              <h1 className="font-heading text-xs md:text-sm font-bold leading-tight truncate">
-                {lang === "ar" ? "موقع معادلة المواد الذكي" : "Smart Course Equivalency"}
+              <h1 className="font-heading text-sm md:text-base font-bold leading-tight truncate">
+                {lang === "ar" ? "جامعة العقبة للتكنولوجيا" : "Aqaba University of Technology"}
               </h1>
             </div>
           </a>
@@ -264,7 +264,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
               <img
                 src={logo}
                 alt={lang === "ar" ? "شعار جامعة العقبة للتكنولوجيا" : "Aqaba University of Technology logo"}
-                className="h-12 md:h-14 w-auto rounded-lg bg-card object-contain px-2 py-1 shadow"
+                className="h-7 md:h-8 w-auto rounded bg-card object-contain px-1 py-0.5 shadow"
               />
             </a>
             <span className="font-bold text-sm md:text-base">{t("footer.uni")}</span>
