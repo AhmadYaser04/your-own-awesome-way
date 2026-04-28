@@ -214,17 +214,18 @@ export default function AdminReview() {
   const overCap = approvedAutCredits > cap;
 
   // === تتبع متطلبات الـ132 ساعة عبر 5 فئات ===
+  // Keys MUST match aut_courses.category values stored in the DB.
   const CATEGORY_LIMITS: Record<string, { ar: string; en: string; max: number }> = {
-    university_compulsory: { ar: "متطلبات جامعة إجبارية", en: "University Compulsory", max: 15 },
-    university_elective:   { ar: "متطلبات جامعة اختيارية", en: "University Elective",   max: 12 },
-    major_compulsory:      { ar: "متطلبات تخصص إجبارية",   en: "Major Compulsory",      max: 72 },
-    major_elective:        { ar: "متطلبات تخصص اختيارية",  en: "Major Elective",        max: 12 },
-    remedial:              { ar: "مواد استدراكية",          en: "Remedial",              max: 9  },
+    university_required: { ar: "متطلبات جامعة إجبارية", en: "University Required", max: 15 },
+    university_elective: { ar: "متطلبات جامعة اختيارية", en: "University Elective", max: 12 },
+    department_required: { ar: "متطلبات تخصص إجبارية",   en: "Department Required", max: 84 },
+    department_elective: { ar: "متطلبات تخصص اختيارية",  en: "Department Elective", max: 12 },
+    remedial:            { ar: "مواد استدراكية",          en: "Remedial",            max: 9  },
   };
   const categoryTotals = useMemo(() => {
     const totals: Record<string, number> = {
-      university_compulsory: 0, university_elective: 0,
-      major_compulsory: 0, major_elective: 0, remedial: 0,
+      university_required: 0, university_elective: 0,
+      department_required: 0, department_elective: 0, remedial: 0,
     };
     const autById = new Map(autCourses.map((c) => [c.id, c] as const));
     matches.filter((m) => m.verdict === "approved").forEach((m) => {
