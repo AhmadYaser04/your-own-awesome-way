@@ -73,15 +73,14 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
             <img
               src={logo}
               alt={lang === "ar" ? "شعار جامعة العقبة للتكنولوجيا" : "Aqaba University of Technology logo"}
-              width={56}
-              height={48}
-              className="h-11 w-auto rounded-md bg-card object-contain shrink-0 px-1.5 py-1 group-hover:scale-105 transition-transform"
+              width={36}
+              height={36}
+              className="h-8 w-auto rounded-md bg-card object-contain shrink-0 px-1 py-0.5 group-hover:scale-105 transition-transform"
             />
             <div className="text-primary-foreground min-w-0 hidden sm:block">
               <h1 className="font-heading text-sm md:text-base font-bold leading-tight truncate">
-                {t("header.title")}
+                {lang === "ar" ? "موقع معادلة المواد الذكي" : "Smart Course Equivalency"}
               </h1>
-              <p className="text-[10px] md:text-xs opacity-75 truncate">{t("header.subtitle")}</p>
             </div>
           </a>
 
