@@ -224,7 +224,7 @@ function renderHtml(d: EquivalencyPrintData, title: string): string {
 
 <div class="page">
   <div class="hdr">
-    <div class="seal">جامعة العقبة<br/>للتكنولوجيا</div>
+    <div class="logo-box"><img src="${esc(logoUrl)}" alt="AUT" /></div>
     <div class="uni">
       <h1>جامعة العقبة للتكنولوجيا</h1>
       <h2>كلية تكنولوجيا المعلومات — قسم الذكاء الاصطناعي</h2>
