@@ -8,6 +8,8 @@
  * Merged courses (N→1) are visually grouped with a left brace `{`.
  */
 
+import autLogo from "@/assets/aut-logo-official.png";
+
 export type PrintMode = "approved" | "rejected" | "full";
 
 export interface PrintRow {
