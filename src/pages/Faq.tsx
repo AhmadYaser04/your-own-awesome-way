@@ -117,13 +117,14 @@ export default function Faq() {
     <SiteLayout>
       {/* Hero — UNMISTAKABLY an FAQ page */}
       <section className="relative text-primary-foreground py-20 overflow-hidden">
-        {/* University campus background image */}
+        {/* University campus background image — lazy & low priority for fast LCP */}
         <img
           src={autFaqBg}
           alt={isRtl ? "جامعة العقبة للتكنولوجيا" : "Aqaba University of Technology"}
           className="absolute inset-0 w-full h-full object-cover"
-          loading="eager"
-          fetchPriority="high"
+          loading="lazy"
+          decoding="async"
+          fetchPriority="low"
         />
         {/* Color overlay to keep text legible */}
         <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-secondary/55 via-secondary/40 to-primary/55" />

@@ -64,19 +64,43 @@ const fmtDate = (iso: string) => {
   }
 };
 
-export function exportEquivalencyForm(data: EquivalencyPrintData) {
+// Cache the base64 logo across multiple prints
+let _logoDataUrl: string | null = null;
+async function getLogoDataUrl(): Promise<string> {
+  if (_logoDataUrl) return _logoDataUrl;
+  try {
+    const res = await fetch(autLogo);
+    const blob = await res.blob();
+    _logoDataUrl = await new Promise<string>((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(String(fr.result));
+      fr.onerror = () => reject(fr.error);
+      fr.readAsDataURL(blob);
+    });
+    return _logoDataUrl;
+  } catch {
+    // Fall back to absolute URL if base64 conversion fails
+    return new URL(autLogo, window.location.origin).href;
+  }
+}
+
+export async function exportEquivalencyForm(data: EquivalencyPrintData) {
   const title =
     data.mode === "approved" ? "المواد المعادَلة"
     : data.mode === "rejected" ? "المواد غير المعادَلة"
     : "نموذج معادلة مواد للطلبة المجسرين — كامل";
 
+  // Open blank window synchronously so popup blockers don't trip
   const w = window.open("", "_blank", "width=900,height=1100");
   if (!w) {
     alert("فضلاً اسمح بالنوافذ المنبثقة لطباعة النموذج.");
     return;
   }
 
-  const html = renderHtml(data, title);
+  // Fetch logo as base64 BEFORE writing the doc
+  const logoDataUrl = await getLogoDataUrl();
+
+  const html = renderHtml(data, title, logoDataUrl);
   w.document.open();
   w.document.write(html);
   w.document.close();
@@ -89,9 +113,8 @@ export function exportEquivalencyForm(data: EquivalencyPrintData) {
   };
 }
 
-function renderHtml(d: EquivalencyPrintData, title: string): string {
+function renderHtml(d: EquivalencyPrintData, title: string, logoUrl: string): string {
   const s = d.student;
-  const logoUrl = new URL(autLogo, window.location.origin).href;
   const showApproved = d.mode === "approved" || d.mode === "full";
   const showRejected = d.mode === "rejected" || d.mode === "full";
 
