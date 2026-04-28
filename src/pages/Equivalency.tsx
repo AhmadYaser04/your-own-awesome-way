@@ -43,7 +43,7 @@ const emptyRow = (): CourseRow => ({
 
 export default function Equivalency() {
   const { dir, lang } = useLang();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const nav = useNavigate();
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
   const isAr = lang === "ar";
@@ -281,13 +281,16 @@ export default function Equivalency() {
         throw itemsErr;
       }
 
+      const isAdmin = role === "admin";
       toast({
-        title: isAr ? "تم إرسال الطلب" : "Request submitted",
-        description: isAr
-          ? "سيراجعه المرشد الأكاديمي قريباً."
-          : "Your academic advisor will review it soon.",
+        title: isAdmin
+          ? (isAr ? "تم إنشاء الطلب — انتقال للمعادلة" : "Request created — opening review")
+          : (isAr ? "تم إرسال الطلب" : "Request submitted"),
+        description: isAdmin
+          ? (isAr ? "ابدأ المعادلة التلقائية الآن." : "Starting auto-match.")
+          : (isAr ? "سيراجعه المرشد الأكاديمي قريباً." : "Your academic advisor will review it soon."),
       });
-      nav("/my-requests");
+      nav(isAdmin ? `/admin/review/${req.id}` : "/my-requests");
     } catch (e: any) {
       const msg = e?.message ?? String(e);
       console.error("[Equivalency] Submit failed:", e);
@@ -324,14 +327,12 @@ export default function Equivalency() {
     <SiteLayout>
       <div className="container mx-auto py-8 max-w-5xl space-y-6" dir={dir}>
         {/* العنوان */}
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-3">
           <div className="rounded-xl bg-primary/10 p-3"><Brain className="h-7 w-7 text-primary" /></div>
           <div>
-            <h1 className="text-3xl font-bold">{isAr ? "طلب معادلة مواد" : "Course Equivalency Request"}</h1>
-            <p className="text-muted-foreground mt-1">
-              {isAr
-                ? "ارفع كشف المواد التي اجتزتها (PDF أو صورة)، وسيستخرج النظام المواد تلقائياً ويقارنها بمواد جامعة العقبة للتكنولوجيا."
-                : "Upload your transcript (PDF or image). The system will extract and compare against AUT courses."}
+            <h1 className="text-2xl md:text-3xl font-bold">{isAr ? "طلب معادلة مواد" : "Course Equivalency Request"}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {isAr ? "ارفع كشف المواد ليتم استخراجها ومعادلتها مع مواد جامعة العقبة." : "Upload your transcript to extract and match against AUT courses."}
             </p>
           </div>
         </div>
@@ -349,9 +350,6 @@ export default function Equivalency() {
           <div className="flex items-center gap-2">
             <GraduationCap className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-semibold">{isAr ? "بيانات الطالب" : "Student Information"}</h2>
-            <Badge variant="outline" className="ms-auto">
-              {isAr ? "بدون رقم جامعي/معدل" : "No university ID/GPA needed"}
-            </Badge>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -404,13 +402,8 @@ export default function Equivalency() {
         <Card className="p-6 space-y-4">
           <div className="flex items-center gap-2">
             <Upload className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold">{isAr ? "كشف المواد المُجتازة *" : "Transcript of Passed Courses *"}</h2>
+            <h2 className="text-xl font-semibold">{isAr ? "كشف المواد المُجتازة *" : "Transcript *"}</h2>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {isAr
-              ? "ارفع صورة أو ملف PDF لكشف المواد التي اجتازها الطالب من أي جامعة أو دبلوم. الحد الأقصى 50 ميجابايت."
-              : "Upload an image or PDF of the passed-courses transcript. Max 50MB."}
-          </p>
 
           {!file ? (
             <div
@@ -448,7 +441,7 @@ export default function Equivalency() {
                   {extracting ? (
                     <><Loader2 className="me-2 h-4 w-4 animate-spin" /> {isAr ? "جاري الاستخراج..." : "Extracting..."}</>
                   ) : (
-                    <><Wand2 className="me-2 h-4 w-4" /> {isAr ? "استخرج المواد بالذكاء الاصطناعي" : "Extract Courses with AI"}</>
+                    <><Wand2 className="me-2 h-4 w-4" /> {isAr ? "استخراج المواد" : "Extract Courses"}</>
                   )}
                 </Button>
               ) : (
@@ -473,11 +466,8 @@ export default function Equivalency() {
                 {isAr ? `الإجمالي: ${totalSourceCredits} ساعة` : `Total: ${totalSourceCredits}h`}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {isAr
-                ? "راجع المواد التي استخرجها الذكاء الاصطناعي. يمكنك تعديل أو حذف أو إضافة مواد قبل الإرسال."
-                : "Review AI-extracted courses. You can edit, delete, or add rows before submitting."}
-            </p>
+
+
 
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -536,6 +526,8 @@ export default function Equivalency() {
           <Button onClick={handleSubmit} disabled={submitting} type="button">
             {submitting ? (
               <><Loader2 className="me-2 h-4 w-4 animate-spin" /> {isAr ? "جاري الإرسال..." : "Submitting..."}</>
+            ) : role === "admin" ? (
+              <><Sparkles className="me-2 h-4 w-4" /> {isAr ? "بدء المعادلة التلقائية" : "Start Auto-match"}</>
             ) : (
               <><Save className="me-2 h-4 w-4" /> {isAr ? "إرسال الطلب للمرشد" : "Submit to Advisor"}</>
             )}

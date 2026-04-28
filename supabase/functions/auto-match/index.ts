@@ -227,7 +227,7 @@ ${autText}`;
         similarity: Math.max(0, Math.min(1, (Number(s.similarity) || 0) / 100)),
         verdict: "pending",
         is_manual: false,
-        notes: s.reasoning ? `🤖 اقتراح AI: ${s.reasoning}` : "🤖 اقتراح AI",
+        notes: null,
       });
     }
 

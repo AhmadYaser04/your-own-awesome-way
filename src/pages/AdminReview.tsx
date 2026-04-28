@@ -218,13 +218,14 @@ export default function AdminReview() {
   const CATEGORY_LIMITS: Record<string, { ar: string; en: string; max: number }> = {
     university_required: { ar: "متطلبات جامعة إجبارية", en: "University Required", max: 15 },
     university_elective: { ar: "متطلبات جامعة اختيارية", en: "University Elective", max: 12 },
-    department_required: { ar: "متطلبات تخصص إجبارية",   en: "Department Required", max: 84 },
+    college_required:    { ar: "متطلبات كلية إجبارية",   en: "College Required",    max: 21 },
+    department_required: { ar: "متطلبات تخصص إجبارية",   en: "Department Required", max: 72 },
     department_elective: { ar: "متطلبات تخصص اختيارية",  en: "Department Elective", max: 12 },
     remedial:            { ar: "مواد استدراكية",          en: "Remedial",            max: 9  },
   };
   const categoryTotals = useMemo(() => {
     const totals: Record<string, number> = {
-      university_required: 0, university_elective: 0,
+      university_required: 0, university_elective: 0, college_required: 0,
       department_required: 0, department_elective: 0, remedial: 0,
     };
     const autById = new Map(autCourses.map((c) => [c.id, c] as const));
@@ -698,10 +699,10 @@ export default function AdminReview() {
                 onClick={handleAutoMatch}
                 disabled={busy || items.length === 0}
                 className="gap-2"
-                title={lang === "ar" ? "اقتراح معادلات تلقائية بالذكاء الاصطناعي" : "AI auto-match"}
+                title={lang === "ar" ? "اقتراح معادلات تلقائية" : "Auto-match"}
               >
                 <Sparkles className="h-4 w-4" />
-                {lang === "ar" ? "معادلة تلقائية (AI)" : "Auto-match (AI)"}
+                {lang === "ar" ? "معادلة تلقائية" : "Auto-match"}
               </Button>
               {(selectedItemIds.size > 0 || selectedAutId) && (
                 <Button
@@ -800,12 +801,8 @@ export default function AdminReview() {
                       </div>
                     </div>
 
-                    <Textarea
-                      value={matchNotes[m.id] ?? ""}
-                      onChange={(e) => setMatchNotes((prev) => ({ ...prev, [m.id]: e.target.value }))}
-                      placeholder={lang === "ar" ? "ملاحظات على هذه المعادلة (اختياري)" : "Notes on this match (optional)"}
-                      className="text-sm min-h-[60px]"
-                    />
+
+
 
                     <div className="flex flex-wrap gap-2 justify-end">
                       <Button variant="outline" size="sm" onClick={() => setMatchVerdict(m.id, "pending")} disabled={busy} className="gap-1">
@@ -847,10 +844,8 @@ export default function AdminReview() {
             </Alert>
           )}
 
-          <div>
-            <Label>{lang === "ar" ? "ملاحظات عامة على الطلب" : "Overall notes"}</Label>
-            <Textarea value={overallNotes} onChange={(e) => setOverallNotes(e.target.value)} className="min-h-[80px]" />
-          </div>
+
+
 
           <div className="flex flex-wrap gap-2 justify-end">
             <Button variant="outline" onClick={() => finalizeRequest("pending")} disabled={busy} className="gap-1">
