@@ -280,7 +280,7 @@ export default function AdminReview() {
     });
     setSelectedItemIds(new Set());
     setSelectedAutId(null);
-    loadAll();
+    loadAll({ preserveInputs: true });
   };
 
   const setMatchVerdict = async (matchId: string, verdict: Verdict) => {
@@ -299,7 +299,7 @@ export default function AdminReview() {
       .eq("id", matchId);
     setBusy(false);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    loadAll();
+    loadAll({ preserveInputs: true });
   };
 
   const handleAutoMatch = async () => {
@@ -323,7 +323,7 @@ export default function AdminReview() {
         ? (lang === "ar" ? `تم اقتراح ${data.created} معادلة — راجعها واعتمد أو ارفض.` : `Created ${data.created} suggestion(s).`)
         : (data?.message || (lang === "ar" ? "لا توجد اقتراحات." : "No suggestions.")),
     });
-    loadAll();
+    loadAll({ preserveInputs: true });
   };
 
   const removeMatch = async (matchId: string) => {
@@ -332,7 +332,7 @@ export default function AdminReview() {
     setBusy(false);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     toast({ title: lang === "ar" ? "تم فك الربط" : "Unlinked" });
-    loadAll();
+    loadAll({ preserveInputs: true });
   };
 
   const finalizeRequest = async (status: Status) => {
@@ -364,7 +364,7 @@ export default function AdminReview() {
         ? (lang === "ar" ? "تم رفض الطلب" : "Request rejected")
         : (lang === "ar" ? "أعيد للمراجعة" : "Marked pending"),
     });
-    loadAll();
+    loadAll({ preserveInputs: true });
   };
 
   const buildPrintData = (mode: PrintMode): EquivalencyPrintData | null => {
