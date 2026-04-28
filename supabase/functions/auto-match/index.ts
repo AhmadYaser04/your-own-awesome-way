@@ -99,33 +99,49 @@ serve(async (req) => {
     }
 
     const sourceText = unlinkedItems.map((i) =>
-      `- [ID:${i.id}] ${i.source_course_name}${i.source_course_code ? ` (${i.source_course_code})` : ""} — ${i.source_credits} س.م`
+      `- [ID:${i.id}] ${i.source_course_name}${i.source_course_code ? ` (كود: ${i.source_course_code})` : ""} — ${i.source_credits} س.م`
     ).join("\n");
 
+    // AUT-centric: full descriptions, no truncation. Descriptions are the
+    // primary signal for matching, names/codes alone are unreliable.
     const autText = autList.map((c) =>
-      `- [ID:${c.id}] ${c.course_code} | ${c.course_name_ar}${c.course_name_en ? ` / ${c.course_name_en}` : ""} (${c.credits} س.م)${c.description_ar ? `: ${c.description_ar.slice(0, 200)}` : ""}`
-    ).join("\n");
+      `### [ID:${c.id}] ${c.course_code} — ${c.course_name_ar}${c.course_name_en ? ` / ${c.course_name_en}` : ""} (${c.credits} س.م)
+الوصف الرسمي: ${c.description_ar || "(لا يوجد وصف رسمي — استنتج المحتوى من الاسم والكود ومن معرفتك بالخطط الأكاديمية المماثلة)"}`
+    ).join("\n\n");
 
-    const systemPrompt = `أنت خبير أكاديمي في معادلة المواد بين الجامعات السعودية وجامعة العقبة للتكنولوجيا (AUT).
+    const systemPrompt = `أنت خبير أكاديمي متخصص في معادلة المساقات الجامعية بين الجامعات السعودية وجامعة العقبة للتكنولوجيا (AUT) — تخصص الذكاء الاصطناعي.
 
-مهمتك: لكل مادة من مواد الطالب السعودية أدناه، اقترح أفضل مادة AUT مطابقة (إن وجدت) بناءً على الاسم والمحتوى والساعات.
-- نسبة التطابق ≥ 70٪ → اقترح المعادلة.
-- إذا لم تجد مطابقة قوية، لا تقترح شيئاً لتلك المادة.
-- يمكن دمج عدة مواد طالب في مادة AUT واحدة إذا كان مجموع ساعاتها يقارب ساعات AUT والمحتوى مكمّل.
-- لا تقترح نفس مادة AUT لأكثر من مجموعة.
-- استخدم ID المعطى بالضبط كما هو.
+## فلسفة المعادلة (مهم جداً)
+**الأساس هو وصف مساق AUT، وليس اسم المادة المستخرجة من كشف الطالب.**
+- اسم المادة في كشف الطالب قد يكون مختصراً، مترجماً، أو حتى مكتوباً بصيغة مختلفة (نفس المحتوى باسم آخر).
+- مهمتك أن تفهم بعمق **ماذا يُدرَّس فعلياً** في كل مادة AUT (من وصفها الرسمي أدناه)، ثم تبحث في مواد الطالب عن المادة (أو المواد) التي يُغطّي محتواها نفس المخرجات التعليمية.
+- استنتج محتوى مواد الطالب بناءً على:
+  1. اسم المادة + كودها + معرفتك بالمناهج المعتادة في الجامعات السعودية لتخصصات الحاسوب والذكاء الاصطناعي وعلم البيانات.
+  2. السياق (مادة "مقدمة" غير مادة "متقدمة"، مادة بـ1 ساعة عادة مختبر، إلخ).
+  3. التشابه الدلالي (مثلاً "تعلم الآلة" = "Machine Learning" = "تعلم آلي" = "ML").
+- لا تعتمد على تطابق نصي حرفي للأسماء — اعتمد على **تطابق المحتوى التعليمي**.
 
-مواد الطالب (غير المربوطة):
+## قواعد الإخراج
+- لكل مادة AUT، ابحث في مواد الطالب عن أفضل تغطية ممكنة لمحتواها.
+- نسبة التطابق ≥ 65٪ → اقترح المعادلة.
+- يمكن **دمج عدة مواد طالب** في مادة AUT واحدة (مثلاً: "نظرية + مختبر" يعادلان مادة AUT مدمجة)، شرط أن يكون مجموع ساعاتها ضمن ±2 من ساعات AUT.
+- لا تقترح نفس مادة AUT أو نفس مادة طالب لأكثر من مجموعة.
+- إذا كان مختبر AUT منفصلاً (1 س.م) يمكن معادلته بمختبر مقابل من الطالب فقط.
+- إذا لم تجد تغطية حقيقية، **لا تقترح شيئاً** لتلك المادة AUT — التخمين يضر بالطالب.
+- استخدم ID المعطى بالضبط كما هو، بدون تعديل.
+- في حقل reasoning: اشرح بإيجاز (سطر أو سطرين) لماذا المحتوى يتطابق، مع الإشارة لمفاهيم مشتركة محددة (مثلاً: "كلاهما يغطي SQL، ER، التطبيع، والمعاملات").
+
+## مواد الطالب المتاحة (غير المربوطة بعد):
 ${sourceText}
 
-كتالوج مواد AUT:
+## كتالوج مواد AUT (الهدف — اقرأ الأوصاف بعمق):
 ${autText}`;
 
     const tools = [{
       type: "function",
       function: {
         name: "submit_matches",
-        description: "إرجاع قائمة المعادلات المقترحة",
+        description: "إرجاع قائمة المعادلات المقترحة بعد تحليل عميق لمحتوى كل مادة",
         parameters: {
           type: "object",
           properties: {
@@ -134,10 +150,10 @@ ${autText}`;
               items: {
                 type: "object",
                 properties: {
-                  source_item_ids: { type: "array", items: { type: "string" }, description: "معرّفات مواد الطالب" },
-                  aut_course_id: { type: "string", description: "معرّف مادة AUT المقترحة" },
-                  similarity: { type: "number", description: "نسبة التطابق 0-100" },
-                  reasoning: { type: "string", description: "سبب المطابقة بالعربية، جملة قصيرة" },
+                  source_item_ids: { type: "array", items: { type: "string" }, description: "معرّفات مواد الطالب التي تغطي هذه المادة (واحد أو أكثر للدمج)" },
+                  aut_course_id: { type: "string", description: "معرّف مادة AUT المستهدفة" },
+                  similarity: { type: "number", description: "نسبة تطابق المحتوى 0-100 (وليس تطابق الاسم)" },
+                  reasoning: { type: "string", description: "تبرير محتوائي قصير: ما المفاهيم/المخرجات المشتركة بين مواد الطالب ومادة AUT" },
                 },
                 required: ["source_item_ids", "aut_course_id", "similarity", "reasoning"],
                 additionalProperties: false,
@@ -154,10 +170,11 @@ ${autText}`;
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        // Pro model: deep reasoning over course descriptions, large context.
+        model: "google/gemini-2.5-pro",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: "قم بمعادلة كل مادة طالب مع أفضل مادة AUT مطابقة، ثم أعد النتيجة عبر الدالة." },
+          { role: "user", content: "حلّل وصف كل مادة AUT بعمق، استنتج محتوى مواد الطالب من أسمائها وأكوادها ومعرفتك بالمناهج، ثم أعد المعادلات عبر الدالة. ركّز على تطابق المحتوى لا تطابق الاسم." },
         ],
         tools,
         tool_choice: { type: "function", function: { name: "submit_matches" } },
