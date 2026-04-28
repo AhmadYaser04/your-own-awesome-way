@@ -55,7 +55,7 @@ const CATEGORY_ORDER: Category[] = [
 ];
 
 export default function College() {
-  const { t, lang } = useLang();
+  const { t, lang, dir } = useLang();
   const [courses, setCourses] = useState<AutCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Category>("department_required");
