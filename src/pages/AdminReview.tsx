@@ -286,6 +286,30 @@ export default function AdminReview() {
     loadAll();
   };
 
+  const handleAutoMatch = async () => {
+    if (!id) return;
+    setBusy(true);
+    const { data, error } = await supabase.functions.invoke("auto-match", {
+      body: { request_id: id },
+    });
+    setBusy(false);
+    if (error) {
+      toast({ title: "AI", description: error.message, variant: "destructive" });
+      return;
+    }
+    if (data?.error) {
+      toast({ title: "AI", description: data.error, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: lang === "ar" ? "تمت المعادلة التلقائية" : "Auto-match done",
+      description: data?.created
+        ? (lang === "ar" ? `تم اقتراح ${data.created} معادلة — راجعها واعتمد أو ارفض.` : `Created ${data.created} suggestion(s).`)
+        : (data?.message || (lang === "ar" ? "لا توجد اقتراحات." : "No suggestions.")),
+    });
+    loadAll();
+  };
+
   const removeMatch = async (matchId: string) => {
     setBusy(true);
     const { error } = await supabase.from("equivalency_matches").delete().eq("id", matchId);
