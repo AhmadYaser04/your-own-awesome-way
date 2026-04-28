@@ -644,6 +644,11 @@ export default function Admin() {
                         <div className="text-[10px] text-muted-foreground">{t("admin.aiSimilarity")}</div>
                       </div>
                     )}
+                    <Button asChild size="sm" className="gap-1 bg-primary">
+                      <Link to={`/admin/review/${r.id}`}>
+                        <ShieldCheck className="h-4 w-4" /> {lang === "ar" ? "مراجعة كاملة" : "Full review"}
+                      </Link>
+                    </Button>
                     <Button size="sm" variant="outline" className="gap-1" onClick={() => { setActive(r); setNotes(r.admin_notes || ""); setReviewerName(r.reviewer_name || ""); setDescExpanded(false); }}>
                       <Eye className="h-4 w-4" /> {t("admin.review")}
                     </Button>

@@ -15,6 +15,7 @@ import Faq from "./pages/Faq.tsx";
 import Auth from "./pages/Auth.tsx";
 import MyRequests from "./pages/MyRequests.tsx";
 import Admin from "./pages/Admin.tsx";
+import AdminReview from "./pages/AdminReview.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,14 @@ const App = () => (
                   element={
                     <ProtectedRoute requireAdmin>
                       <Admin />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/review/:id"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminReview />
                     </ProtectedRoute>
                   }
                 />
