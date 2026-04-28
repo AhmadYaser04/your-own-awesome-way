@@ -51,7 +51,7 @@ interface MatchRow {
 }
 
 export default function MyRequests() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const { t, dir, lang } = useLang();
   const [rows, setRows] = useState<ReqRow[]>([]);
   const [itemsByReq, setItemsByReq] = useState<Record<string, ItemRow[]>>({});
