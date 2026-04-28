@@ -195,8 +195,6 @@ export default function MyRequests() {
                     </Button>
                   )}
                 </div>
-                  </div>
-                </div>
 
                 {/* Credits cap progress */}
                 <div className="space-y-1.5">
