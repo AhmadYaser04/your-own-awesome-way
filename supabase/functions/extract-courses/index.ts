@@ -19,24 +19,41 @@ interface ExtractedCourse {
   semester?: string;
 }
 
-const SYSTEM_PROMPT = `أنت مساعد ذكي متخصص في استخراج بيانات المواد الدراسية من كشوف العلامات الجامعية والدبلومات.
-سيُعرض عليك صورة أو PDF لكشف مواد طالب (من جامعة أو دبلوم سابق).
+const SYSTEM_PROMPT = `أنت مساعد دقيق جداً متخصص في استخراج بيانات المواد الدراسية من كشوف العلامات (transcripts) العربية والإنجليزية.
 
-استخرج كل مادة مرّت في الكشف وأعد JSON خالصاً (بدون أي نص قبل أو بعد) بالشكل التالي:
+أعد JSON خالصاً فقط (بدون أي نص أو markdown أو شرح) بالشكل:
 {
   "courses": [
-    { "name": "اسم المادة بالعربية أو الإنجليزية كما ورد", "code": "رمز المادة إن وُجد", "credits": 3, "grade": "A أو 85 أو ممتاز", "semester": "الفصل إن ذُكر" }
+    { "name": "...", "code": "...", "credits": 3, "grade": "...", "semester": "..." }
   ]
 }
 
-قواعد مهمة:
-- استخرج كل المواد المُجتازة فقط (تجاهل الراسبة أو غير المكتملة إن وُجدت).
-- credits = عدد الساعات المعتمدة (رقم بين 1 و 6).
-- grade = الدرجة كما وردت (حرفية مثل A,B+ أو رقمية مثل 85 أو وصفية مثل "ممتاز").
-- إن لم يوجد رمز للمادة اترك code=""
-- إن لم يوجد فصل اترك semester=""
-- لا تخترع مواد. فقط ما تراه فعلياً في الكشف.
-- أعد JSON فقط بدون شرح أو markdown.`;
+== قواعد صارمة جداً (التزم بها حرفياً) ==
+
+1) الرمز (code):
+   - انسخه حرفياً من نفس صف المادة فقط (مثل: CS101, MATH-201, 0905101).
+   - إن لم يكن هناك رمز ظاهر بوضوح في صف هذه المادة بالذات، اجعل code="" (سلسلة فارغة).
+   - **ممنوع منعاً باتاً اختراع أي رمز أو تخمينه أو تركيبه من اسم المادة.**
+   - لا تنسخ رمز مادة أخرى ولا رقم الصف.
+
+2) الدرجة (grade):
+   - انسخها حرفياً كما تظهر: قد تكون حرفاً لاتينياً (A, A-, B+, C, ...) أو رقماً (85, 92.5) أو كلمة عربية (ممتاز، جيد جداً، جيد، مقبول، ناجح).
+   - **لا تترجم بين الأنظمة** (لا تحوّل "ممتاز" إلى A ولا 85 إلى B+).
+   - إن كانت الدرجة بالعربية اتركها بالعربية بدون تغيير الأحرف.
+   - إن لم تكن واضحة اجعل grade="".
+
+3) الساعات (credits):
+   - رقم صحيح أو نصف صحيح بين 1 و 6 كما يظهر في عمود الساعات/Credits/CrHr.
+   - إن لم يظهر اجعلها 3 افتراضياً.
+
+4) المواد:
+   - استخرج فقط المواد المُجتازة/الناجحة (تجاهل الراسبة F، أو غير المكتملة I/W، أو المؤجلة).
+   - لا تخترع مواد. فقط ما تراه فعلياً.
+   - حافظ على الترتيب من أعلى إلى أسفل كما في الكشف.
+
+5) الإخراج:
+   - JSON صالح فقط. لا تستعمل علامات اقتباس عربية. استخدم " فقط.
+   - تأكد من إغلاق كل {} و [].`;
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -69,7 +86,9 @@ Deno.serve(async (req: Request) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-pro",
+        max_tokens: 8000,
+        temperature: 0.1,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           {
@@ -77,7 +96,7 @@ Deno.serve(async (req: Request) => {
             content: [
               {
                 type: "text",
-                text: "استخرج كل المواد من هذا الكشف وأعد JSON فقط.",
+                text: "استخرج كل المواد المُجتازة من هذا الكشف بدقة عالية، ولا تخترع رموزاً لمواد ليس لها رمز ظاهر. أعد JSON فقط.",
               },
               {
                 type: "image_url",
@@ -133,13 +152,46 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const courses = (parsed.courses ?? []).map((c) => ({
-      name: String(c.name ?? "").trim(),
-      code: String(c.code ?? "").trim(),
-      credits: Number(c.credits ?? 3) || 3,
-      grade: String(c.grade ?? "").trim(),
-      semester: String(c.semester ?? "").trim(),
-    })).filter((c) => c.name.length > 0);
+    // تطبيع الأرقام العربية ← لاتينية
+    const arabicToLatinDigits = (s: string) =>
+      s.replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+       .replace(/[\u06F0-\u06F9]/g, (d) => String(d.charCodeAt(0) - 0x06F0));
+
+    // تطبيع الدرجة: لو رقمية حوّلها إلى رقم نظيف، لو حرفية ابقها بالحروف اللاتينية الكبيرة، لو عربية ابقها كما هي
+    const cleanGrade = (raw: string): string => {
+      if (!raw) return "";
+      const g = arabicToLatinDigits(raw).trim();
+      // محاولة رقمية
+      const numMatch = g.match(/^-?\d+(\.\d+)?$/);
+      if (numMatch) return g;
+      // حرفي لاتيني A-F مع +/-
+      const letterMatch = g.match(/^[A-Fa-f][+\-]?$/);
+      if (letterMatch) return letterMatch[0].toUpperCase();
+      // أبقِ النص الأصلي (عربي أو غيره) دون تعديل
+      return raw.trim();
+    };
+
+    // تنظيف الرمز: إزالة المسافات الزائدة، وإذا كان طويلاً جداً (>20 حرف) فهو غالباً اسم وليس رمزاً → أفرغه
+    const cleanCode = (raw: string): string => {
+      const c = arabicToLatinDigits(String(raw ?? "")).trim().replace(/\s+/g, "");
+      if (!c) return "";
+      if (c.length > 20) return "";
+      // الرمز الصالح: حروف+أرقام+- (مثل CS101 أو 0905101 أو MATH-A)
+      if (!/[A-Za-z0-9]/.test(c)) return "";
+      return c;
+    };
+
+    const courses = (parsed.courses ?? []).map((c) => {
+      const credRaw = arabicToLatinDigits(String(c.credits ?? "3"));
+      const credNum = Number(credRaw);
+      return {
+        name: String(c.name ?? "").trim(),
+        code: cleanCode(c.code as string),
+        credits: Number.isFinite(credNum) && credNum >= 1 && credNum <= 6 ? credNum : 3,
+        grade: cleanGrade(String(c.grade ?? "")),
+        semester: String(c.semester ?? "").trim(),
+      };
+    }).filter((c) => c.name.length > 0);
 
     return new Response(
       JSON.stringify({
