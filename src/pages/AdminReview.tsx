@@ -110,9 +110,13 @@ export default function AdminReview() {
   // Per-match note dialog state
   const [matchNotes, setMatchNotes] = useState<Record<string, string>>({});
 
-  const loadAll = async () => {
+  // True only on the very first load — prevents subsequent refreshes from
+  // overwriting reviewer_name / admin_notes that the advisor is currently typing.
+  const [initialized, setInitialized] = useState(false);
+
+  const loadAll = async (opts: { preserveInputs?: boolean } = {}) => {
     if (!id) return;
-    setLoading(true);
+    if (!opts.preserveInputs) setLoading(true);
     const [{ data: r }, { data: it }, { data: aut }, { data: ms }] = await Promise.all([
       supabase.from("equivalency_requests").select("*").eq("id", id).single(),
       supabase.from("equivalency_request_items").select("*").eq("request_id", id).order("display_order"),
@@ -121,8 +125,13 @@ export default function AdminReview() {
     ]);
     if (r) {
       setReq(r as ReqRow);
-      setReviewerName((r as ReqRow).reviewer_name || "");
-      setOverallNotes((r as ReqRow).admin_notes || "");
+      // Only seed reviewer/notes inputs on the FIRST load. Later refreshes must
+      // not blow away what the advisor has typed (this is what was forcing them
+      // to re-enter the name after every decision).
+      if (!initialized && !opts.preserveInputs) {
+        setReviewerName((r as ReqRow).reviewer_name || "");
+        setOverallNotes((r as ReqRow).admin_notes || "");
+      }
     }
     let itemsList = (it ?? []) as ItemRow[];
 
@@ -159,10 +168,17 @@ export default function AdminReview() {
     setAutCourses((aut ?? []) as AutCourse[]);
     const mss = (ms ?? []) as MatchRow[];
     setMatches(mss);
-    const noteMap: Record<string, string> = {};
-    mss.forEach((m) => { noteMap[m.id] = m.notes || ""; });
-    setMatchNotes(noteMap);
-    setLoading(false);
+    // Merge match notes — keep unsaved text the advisor is typing, only seed
+    // notes for matches we haven't seen before.
+    setMatchNotes((prev) => {
+      const next = { ...prev };
+      mss.forEach((m) => {
+        if (!(m.id in next)) next[m.id] = m.notes || "";
+      });
+      return next;
+    });
+    if (!opts.preserveInputs) setLoading(false);
+    setInitialized(true);
   };
 
   useEffect(() => { loadAll(); }, [id]);
@@ -198,17 +214,18 @@ export default function AdminReview() {
   const overCap = approvedAutCredits > cap;
 
   // === تتبع متطلبات الـ132 ساعة عبر 5 فئات ===
+  // Keys MUST match aut_courses.category values stored in the DB.
   const CATEGORY_LIMITS: Record<string, { ar: string; en: string; max: number }> = {
-    university_compulsory: { ar: "متطلبات جامعة إجبارية", en: "University Compulsory", max: 15 },
-    university_elective:   { ar: "متطلبات جامعة اختيارية", en: "University Elective",   max: 12 },
-    major_compulsory:      { ar: "متطلبات تخصص إجبارية",   en: "Major Compulsory",      max: 72 },
-    major_elective:        { ar: "متطلبات تخصص اختيارية",  en: "Major Elective",        max: 12 },
-    remedial:              { ar: "مواد استدراكية",          en: "Remedial",              max: 9  },
+    university_required: { ar: "متطلبات جامعة إجبارية", en: "University Required", max: 15 },
+    university_elective: { ar: "متطلبات جامعة اختيارية", en: "University Elective", max: 12 },
+    department_required: { ar: "متطلبات تخصص إجبارية",   en: "Department Required", max: 84 },
+    department_elective: { ar: "متطلبات تخصص اختيارية",  en: "Department Elective", max: 12 },
+    remedial:            { ar: "مواد استدراكية",          en: "Remedial",            max: 9  },
   };
   const categoryTotals = useMemo(() => {
     const totals: Record<string, number> = {
-      university_compulsory: 0, university_elective: 0,
-      major_compulsory: 0, major_elective: 0, remedial: 0,
+      university_required: 0, university_elective: 0,
+      department_required: 0, department_elective: 0, remedial: 0,
     };
     const autById = new Map(autCourses.map((c) => [c.id, c] as const));
     matches.filter((m) => m.verdict === "approved").forEach((m) => {
@@ -264,7 +281,7 @@ export default function AdminReview() {
     });
     setSelectedItemIds(new Set());
     setSelectedAutId(null);
-    loadAll();
+    loadAll({ preserveInputs: true });
   };
 
   const setMatchVerdict = async (matchId: string, verdict: Verdict) => {
@@ -283,7 +300,7 @@ export default function AdminReview() {
       .eq("id", matchId);
     setBusy(false);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    loadAll();
+    loadAll({ preserveInputs: true });
   };
 
   const handleAutoMatch = async () => {
@@ -307,7 +324,7 @@ export default function AdminReview() {
         ? (lang === "ar" ? `تم اقتراح ${data.created} معادلة — راجعها واعتمد أو ارفض.` : `Created ${data.created} suggestion(s).`)
         : (data?.message || (lang === "ar" ? "لا توجد اقتراحات." : "No suggestions.")),
     });
-    loadAll();
+    loadAll({ preserveInputs: true });
   };
 
   const removeMatch = async (matchId: string) => {
@@ -316,7 +333,7 @@ export default function AdminReview() {
     setBusy(false);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     toast({ title: lang === "ar" ? "تم فك الربط" : "Unlinked" });
-    loadAll();
+    loadAll({ preserveInputs: true });
   };
 
   const finalizeRequest = async (status: Status) => {
@@ -348,7 +365,7 @@ export default function AdminReview() {
         ? (lang === "ar" ? "تم رفض الطلب" : "Request rejected")
         : (lang === "ar" ? "أعيد للمراجعة" : "Marked pending"),
     });
-    loadAll();
+    loadAll({ preserveInputs: true });
   };
 
   const buildPrintData = (mode: PrintMode): EquivalencyPrintData | null => {
