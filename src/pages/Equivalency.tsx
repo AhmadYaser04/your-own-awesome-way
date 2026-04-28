@@ -186,50 +186,81 @@ export default function Equivalency() {
   };
 
   const handleSubmit = async () => {
+    console.log("[Equivalency] Submit clicked", {
+      hasUser: !!user,
+      extractionDone,
+      coursesCount: extractedCourses.length,
+    });
     if (!user) {
       nav("/auth");
       return;
     }
     const v = validate();
-    if (v) { setError(v); return; }
+    if (v) {
+      console.warn("[Equivalency] Validation failed:", v);
+      setError(v);
+      toast({
+        title: isAr ? "تحقق من البيانات" : "Validation",
+        description: v,
+        variant: "destructive",
+      });
+      // مرّر التركيز لأعلى الصفحة ليرى المستخدم الخطأ
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
-      // ارفع الملف مرة أخرى للأرشيف الدائم (مع upsert false)
+      // ارفع الملف للأرشيف الدائم — الفشل لا يمنع الإرسال
       let uploadedFileUrl: string | null = null;
       if (file) {
-        const ext = file.name.split(".").pop() || "bin";
-        const path = `${user.id}/request-${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage
-          .from(BUCKET)
-          .upload(path, file, { upsert: false, contentType: file.type });
-        if (!upErr) uploadedFileUrl = path;
+        try {
+          const ext = file.name.split(".").pop() || "bin";
+          const path = `${user.id}/request-${Date.now()}.${ext}`;
+          const { error: upErr } = await supabase.storage
+            .from(BUCKET)
+            .upload(path, file, { upsert: false, contentType: file.type });
+          if (upErr) {
+            console.warn("[Equivalency] Archive upload failed (non-blocking):", upErr);
+          } else {
+            uploadedFileUrl = path;
+          }
+        } catch (archiveErr) {
+          console.warn("[Equivalency] Archive upload exception (non-blocking):", archiveErr);
+        }
       }
 
       // أنشئ الطلب
+      const insertPayload = {
+        user_id: user.id,
+        student_full_name: studentFullName.trim(),
+        student_college: studentCollege.trim(),
+        student_major: studentMajor.trim(),
+        previous_university: previousUniversity.trim(),
+        previous_major_name: previousMajorName.trim() || null,
+        transfer_semester: transferSemester.trim() || null,
+        transfer_type: transferType,
+        student_type: transferType,
+        credits_cap: 132,
+        input_mode: "file",
+        uploaded_file_url: uploadedFileUrl,
+        extraction_status: "completed",
+        extraction_raw_text: rawText.slice(0, 10000),
+        ai_result: { extracted_count: extractedCourses.length },
+        status: "pending" as const,
+      };
+      console.log("[Equivalency] Inserting request...", insertPayload);
+
       const { data: req, error: reqErr } = await supabase
         .from("equivalency_requests")
-        .insert({
-          user_id: user.id,
-          student_full_name: studentFullName.trim(),
-          student_college: studentCollege.trim(),
-          student_major: studentMajor.trim(),
-          previous_university: previousUniversity.trim(),
-          previous_major_name: previousMajorName.trim() || null,
-          transfer_semester: transferSemester.trim() || null,
-          transfer_type: transferType,
-          student_type: transferType,
-          credits_cap: 132,
-          input_mode: "file",
-          uploaded_file_url: uploadedFileUrl,
-          extraction_status: "completed",
-          extraction_raw_text: rawText.slice(0, 10000),
-          ai_result: { extracted_count: extractedCourses.length },
-          status: "pending",
-        })
+        .insert(insertPayload)
         .select("id")
         .single();
-      if (reqErr) throw reqErr;
+      if (reqErr) {
+        console.error("[Equivalency] Insert request failed:", reqErr);
+        throw reqErr;
+      }
+      console.log("[Equivalency] Request created:", req?.id);
 
       // أدرج المواد
       const items = extractedCourses.map((c, idx) => ({
@@ -241,10 +272,14 @@ export default function Equivalency() {
         source_semester: c.source_semester?.trim() || null,
         display_order: idx,
       }));
+      console.log("[Equivalency] Inserting items:", items.length);
       const { error: itemsErr } = await supabase
         .from("equivalency_request_items")
         .insert(items);
-      if (itemsErr) throw itemsErr;
+      if (itemsErr) {
+        console.error("[Equivalency] Insert items failed:", itemsErr);
+        throw itemsErr;
+      }
 
       toast({
         title: isAr ? "تم إرسال الطلب" : "Request submitted",
@@ -255,8 +290,14 @@ export default function Equivalency() {
       nav("/my-requests");
     } catch (e: any) {
       const msg = e?.message ?? String(e);
+      console.error("[Equivalency] Submit failed:", e);
       setError(msg);
-      toast({ title: isAr ? "فشل الإرسال" : "Submission failed", description: msg, variant: "destructive" });
+      toast({
+        title: isAr ? "فشل الإرسال" : "Submission failed",
+        description: msg,
+        variant: "destructive",
+      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setSubmitting(false);
     }
