@@ -334,9 +334,9 @@ function renderTable(heading: string, rows: PrintRow[], kind: "approved" | "reje
   <table class="eq">
     <thead>
       <tr>
-        <th colspan="4" style="background:#0f766e">مواد الطالب (الدبلوم السابق)</th>
-        <th rowspan="2" style="width:18px"></th>
-        <th colspan="3" style="background:#1e3a8a">مواد جامعة AUT المعادِلة</th>
+       <th colspan="4" style="background:#b58a2b">مواد الطالب (الدبلوم السابق)</th>
+       <th rowspan="2" style="width:18px"></th>
+       <th colspan="3" style="background:#14306b">مواد جامعة AUT المعادِلة</th>
       </tr>
       <tr>
         <th>اسم المادة</th><th>الرقم</th><th>الساعات</th><th>العلامة</th>
