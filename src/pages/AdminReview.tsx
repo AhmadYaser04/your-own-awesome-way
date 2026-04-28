@@ -15,6 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select";
@@ -160,9 +162,33 @@ export default function AdminReview() {
     () => matches.filter((m) => m.verdict === "approved").reduce((s, m) => s + (Number(m.total_source_credits) || 0), 0),
     [matches]
   );
-  const cap = req?.credits_cap ?? 30;
+  const cap = req?.credits_cap ?? 132;
   const capPct = Math.min(100, (approvedAutCredits / cap) * 100);
   const overCap = approvedAutCredits > cap;
+
+  // === تتبع متطلبات الـ132 ساعة عبر 5 فئات ===
+  const CATEGORY_LIMITS: Record<string, { ar: string; en: string; max: number }> = {
+    university_compulsory: { ar: "متطلبات جامعة إجبارية", en: "University Compulsory", max: 15 },
+    university_elective:   { ar: "متطلبات جامعة اختيارية", en: "University Elective",   max: 12 },
+    major_compulsory:      { ar: "متطلبات تخصص إجبارية",   en: "Major Compulsory",      max: 72 },
+    major_elective:        { ar: "متطلبات تخصص اختيارية",  en: "Major Elective",        max: 12 },
+    remedial:              { ar: "مواد استدراكية",          en: "Remedial",              max: 9  },
+  };
+  const categoryTotals = useMemo(() => {
+    const totals: Record<string, number> = {
+      university_compulsory: 0, university_elective: 0,
+      major_compulsory: 0, major_elective: 0, remedial: 0,
+    };
+    const autById = new Map(autCourses.map((c) => [c.id, c] as const));
+    matches.filter((m) => m.verdict === "approved").forEach((m) => {
+      if (!m.aut_course_id) return;
+      const aut = autById.get(m.aut_course_id);
+      if (!aut) return;
+      const key = (aut.category || "").trim();
+      if (key in totals) totals[key] += aut.credits || 0;
+    });
+    return totals;
+  }, [matches, autCourses]);
 
   const toggleItem = (itemId: string) => {
     if (linkedItemIds.has(itemId)) return; // ignore — already linked
@@ -389,9 +415,9 @@ export default function AdminReview() {
                 </p>
               </div>
             </div>
-            <div className="flex flex-col items-stretch sm:items-end gap-2 min-w-[280px]">
+            <div className="flex flex-col items-stretch sm:items-end gap-2 min-w-[300px] w-full md:w-auto">
               <div className="flex items-center justify-between text-xs">
-                <span>{lang === "ar" ? "الساعات المعتمَدة" : "Approved credits"}</span>
+                <span>{lang === "ar" ? "إجمالي الساعات المعتمَدة" : "Total approved credits"}</span>
                 <span className="font-bold">{approvedAutCredits} / {cap} {lang === "ar" ? "س" : "h"}</span>
               </div>
               <Progress
@@ -404,6 +430,38 @@ export default function AdminReview() {
                   {lang === "ar" ? `تجاوز السقف بـ ${approvedAutCredits - cap} ساعة!` : `Over cap by ${approvedAutCredits - cap}h!`}
                 </div>
               )}
+
+              {/* ===== الأشرطة التفصيلية لكل فئة (قابلة للطي) ===== */}
+              <Collapsible className="w-full">
+                <CollapsibleTrigger className="flex items-center justify-between w-full text-xs bg-primary-foreground/10 hover:bg-primary-foreground/20 px-2 py-1.5 rounded transition-colors">
+                  <span className="flex items-center gap-1">
+                    <Layers className="h-3 w-3" />
+                    {lang === "ar" ? "تفاصيل الفئات الخمس" : "Category breakdown"}
+                  </span>
+                  <ChevronDown className="h-3 w-3 transition-transform data-[state=open]:rotate-180" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-2 mt-2 bg-primary-foreground/10 p-2 rounded">
+                  {Object.entries(CATEGORY_LIMITS).map(([key, info]) => {
+                    const used = categoryTotals[key] || 0;
+                    const pct = Math.min(100, (used / info.max) * 100);
+                    const over = used > info.max;
+                    return (
+                      <div key={key}>
+                        <div className="flex items-center justify-between text-[11px] mb-0.5">
+                          <span className="truncate">{lang === "ar" ? info.ar : info.en}</span>
+                          <span className={`font-bold ${over ? "text-destructive-foreground bg-destructive/40 px-1 rounded" : ""}`}>
+                            {used} / {info.max}
+                          </span>
+                        </div>
+                        <Progress
+                          value={pct}
+                          className={`h-1.5 bg-primary-foreground/20 ${over ? "[&>div]:bg-destructive" : pct >= 100 ? "[&>div]:bg-gold" : "[&>div]:bg-success"}`}
+                        />
+                      </div>
+                    );
+                  })}
+                </CollapsibleContent>
+              </Collapsible>
             </div>
           </div>
         </div>
