@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, FileText, CheckCircle2, XCircle, Clock, Calendar, BookOpen, MessageSquare, Plus, ChevronDown, ChevronUp, FolderKanban, Download } from "lucide-react";
+import {
+  Loader2, FileText, CheckCircle2, XCircle, Clock, Calendar, Plus,
+  ChevronDown, ChevronUp, MessageSquare, GraduationCap, BookOpen,
+} from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,123 +12,95 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLang } from "@/i18n/LanguageProvider";
-import { exportDecisionPdf } from "@/lib/exportDecisionPdf";
-import { exportDecisionDocxArabic } from "@/lib/exportDecisionDocxArabic";
 
-
-interface Row {
+interface ReqRow {
   id: string;
-  saudi_course_name: string | null;
-  saudi_course_description: string | null;
-  matched_aut_name: string | null;
-  matched_aut_code: string | null;
-  similarity: number | null;
-  verdict: string | null;
+  student_full_name: string | null;
+  previous_diploma_source: string | null;
+  student_type: string;
+  credits_cap: number;
   status: "pending" | "approved" | "rejected";
   admin_notes: string | null;
   reviewer_name: string | null;
   created_at: string;
   reviewed_at: string | null;
-  ai_result?: unknown;
 }
 
-interface BatchCourse {
-  saudi_course_name: string;
+interface ItemRow {
+  id: string;
+  request_id: string;
+  source_course_name: string;
+  source_course_code: string | null;
+  source_credits: number;
+  source_grade: string | null;
+}
+
+interface MatchRow {
+  id: string;
+  request_id: string;
+  aut_course_id: string | null;
+  source_item_ids: string[];
+  total_source_credits: number;
+  aut_credits: number;
+  similarity: number | null;
   verdict: string;
-  overall_similarity: number;
-  matches?: { aut_name: string; aut_code: string }[];
-  decision?: { status: "pending" | "approved" | "rejected"; notes?: string };
-}
-
-function getBatchCourses(ai: unknown): BatchCourse[] {
-  if (!ai || typeof ai !== "object" || !("courses" in ai)) return [];
-  const courses = (ai as { courses?: BatchCourse[] }).courses;
-  return Array.isArray(courses) && courses.length > 1 ? courses : [];
-}
-
-interface Profile {
-  full_name: string | null;
-  email: string | null;
-  saudi_university: string | null;
+  notes: string | null;
 }
 
 export default function MyRequests() {
   const { user } = useAuth();
   const { t, dir, lang } = useLang();
-  const [rows, setRows] = useState<Row[]>([]);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [rows, setRows] = useState<ReqRow[]>([]);
+  const [itemsByReq, setItemsByReq] = useState<Record<string, ItemRow[]>>({});
+  const [matchesByReq, setMatchesByReq] = useState<Record<string, MatchRow[]>>({});
   const [loading, setLoading] = useState(true);
-  const [expandedBatchId, setExpandedBatchId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
-    Promise.all([
-      supabase
+    (async () => {
+      setLoading(true);
+      const { data: reqs } = await supabase
         .from("equivalency_requests")
-        .select("*")
+        .select("id, student_full_name, previous_diploma_source, student_type, credits_cap, status, admin_notes, reviewer_name, created_at, reviewed_at")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("profiles")
-        .select("full_name,email,saudi_university")
-        .eq("id", user.id)
-        .maybeSingle(),
-    ]).then(([reqRes, profRes]) => {
-      setRows((reqRes.data ?? []) as Row[]);
-      setProfile((profRes.data ?? null) as Profile | null);
+        .order("created_at", { ascending: false });
+      const list = (reqs ?? []) as ReqRow[];
+      setRows(list);
+
+      if (list.length) {
+        const ids = list.map((r) => r.id);
+        const [itemsRes, matchesRes] = await Promise.all([
+          supabase.from("equivalency_request_items").select("*").in("request_id", ids).order("display_order"),
+          supabase.from("equivalency_matches").select("*").in("request_id", ids),
+        ]);
+        const itemsMap: Record<string, ItemRow[]> = {};
+        (itemsRes.data ?? []).forEach((i: ItemRow) => {
+          (itemsMap[i.request_id] ??= []).push(i);
+        });
+        const matchesMap: Record<string, MatchRow[]> = {};
+        (matchesRes.data ?? []).forEach((m: MatchRow) => {
+          (matchesMap[m.request_id] ??= []).push(m);
+        });
+        setItemsByReq(itemsMap);
+        setMatchesByReq(matchesMap);
+      }
       setLoading(false);
-    });
+    })();
   }, [user]);
 
-  const badge = (s: Row["status"]) => {
+  const badge = (s: ReqRow["status"]) => {
     if (s === "approved") return <Badge className="bg-success text-white gap-1"><CheckCircle2 className="h-3 w-3" /> {t("admin.statusApproved")}</Badge>;
     if (s === "rejected") return <Badge className="bg-destructive text-destructive-foreground gap-1"><XCircle className="h-3 w-3" /> {t("admin.statusRejected")}</Badge>;
     return <Badge className="bg-gold text-gold-foreground gap-1"><Clock className="h-3 w-3" /> {t("admin.statusPending")}</Badge>;
   };
-
-  const decisionBadge = (s: "pending" | "approved" | "rejected") => {
-    if (s === "approved") return <Badge className="bg-success text-white gap-1 text-[11px]"><CheckCircle2 className="h-3 w-3" /> مقبولة</Badge>;
-    if (s === "rejected") return <Badge className="bg-destructive text-destructive-foreground gap-1 text-[11px]"><XCircle className="h-3 w-3" /> مرفوضة</Badge>;
-    return <Badge className="bg-gold text-gold-foreground gap-1 text-[11px]"><Clock className="h-3 w-3" /> قيد المراجعة</Badge>;
-  };
-
-  const buildDecisionData = (r: Row, batchCourses: BatchCourse[]) => ({
-    requestId: r.id,
-    studentName: profile?.full_name || user?.email || "—",
-    studentEmail: profile?.email || user?.email || "—",
-    saudiUniversity: profile?.saudi_university || "—",
-    saudiCourseName: r.saudi_course_name || "—",
-    saudiCourseDescription: r.saudi_course_description || "",
-    inputMode: "text",
-    matchedCode: r.matched_aut_code || "—",
-    matchedName: r.matched_aut_name || "—",
-    similarity: Number(r.similarity ?? 0),
-    verdict: r.verdict || "—",
-    status: r.status,
-    adminNotes: r.admin_notes || "",
-    reviewerName: r.reviewer_name || "",
-    reviewerEmail: "committee@aut.edu.jo",
-    reviewedAt: r.reviewed_at || "",
-    submittedAt: r.created_at,
-    batchCourses: batchCourses.length
-      ? batchCourses.map((c) => ({
-          saudi_course_name: c.saudi_course_name,
-          matched_aut_name: c.matches?.[0]?.aut_name,
-          matched_aut_code: c.matches?.[0]?.aut_code,
-          similarity: c.overall_similarity,
-          verdict: c.verdict,
-          summary: (c as { summary?: string }).summary,
-          decision: c.decision,
-        }))
-      : undefined,
-  });
 
   return (
     <SiteLayout>
       <section className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground py-10">
         <div className="container mx-auto px-4 max-w-5xl">
           <Link to="/" className="inline-block text-primary-foreground/70 hover:text-primary-foreground text-sm mb-3">
-            {t("eq.back")}
+            ← {lang === "ar" ? "الرئيسية" : "Home"}
           </Link>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div className="flex items-center gap-4">
@@ -152,96 +127,100 @@ export default function MyRequests() {
           </Card>
         ) : (
           rows.map((r) => {
-            const batchCourses = getBatchCourses(r.ai_result);
-            const isBatch = batchCourses.length > 1;
-            const approvedCount = batchCourses.filter((c) => c.decision?.status === "approved").length;
-            const rejectedCount = batchCourses.filter((c) => c.decision?.status === "rejected").length;
-            const pendingCount = batchCourses.length - approvedCount - rejectedCount;
-            const isExpanded = expandedBatchId === r.id;
+            const items = itemsByReq[r.id] ?? [];
+            const matches = matchesByReq[r.id] ?? [];
+            const approvedCredits = matches
+              .filter((m) => m.verdict === "approved")
+              .reduce((s, m) => s + (Number(m.aut_credits) || 0), 0);
+            const isOpen = openId === r.id;
+            const totalSource = items.reduce((s, i) => s + (Number(i.source_credits) || 0), 0);
+
             return (
               <Card key={r.id} className="p-5 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   {badge(r.status)}
-                  {isBatch && <Badge variant="outline" className="gap-1"><FolderKanban className="h-3 w-3" /> طلب مجمّع</Badge>}
+                  <Badge variant="outline" className="gap-1">
+                    {r.student_type === "same_major"
+                      ? (lang === "ar" ? "نفس التخصص" : "Same major")
+                      : (lang === "ar" ? "تخصص مختلف" : "Different major")}
+                    {" · "}{lang === "ar" ? `سقف ${r.credits_cap}س` : `cap ${r.credits_cap}h`}
+                  </Badge>
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     {new Date(r.created_at).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US")}
                   </span>
                 </div>
-                <div className="font-heading font-bold text-foreground">
-                  {r.saudi_course_name || r.saudi_course_description?.slice(0, 100) || "—"}
+
+                <div className="flex items-start gap-3">
+                  <GraduationCap className="h-5 w-5 text-primary mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <div className="font-heading font-bold text-foreground">{r.student_full_name || "—"}</div>
+                    <div className="text-xs text-muted-foreground">{r.previous_diploma_source || "—"}</div>
+                  </div>
                 </div>
 
-                {isBatch ? (
-                  <div className="space-y-3 rounded-lg border bg-accent/20 p-4">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-heading font-bold text-primary">ملخص المواد داخل الطلب</div>
-                        <div className="text-xs text-muted-foreground mt-1">يمكنك معرفة المقبول والمرفوض لكل مادة من نفس الملف.</div>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge className="bg-success/15 text-success border-success/30">مقبولة: {approvedCount}</Badge>
-                        <Badge className="bg-destructive/15 text-destructive border-destructive/30">مرفوضة: {rejectedCount}</Badge>
-                        <Badge className="bg-gold text-gold-foreground">قيد المراجعة: {pendingCount}</Badge>
-                      </div>
-                    </div>
+                {/* Credits cap progress */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">
+                      {lang === "ar" ? "ساعات معتمَدة من المعادلة" : "Approved equivalent credits"}
+                    </span>
+                    <span className="font-bold">
+                      {approvedCredits} / {r.credits_cap} {lang === "ar" ? "س" : "h"}
+                    </span>
+                  </div>
+                  <Progress
+                    value={Math.min(100, (approvedCredits / r.credits_cap) * 100)}
+                    className={`h-2 ${approvedCredits > r.credits_cap ? "[&>div]:bg-destructive" : "[&>div]:bg-success"}`}
+                  />
+                </div>
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="gap-2 w-full sm:w-auto"
-                      onClick={() => setExpandedBatchId(isExpanded ? null : r.id)}
-                    >
-                      {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                      {isExpanded ? "إخفاء تفاصيل المواد" : "استعراض المقبول والمرفوض"}
-                    </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => setOpenId(isOpen ? null : r.id)}
+                >
+                  {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {isOpen
+                    ? (lang === "ar" ? "إخفاء التفاصيل" : "Hide details")
+                    : (lang === "ar" ? `استعراض ${items.length} مادة (${totalSource}س)` : `View ${items.length} courses (${totalSource}h)`)}
+                </Button>
 
-                    {isExpanded && (
-                      <div className="space-y-2">
-                        {batchCourses.map((course, index) => {
-                          const topMatch = course.matches?.[0];
-                          const courseStatus = course.decision?.status ?? "pending";
-                          return (
-                            <div key={`${r.id}-${index}`} className={`rounded-lg border p-3 ${dir === "rtl" ? "border-r-4" : "border-l-4"} ${
-                              courseStatus === "approved"
-                                ? dir === "rtl" ? "border-r-success" : "border-l-success"
-                                : courseStatus === "rejected"
-                                ? dir === "rtl" ? "border-r-destructive" : "border-l-destructive"
-                                : dir === "rtl" ? "border-r-gold" : "border-l-gold"
-                            }`}>
-                              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                                <div className="space-y-1 min-w-0">
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <Badge variant="outline">مادة #{index + 1}</Badge>
-                                    {decisionBadge(courseStatus)}
-                                  </div>
-                                  <div className="font-heading font-bold text-foreground truncate">{course.saudi_course_name}</div>
-                                  {topMatch && (
-                                    <div className="text-xs text-primary font-medium">
-                                      {topMatch.aut_name} <span className="text-muted-foreground">({topMatch.aut_code})</span>
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="text-sm font-heading font-bold text-primary">{Math.round(course.overall_similarity ?? 0)}%</div>
+                {isOpen && (
+                  <div className="rounded-lg border bg-accent/20 p-3 space-y-2">
+                    {items.length === 0 ? (
+                      <div className="text-xs text-muted-foreground">{lang === "ar" ? "لا مواد." : "No items."}</div>
+                    ) : (
+                      items.map((it) => {
+                        const itMatch = matches.find((m) => (m.source_item_ids || []).includes(it.id));
+                        return (
+                          <div key={it.id} className="flex flex-wrap items-center justify-between gap-2 text-sm bg-card border rounded-md p-2.5">
+                            <div className="min-w-0 flex-1">
+                              <div className="font-bold text-foreground truncate">{it.source_course_name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {it.source_course_code || "—"} · {it.source_credits}{lang === "ar" ? "س" : "h"}
+                                {it.source_grade && <> · {it.source_grade}</>}
                               </div>
                             </div>
-                          );
-                        })}
-                      </div>
+                            {itMatch ? (
+                              itMatch.verdict === "approved" ? (
+                                <Badge className="bg-success text-white gap-1"><CheckCircle2 className="h-3 w-3" /> {lang === "ar" ? "معادَلة" : "Equivalent"}</Badge>
+                              ) : itMatch.verdict === "rejected" ? (
+                                <Badge className="bg-destructive text-destructive-foreground gap-1"><XCircle className="h-3 w-3" /> {lang === "ar" ? "غير معادَلة" : "Not equivalent"}</Badge>
+                              ) : (
+                                <Badge className="bg-gold text-gold-foreground gap-1"><Clock className="h-3 w-3" /> {lang === "ar" ? "قيد المراجعة" : "Pending"}</Badge>
+                              )
+                            ) : (
+                              <Badge variant="outline" className="gap-1"><BookOpen className="h-3 w-3" /> {lang === "ar" ? "بانتظار المراجعة" : "Awaiting review"}</Badge>
+                            )}
+                          </div>
+                        );
+                      })
                     )}
                   </div>
-                ) : r.matched_aut_name ? (
-                  <div className="bg-accent/40 p-3 rounded-md space-y-2">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2 text-sm font-bold text-primary">
-                        <BookOpen className="h-4 w-4" />
-                        {r.matched_aut_name} <span className="text-xs text-muted-foreground">({r.matched_aut_code})</span>
-                      </div>
-                      <span className="font-heading font-bold text-primary">{Math.round(Number(r.similarity ?? 0))}%</span>
-                    </div>
-                    <Progress value={Number(r.similarity ?? 0)} className="h-1.5" />
-                  </div>
-                ) : null}
+                )}
 
                 {(r.admin_notes || r.reviewer_name) && (
                   <div className={`flex gap-2 text-sm bg-primary/5 p-3 rounded-md ${dir === "rtl" ? "border-r-2" : "border-l-2"} border-primary`}>
@@ -249,7 +228,7 @@ export default function MyRequests() {
                     <div className="flex-1 space-y-1">
                       {r.reviewer_name && (
                         <div className="text-xs">
-                          <span className="text-muted-foreground font-heading">القرار صادر عن: </span>
+                          <span className="text-muted-foreground font-heading">{lang === "ar" ? "القرار صادر عن: " : "Reviewed by: "}</span>
                           <span className="font-heading font-bold text-primary">د. {r.reviewer_name}</span>
                         </div>
                       )}
@@ -259,31 +238,6 @@ export default function MyRequests() {
                           <div className="text-foreground">{r.admin_notes}</div>
                         </>
                       )}
-                    </div>
-                  </div>
-                )}
-
-                {/* أزرار تحميل الشهادة الرسمية بعد قرار المشرف */}
-                {r.status !== "pending" && (
-                  <div className={`rounded-lg border-2 p-3 space-y-2 ${
-                    r.status === "approved"
-                      ? "border-success/40 bg-success/5"
-                      : "border-destructive/40 bg-destructive/5"
-                  }`}>
-                    <div className="flex items-center gap-2 text-xs font-heading">
-                      <FileText className={`h-4 w-4 ${r.status === "approved" ? "text-success" : "text-destructive"}`} />
-                      <span className="font-bold">
-                        {r.status === "approved" ? "تم اعتماد المعادلة بنجاح" : "تم إصدار قرار من قبل المرشد"}
-                      </span>
-                    </div>
-                    <div className="flex">
-                      <Button
-                        size="sm"
-                        onClick={() => exportDecisionPdf(buildDecisionData(r, batchCourses))}
-                        className="gap-2 flex-1 bg-gold text-gold-foreground hover:bg-gold/90 font-bold"
-                      >
-                        <Download className="h-4 w-4" /> Download Certificate (PDF)
-                      </Button>
                     </div>
                   </div>
                 )}
