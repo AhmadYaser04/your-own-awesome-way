@@ -78,7 +78,66 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // نُرسل رابط الملف مباشرة إلى Gemini عبر Lovable AI
+    // كشف نوع الملف من الامتداد أو من Content-Type
+    const urlPath = (() => {
+      try { return new URL(fileUrl).pathname.toLowerCase(); } catch { return fileUrl.toLowerCase(); }
+    })();
+    const isPdf = urlPath.includes(".pdf");
+
+    let userContent: unknown;
+
+    if (isPdf) {
+      // PDF: نزّل الملف، استخرج النص، وأرسله كنص للذكاء الاصطناعي
+      try {
+        const fileRes = await fetch(fileUrl);
+        if (!fileRes.ok) {
+          return new Response(
+            JSON.stringify({ error: `تعذّر تنزيل الملف: ${fileRes.status}` }),
+            { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        const buf = new Uint8Array(await fileRes.arrayBuffer());
+        if (buf.byteLength > 15 * 1024 * 1024) {
+          return new Response(
+            JSON.stringify({ error: "حجم الملف كبير جداً (الحد الأقصى 15MB)" }),
+            { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        const { extractText } = await import("https://esm.sh/unpdf@0.12.1");
+        const { text } = await extractText(buf, { mergePages: true });
+        const pdfText = (Array.isArray(text) ? text.join("\n") : String(text || "")).slice(0, 40000);
+        if (!pdfText.trim()) {
+          return new Response(
+            JSON.stringify({ error: "لم يتم العثور على نص قابل للقراءة في ملف PDF. قد يكون الملف صورة ممسوحة ضوئياً — يُرجى رفعه كصورة (PNG/JPEG)." }),
+            { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        userContent = [
+          {
+            type: "text",
+            text: `استخرج كل المواد المُجتازة من نص كشف العلامات التالي بدقة عالية، ولا تخترع رموزاً لمواد ليس لها رمز ظاهر. أعد JSON فقط.\n\n=== نص الكشف ===\n${pdfText}`,
+          },
+        ];
+      } catch (e) {
+        return new Response(
+          JSON.stringify({ error: `فشل قراءة PDF: ${(e as Error)?.message ?? e}` }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else {
+      // صورة: أرسل الرابط مباشرة كـ image_url
+      userContent = [
+        {
+          type: "text",
+          text: "استخرج كل المواد المُجتازة من هذا الكشف بدقة عالية، ولا تخترع رموزاً لمواد ليس لها رمز ظاهر. أعد JSON فقط.",
+        },
+        {
+          type: "image_url",
+          image_url: { url: fileUrl },
+        },
+      ];
+    }
+
     const aiRes = await fetch(LOVABLE_AI_URL, {
       method: "POST",
       headers: {
@@ -91,19 +150,7 @@ Deno.serve(async (req: Request) => {
         temperature: 0.1,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "استخرج كل المواد المُجتازة من هذا الكشف بدقة عالية، ولا تخترع رموزاً لمواد ليس لها رمز ظاهر. أعد JSON فقط.",
-              },
-              {
-                type: "image_url",
-                image_url: { url: fileUrl },
-              },
-            ],
-          },
+          { role: "user", content: userContent },
         ],
       }),
     });
