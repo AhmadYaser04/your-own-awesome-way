@@ -10,13 +10,6 @@ export default function Home() {
   const { t, dir } = useLang();
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
 
-  const stats = [
-    { icon: GraduationCap, value: "1", label: t("home.stat.spec"), color: "text-primary", bg: "bg-primary/10" },
-    { icon: BookOpen, value: "+15", label: t("home.stat.courses"), color: "text-secondary", bg: "bg-secondary/10" },
-    { icon: Target, value: "AI", label: t("home.stat.engine"), color: "text-success", bg: "bg-success/10" },
-    { icon: Zap, value: "<10", label: t("home.stat.speed"), color: "text-gold", bg: "bg-gold/15" },
-  ];
-
   const steps = [
     { icon: ScrollText, title: t("home.step1.t"), desc: t("home.step1.d") },
     { icon: FileSearch, title: t("home.step2.t"), desc: t("home.step2.d") },
@@ -154,26 +147,6 @@ export default function Home() {
             </div>
           </div>
         </Card>
-      </section>
-
-      {/* Stats */}
-      <section className="container mx-auto px-4 py-12">
-        <h2 className="text-center font-heading text-2xl font-bold text-foreground mb-8">{t("home.statsTitle")}</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-          {stats.map((s, i) => (
-            <Card
-              key={s.label}
-              className="p-5 text-center hover:shadow-elegant transition-all hover:-translate-y-1 animate-fade-up border-2"
-              style={{ animationDelay: `${i * 80}ms` }}
-            >
-              <div className={`${s.bg} rounded-2xl w-14 h-14 mx-auto flex items-center justify-center mb-3`}>
-                <s.icon className={`h-7 w-7 ${s.color}`} />
-              </div>
-              <div className="font-heading font-bold text-2xl text-foreground">{s.value}</div>
-              <div className="text-xs text-muted-foreground font-heading mt-1">{s.label}</div>
-            </Card>
-          ))}
-        </div>
       </section>
 
       {/* Vibrant student-friendly perks strip */}
