@@ -15,6 +15,7 @@ import { useLang } from "@/i18n/LanguageProvider";
 
 interface ReqRow {
   id: string;
+  user_id: string;
   student_full_name: string | null;
   previous_diploma_source: string | null;
   student_type: string;
@@ -24,6 +25,8 @@ interface ReqRow {
   reviewer_name: string | null;
   created_at: string;
   reviewed_at: string | null;
+  owner_email?: string | null;
+  owner_name?: string | null;
 }
 
 interface ItemRow {
@@ -48,7 +51,7 @@ interface MatchRow {
 }
 
 export default function MyRequests() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const { t, dir, lang } = useLang();
   const [rows, setRows] = useState<ReqRow[]>([]);
   const [itemsByReq, setItemsByReq] = useState<Record<string, ItemRow[]>>({});
@@ -60,12 +63,27 @@ export default function MyRequests() {
     if (!user) return;
     (async () => {
       setLoading(true);
-      const { data: reqs } = await supabase
+      const isAdmin = role === "admin";
+      let query = supabase
         .from("equivalency_requests")
-        .select("id, student_full_name, previous_diploma_source, student_type, credits_cap, status, admin_notes, reviewer_name, created_at, reviewed_at")
-        .eq("user_id", user.id)
+        .select("id, user_id, student_full_name, previous_diploma_source, student_type, credits_cap, status, admin_notes, reviewer_name, created_at, reviewed_at")
         .order("created_at", { ascending: false });
+      if (!isAdmin) query = query.eq("user_id", user.id);
+      const { data: reqs } = await query;
       const list = (reqs ?? []) as ReqRow[];
+
+      // Enrich with owner profile when admin
+      if (isAdmin && list.length) {
+        const uids = Array.from(new Set(list.map((r) => r.user_id)));
+        const { data: profs } = await supabase
+          .from("profiles").select("id, full_name, email").in("id", uids);
+        const pmap = new Map((profs ?? []).map((p) => [p.id, p]));
+        for (const r of list) {
+          const p = pmap.get(r.user_id);
+          r.owner_email = p?.email ?? null;
+          r.owner_name = p?.full_name ?? null;
+        }
+      }
       setRows(list);
 
       if (list.length) {
@@ -87,7 +105,7 @@ export default function MyRequests() {
       }
       setLoading(false);
     })();
-  }, [user]);
+  }, [user, role]);
 
   const badge = (s: ReqRow["status"]) => {
     if (s === "approved") return <Badge className="bg-success text-white gap-1"><CheckCircle2 className="h-3 w-3" /> {t("admin.statusApproved")}</Badge>;
@@ -106,8 +124,16 @@ export default function MyRequests() {
             <div className="flex items-center gap-4">
               <div className="bg-primary-foreground/15 backdrop-blur-md p-3 rounded-2xl"><FileText className="h-8 w-8" /></div>
               <div>
-                <h1 className="font-heading text-2xl md:text-3xl font-bold">{t("myReq.title")}</h1>
-                <p className="text-primary-foreground/85 text-sm mt-1">{t("myReq.subtitle")}</p>
+                <h1 className="font-heading text-2xl md:text-3xl font-bold">
+                  {role === "admin"
+                    ? (lang === "ar" ? "كل طلبات المعادلة" : "All equivalency requests")
+                    : t("myReq.title")}
+                </h1>
+                <p className="text-primary-foreground/85 text-sm mt-1">
+                  {role === "admin"
+                    ? (lang === "ar" ? "عرض جميع الطلبات المقدمة من الطلاب" : "View all student-submitted requests")
+                    : t("myReq.subtitle")}
+                </p>
               </div>
             </div>
             <Button asChild variant="secondary" className="gap-2">
@@ -156,7 +182,18 @@ export default function MyRequests() {
                   <div className="min-w-0 flex-1">
                     <div className="font-heading font-bold text-foreground">{r.student_full_name || "—"}</div>
                     <div className="text-xs text-muted-foreground">{r.previous_diploma_source || "—"}</div>
+                    {role === "admin" && (
+                      <div className="text-[11px] text-muted-foreground mt-1">
+                        {lang === "ar" ? "مقدِّم الطلب: " : "Submitter: "}
+                        <span className="font-bold">{r.owner_name || r.owner_email || r.user_id.slice(0, 8)}</span>
+                      </div>
+                    )}
                   </div>
+                  {role === "admin" && (
+                    <Button asChild size="sm" variant="outline">
+                      <Link to={`/admin/review/${r.id}`}>{lang === "ar" ? "مراجعة" : "Review"}</Link>
+                    </Button>
+                  )}
                 </div>
 
                 {/* Credits cap progress */}
