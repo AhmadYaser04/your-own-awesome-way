@@ -699,10 +699,10 @@ export default function AdminReview() {
                 onClick={handleAutoMatch}
                 disabled={busy || items.length === 0}
                 className="gap-2"
-                title={lang === "ar" ? "اقتراح معادلات تلقائية بالذكاء الاصطناعي" : "AI auto-match"}
+                title={lang === "ar" ? "اقتراح معادلات تلقائية" : "Auto-match"}
               >
                 <Sparkles className="h-4 w-4" />
-                {lang === "ar" ? "معادلة تلقائية (AI)" : "Auto-match (AI)"}
+                {lang === "ar" ? "معادلة تلقائية" : "Auto-match"}
               </Button>
               {(selectedItemIds.size > 0 || selectedAutId) && (
                 <Button
