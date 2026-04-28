@@ -8,8 +8,7 @@
  * Merged courses (N→1) are visually grouped with a left brace `{`.
  */
 
-// Inline as base64 data URL so it always renders inside window.open() blank docs.
-import autLogo from "@/assets/aut-logo-official.png?inline";
+import autLogo from "@/assets/aut-logo-official.png";
 
 export type PrintMode = "approved" | "rejected" | "full";
 
