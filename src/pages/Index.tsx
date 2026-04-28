@@ -22,10 +22,6 @@ export default function Home() {
       <section className="relative bg-gradient-to-b from-accent/40 via-background to-background pt-8 pb-16">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-8 space-y-3">
-            <span className="inline-flex items-center gap-2 bg-gold/20 border border-gold/40 text-gold-foreground text-xs md:text-sm font-heading font-bold px-4 py-1.5 rounded-full animate-fade-up">
-              <Sparkles className="h-3.5 w-3.5" />
-              {t("home.badge")}
-            </span>
             <h1 className="font-heading text-3xl md:text-5xl font-bold text-foreground animate-fade-up leading-tight">
               {t("home.title")}
             </h1>

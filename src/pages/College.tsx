@@ -184,9 +184,6 @@ export default function College() {
                   >
                     <Icon className={`h-4 w-4 ${meta.color}`} />
                     <span className="font-heading font-bold">{lang === "ar" ? meta.ar : meta.en}</span>
-                    <Badge variant="outline" className="ml-1 text-[10px]">
-                      {list.length} · {credits}{lang === "ar" ? " س" : "h"}
-                    </Badge>
                   </TabsTrigger>
                 );
               })}
