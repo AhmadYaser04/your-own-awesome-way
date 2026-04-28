@@ -1,551 +1,449 @@
 import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  Sparkles, Loader2, AlertCircle, CheckCircle2, XCircle, AlertTriangle, Brain,
-  ArrowLeft, ArrowRight, FileText, Upload, Image as ImageIcon, FileType2, X, Save, LogIn,
+  Sparkles, Loader2, AlertCircle, Brain, ArrowLeft, ArrowRight,
+  Upload, Image as ImageIcon, FileType2, X, Plus, Trash2, Save, LogIn,
+  GraduationCap, FileText,
 } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LanguageProvider";
 import { useAuth } from "@/hooks/useAuth";
 
-interface Match {
-  aut_code: string;
-  aut_name: string;
-  similarity: number;
-  reasoning: string;
-}
-interface CourseResult {
-  saudi_course_name: string;
-  extracted_course?: string;
-  matches: Match[];
-  verdict: "تُعادَل" | "تُعادَل بشروط" | "لا تُعادَل";
-  overall_similarity: number;
-  summary: string;
-}
-interface Result {
-  // legacy (مادة واحدة)
-  matches: Match[];
-  verdict: "تُعادَل" | "تُعادَل بشروط" | "لا تُعادَل";
-  overall_similarity: number;
-  summary: string;
-  extracted_course?: string;
-  // batch
-  is_batch?: boolean;
-  courses: CourseResult[];
+const MAX_FILE_BYTES = 50 * 1024 * 1024;
+
+type StudentType = "same_major" | "different_major";
+
+interface CourseRow {
+  source_course_name: string;
+  source_course_code: string;
+  source_credits: number;
+  source_grade: string;
 }
 
-const SAMPLE = `اسم المادة: مقدمة في الذكاء الاصطناعي
-الساعات المعتمدة: 3
-المخرجات التعليمية: يتعرف الطالب على المفاهيم الأساسية للذكاء الاصطناعي وتاريخه وتطبيقاته. يتقن خوارزميات البحث (BFS, DFS, A*). يفهم تمثيل المعرفة والاستدلال المنطقي. يطبق المفاهيم في حل مسائل عملية باستخدام بايثون.
-المواضيع: تعريف الذكاء الاصطناعي، الوكلاء الذكية، البحث العمياء والمستنير، تمثيل المعرفة بمنطق الإسناد، أنظمة الخبراء، مقدمة في تعلم الآلة.`;
-
-type Mode = "text" | "pdf" | "image";
-
-const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50MB
-
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error("Failed to read file"));
-    reader.readAsDataURL(file);
-  });
-}
+const emptyRow = (): CourseRow => ({
+  source_course_name: "",
+  source_course_code: "",
+  source_credits: 3,
+  source_grade: "",
+});
 
 export default function Equivalency() {
-  const { t, dir } = useLang();
+  const { dir, lang } = useLang();
   const { user } = useAuth();
+  const nav = useNavigate();
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
 
-  const [mode, setMode] = useState<Mode>("text");
-  const [input, setInput] = useState("");
+  // Student header
+  const [studentFullName, setStudentFullName] = useState("");
+  const [studentId, setStudentId] = useState("");
+  const [studentCollege, setStudentCollege] = useState("");
+  const [studentMajor, setStudentMajor] = useState("");
+  const [previousDiplomaSource, setPreviousDiplomaSource] = useState("");
+  const [cumulativeGpa, setCumulativeGpa] = useState("");
+  const [diplomaGpa, setDiplomaGpa] = useState("");
+  const [academicYear, setAcademicYear] = useState("");
+  const [semester, setSemester] = useState("");
+  const [studentType, setStudentType] = useState<StudentType>("different_major");
+
+  // Courses table
+  const [rows, setRows] = useState<CourseRow[]>([emptyRow()]);
+
+  // Optional file upload (transcript scan for advisor)
   const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<Result | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [savedId, setSavedId] = useState<string | null>(null);
 
-  const pdfInputRef = useRef<HTMLInputElement>(null);
-  const imgInputRef = useRef<HTMLInputElement>(null);
+  const creditsCap = studentType === "same_major" ? 66 : 30;
+  const totalSourceCredits = rows.reduce((s, r) => s + (Number(r.source_credits) || 0), 0);
 
-  const verdictConfig = (v: Result["verdict"]) => {
-    if (v === "تُعادَل") return { color: "bg-success text-white", icon: CheckCircle2 };
-    if (v === "تُعادَل بشروط") return { color: "bg-gold text-gold-foreground", icon: AlertTriangle };
-    return { color: "bg-destructive text-destructive-foreground", icon: XCircle };
+  const updateRow = (i: number, patch: Partial<CourseRow>) => {
+    setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
   };
+  const addRow = () => setRows((prev) => [...prev, emptyRow()]);
+  const removeRow = (i: number) => setRows((prev) => prev.filter((_, idx) => idx !== i));
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     if (f.size > MAX_FILE_BYTES) {
-      toast({
-        title: t("eq.error"),
-        description: "Max 50MB",
-        variant: "destructive",
-      });
+      toast({ title: "خطأ", description: lang === "ar" ? "الحد الأقصى 50MB" : "Max 50MB", variant: "destructive" });
       return;
     }
     setFile(f);
-    setResult(null);
-    setError(null);
   };
 
-  const persistRequest = async (res: Result, descriptionText: string) => {
-    if (!user) return;
-    setSaving(true);
-    const courses = res.courses ?? [];
-    const isBatch = (res.is_batch ?? courses.length > 1) && courses.length > 1;
-    const top = res.matches?.[0] ?? courses[0]?.matches?.[0];
-
-    const headerName = isBatch
-      ? `📚 دفعة من ${courses.length} مواد`
-      : courses[0]?.saudi_course_name ||
-        res.extracted_course?.split("\n")[0]?.slice(0, 200) ||
-        descriptionText.split("\n")[0]?.slice(0, 200) ||
-        null;
-
-    const headerDesc = isBatch
-      ? `طلب جماعي يحتوي على ${courses.length} مواد سعودية:\n` +
-        courses
-          .map(
-            (c, i) =>
-              `${i + 1}. ${c.saudi_course_name} → ${c.matches?.[0]?.aut_name ?? "—"} (${Math.round(
-                c.overall_similarity ?? 0
-              )}%) — ${c.verdict}`
-          )
-          .join("\n")
-      : descriptionText.slice(0, 8000);
-
-    const { data, error: dbErr } = await supabase
-      .from("equivalency_requests")
-      .insert([
-        {
-          user_id: user.id,
-          saudi_course_name: headerName,
-          saudi_course_description: headerDesc,
-          input_mode: mode,
-          ai_result: res as unknown as never,
-          matched_aut_code: top?.aut_code ?? null,
-          matched_aut_name: top?.aut_name ?? null,
-          similarity: isBatch
-            ? Math.round(
-                courses.reduce((a, c) => a + (c.overall_similarity ?? 0), 0) / courses.length
-              )
-            : res.overall_similarity ?? null,
-          verdict: isBatch ? `دفعة (${courses.length} مواد)` : res.verdict ?? null,
-          status: "pending",
-        },
-      ])
-      .select("id")
-      .single();
-    setSaving(false);
-    if (dbErr) {
-      toast({ title: t("eq.toast.failTitle"), description: dbErr.message, variant: "destructive" });
-      return;
-    }
-    setSavedId(data?.id ?? null);
-    toast({ title: t("eq.saved"), description: t("eq.savedDesc") });
+  const validate = (): string | null => {
+    if (!studentFullName.trim()) return lang === "ar" ? "اسم الطالب مطلوب" : "Student name is required";
+    if (!previousDiplomaSource.trim()) return lang === "ar" ? "الجامعة/الدبلوم السابق مطلوب" : "Previous diploma source is required";
+    const validRows = rows.filter((r) => r.source_course_name.trim().length > 0);
+    if (validRows.length === 0) return lang === "ar" ? "أضف مادة واحدة على الأقل" : "Add at least one course";
+    return null;
   };
 
   const handleSubmit = async () => {
     setError(null);
-    setResult(null);
-    setSavedId(null);
-
-    let payload: Record<string, unknown> = { inputMode: mode };
-    let descriptionForDb = "";
-
-    if (mode === "text") {
-      if (input.trim().length < 20) {
-        toast({
-          title: t("eq.toast.shortTitle"),
-          description: t("eq.toast.shortDesc"),
-          variant: "destructive",
-        });
-        return;
-      }
-      payload.saudiCourse = input.trim();
-      descriptionForDb = input.trim();
-    } else {
-      if (!file) {
-        toast({
-          title: t("eq.toast.noFileTitle"),
-          description: t("eq.toast.noFileDesc"),
-          variant: "destructive",
-        });
-        return;
-      }
-      setLoading(true);
-      try {
-        const dataUrl = await fileToDataUrl(file);
-        payload.fileDataUrl = dataUrl;
-        payload.fileName = file.name;
-        descriptionForDb = `[${mode.toUpperCase()}] ${file.name}`;
-      } catch (e) {
-        setLoading(false);
-        const msg = e instanceof Error ? e.message : String(e);
-        setError(msg);
-        return;
-      }
+    if (!user) {
+      toast({ title: lang === "ar" ? "سجّل دخولك أولاً" : "Please sign in first", variant: "destructive" });
+      nav("/auth");
+      return;
+    }
+    const err = validate();
+    if (err) {
+      setError(err);
+      toast({ title: err, variant: "destructive" });
+      return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     try {
-      const { data, error: fnError } = await supabase.functions.invoke("equivalency", { body: payload });
-      if (fnError) throw fnError;
-      if (data?.error) throw new Error(data.error);
-      const res = data as Result;
-      setResult(res);
-      // Auto-save if user is signed in
-      const fullDesc = res.extracted_course
-        ? `${descriptionForDb}\n---\n${res.extracted_course}`
-        : descriptionForDb;
-      await persistRequest(res, fullDesc);
+      // 1) Optional: upload transcript file
+      let uploadedFileUrl: string | null = null;
+      if (file) {
+        const path = `${user.id}/${Date.now()}-${file.name}`;
+        const { error: upErr } = await supabase.storage
+          .from("equivalency-uploads")
+          .upload(path, file, { upsert: false });
+        if (upErr) throw upErr;
+        uploadedFileUrl = path;
+      }
+
+      // 2) Insert request
+      const { data: reqData, error: reqErr } = await supabase
+        .from("equivalency_requests")
+        .insert({
+          user_id: user.id,
+          student_full_name: studentFullName.trim(),
+          student_id: studentId.trim() || null,
+          student_college: studentCollege.trim() || null,
+          student_major: studentMajor.trim() || null,
+          previous_diploma_source: previousDiplomaSource.trim(),
+          cumulative_gpa: cumulativeGpa ? Number(cumulativeGpa) : null,
+          diploma_gpa: diplomaGpa ? Number(diplomaGpa) : null,
+          academic_year: academicYear.trim() || null,
+          semester: semester.trim() || null,
+          student_type: studentType,
+          credits_cap: creditsCap,
+          input_mode: file ? "file" : "manual",
+          uploaded_file_url: uploadedFileUrl,
+          ai_result: {} as never,
+          status: "pending",
+        })
+        .select("id")
+        .single();
+      if (reqErr) throw reqErr;
+      const requestId = reqData!.id;
+
+      // 3) Insert items
+      const validRows = rows.filter((r) => r.source_course_name.trim().length > 0);
+      const itemsPayload = validRows.map((r, idx) => ({
+        request_id: requestId,
+        source_course_name: r.source_course_name.trim(),
+        source_course_code: r.source_course_code.trim() || null,
+        source_credits: Number(r.source_credits) || 0,
+        source_grade: r.source_grade.trim() || null,
+        display_order: idx,
+      }));
+      const { error: itemsErr } = await supabase
+        .from("equivalency_request_items")
+        .insert(itemsPayload);
+      if (itemsErr) throw itemsErr;
+
+      toast({
+        title: lang === "ar" ? "تم إرسال طلبك بنجاح" : "Request submitted successfully",
+        description: lang === "ar"
+          ? "سيقوم المرشد الأكاديمي بمراجعة طلبك قريباً."
+          : "Your academic advisor will review your request soon.",
+      });
+      nav("/my-requests");
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Unknown error";
+      const msg = e instanceof Error ? e.message : String(e);
       setError(msg);
-      toast({ title: t("eq.toast.failTitle"), description: msg, variant: "destructive" });
+      toast({ title: lang === "ar" ? "تعذّر إرسال الطلب" : "Failed to submit", description: msg, variant: "destructive" });
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  const canSubmit = mode === "text" ? input.trim().length >= 20 : !!file;
-
   return (
     <SiteLayout>
+      {/* Hero */}
       <section className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground py-12">
-        <div className="container mx-auto px-4 max-w-4xl">
+        <div className="container mx-auto px-4 max-w-5xl">
           <Link to="/" className="inline-block text-primary-foreground/70 hover:text-primary-foreground text-sm mb-3">
-            {t("eq.back")}
+            ← {lang === "ar" ? "الرئيسية" : "Home"}
           </Link>
           <div className="flex items-center gap-4">
             <div className="bg-primary-foreground/15 backdrop-blur-md p-4 rounded-2xl">
               <Brain className="h-10 w-10" />
             </div>
             <div>
-              <Badge className="bg-gold text-gold-foreground border-0 mb-2">{t("eq.badge")}</Badge>
-              <h1 className="font-heading text-2xl md:text-3xl font-bold">{t("eq.title")}</h1>
-              <p className="text-primary-foreground/85 text-sm md:text-base mt-1">{t("eq.subtitle")}</p>
+              <Badge className="bg-gold text-gold-foreground border-0 mb-2">
+                {lang === "ar" ? "نموذج معادلة المواد للطلبة المجسرين" : "Bridging Students Equivalency Form"}
+              </Badge>
+              <h1 className="font-heading text-2xl md:text-3xl font-bold">
+                {lang === "ar" ? "طلب معادلة مواد" : "Course Equivalency Request"}
+              </h1>
+              <p className="text-primary-foreground/85 text-sm md:text-base mt-1">
+                {lang === "ar"
+                  ? "أدخل بيانات الطالب ومواد الدبلوم السابقة، وسيقوم المرشد الأكاديمي بإجراء المعادلة الرسمية."
+                  : "Provide student info and prior diploma courses; the academic advisor will perform the official equivalency."}
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-10 max-w-4xl space-y-6">
-        <Card className="p-6 md:p-8 border-2">
-          <Tabs value={mode} onValueChange={(v) => { setMode(v as Mode); setResult(null); setError(null); }}>
-            <TabsList className="grid w-full grid-cols-3 mb-5">
-              <TabsTrigger value="text" className="gap-2" disabled={loading}>
-                <FileText className="h-4 w-4" />
-                {t("eq.tab.text")}
-              </TabsTrigger>
-              <TabsTrigger value="pdf" className="gap-2" disabled={loading}>
-                <FileType2 className="h-4 w-4" />
-                {t("eq.tab.pdf")}
-              </TabsTrigger>
-              <TabsTrigger value="image" className="gap-2" disabled={loading}>
-                <ImageIcon className="h-4 w-4" />
-                {t("eq.tab.image")}
-              </TabsTrigger>
-            </TabsList>
+      <section className="container mx-auto px-4 py-10 max-w-5xl space-y-6">
+        {!user && (
+          <Alert className="border-2 border-gold/40 bg-gold/5">
+            <LogIn className="h-4 w-4" />
+            <AlertTitle>{lang === "ar" ? "سجّل دخولك لتقديم الطلب" : "Sign in to submit a request"}</AlertTitle>
+            <AlertDescription className="flex items-center justify-between gap-3 flex-wrap">
+              <span>{lang === "ar"
+                ? "تحتاج لحساب طالب لتقديم طلب معادلة وحفظه في صفحة طلباتي."
+                : "You need a student account to submit and track the request."}</span>
+              <Button asChild size="sm">
+                <Link to="/auth">{lang === "ar" ? "دخول" : "Sign in"}</Link>
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
-            {/* TEXT */}
-            <TabsContent value="text" className="space-y-3 mt-0">
-              <div className="flex items-center justify-between">
-                <label className="font-heading font-bold text-foreground flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  {t("eq.text.label")}
-                </label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => setInput(SAMPLE)}
-                  disabled={loading}
-                >
-                  {t("eq.text.sample")}
-                </Button>
-              </div>
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={t("eq.text.placeholder")}
-                className="min-h-[220px] text-sm leading-relaxed font-body resize-y"
-                dir={dir}
-                disabled={loading}
-              />
-              <div className="text-xs text-muted-foreground">{input.length} {t("eq.text.charCount")}</div>
-            </TabsContent>
+        {/* Section 1: Student header */}
+        <Card className="p-6 md:p-7 border-2">
+          <div className="flex items-center gap-2 mb-5">
+            <GraduationCap className="h-5 w-5 text-primary" />
+            <h2 className="font-heading font-bold text-lg text-foreground">
+              {lang === "ar" ? "بيانات الطالب" : "Student Information"}
+            </h2>
+          </div>
 
-            {/* PDF */}
-            <TabsContent value="pdf" className="space-y-3 mt-0">
-              <label className="font-heading font-bold text-foreground flex items-center gap-2">
-                <FileType2 className="h-5 w-5 text-primary" />
-                {t("eq.pdf.label")}
-              </label>
-              <input
-                ref={pdfInputRef}
-                type="file"
-                accept="application/pdf"
-                className="hidden"
-                onChange={handleFileChange}
-                disabled={loading}
-              />
-              {!file ? (
-                <button
-                  type="button"
-                  onClick={() => pdfInputRef.current?.click()}
-                  disabled={loading}
-                  className="w-full border-2 border-dashed border-primary/40 rounded-xl p-10 text-center hover:bg-accent/40 hover:border-primary transition-colors flex flex-col items-center gap-3"
-                >
-                  <Upload className="h-10 w-10 text-primary" />
-                  <span className="font-heading font-bold text-foreground">{t("eq.pdf.cta")}</span>
-                  <span className="text-xs text-muted-foreground">{t("eq.pdf.hint")}</span>
-                </button>
-              ) : (
-                <SelectedFile file={file} onRemove={() => setFile(null)} t={t} />
-              )}
-            </TabsContent>
-
-            {/* IMAGE */}
-            <TabsContent value="image" className="space-y-3 mt-0">
-              <label className="font-heading font-bold text-foreground flex items-center gap-2">
-                <ImageIcon className="h-5 w-5 text-primary" />
-                {t("eq.image.label")}
-              </label>
-              <input
-                ref={imgInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={handleFileChange}
-                disabled={loading}
-              />
-              {!file ? (
-                <button
-                  type="button"
-                  onClick={() => imgInputRef.current?.click()}
-                  disabled={loading}
-                  className="w-full border-2 border-dashed border-primary/40 rounded-xl p-10 text-center hover:bg-accent/40 hover:border-primary transition-colors flex flex-col items-center gap-3"
-                >
-                  <ImageIcon className="h-10 w-10 text-primary" />
-                  <span className="font-heading font-bold text-foreground">{t("eq.image.cta")}</span>
-                  <span className="text-xs text-muted-foreground">{t("eq.image.hint")}</span>
-                </button>
-              ) : (
-                <SelectedFile file={file} onRemove={() => setFile(null)} t={t} preview />
-              )}
-            </TabsContent>
-          </Tabs>
-
-          <div className="flex justify-end mt-5">
-            <Button onClick={handleSubmit} disabled={loading || !canSubmit} size="lg" className="gap-2 shadow-elegant">
-              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
-              {loading ? (mode === "text" ? t("eq.analyzing") : t("eq.extracting")) : t("eq.analyze")}
-            </Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <Label>{lang === "ar" ? "اسم الطالب الكامل" : "Full Name"} *</Label>
+              <Input value={studentFullName} onChange={(e) => setStudentFullName(e.target.value)} />
+            </div>
+            <div>
+              <Label>{lang === "ar" ? "الرقم الجامعي" : "Student ID"}</Label>
+              <Input value={studentId} onChange={(e) => setStudentId(e.target.value)} />
+            </div>
+            <div>
+              <Label>{lang === "ar" ? "الكلية في AUT" : "AUT College"}</Label>
+              <Input value={studentCollege} onChange={(e) => setStudentCollege(e.target.value)}
+                placeholder={lang === "ar" ? "كلية تكنولوجيا المعلومات" : "Faculty of IT"} />
+            </div>
+            <div>
+              <Label>{lang === "ar" ? "التخصص في AUT" : "AUT Major"}</Label>
+              <Input value={studentMajor} onChange={(e) => setStudentMajor(e.target.value)}
+                placeholder={lang === "ar" ? "الذكاء الاصطناعي" : "Artificial Intelligence"} />
+            </div>
+            <div className="md:col-span-2">
+              <Label>{lang === "ar" ? "الجامعة / الدبلوم السابق" : "Previous University / Diploma"} *</Label>
+              <Input value={previousDiplomaSource} onChange={(e) => setPreviousDiplomaSource(e.target.value)}
+                placeholder={lang === "ar" ? "مثال: جامعة الملك سعود — دبلوم علوم الحاسب" : "e.g. King Saud University — CS Diploma"} />
+            </div>
+            <div>
+              <Label>{lang === "ar" ? "المعدل التراكمي" : "Cumulative GPA"}</Label>
+              <Input type="number" step="0.01" min="0" max="4" value={cumulativeGpa} onChange={(e) => setCumulativeGpa(e.target.value)} />
+            </div>
+            <div>
+              <Label>{lang === "ar" ? "معدل الدبلوم" : "Diploma GPA"}</Label>
+              <Input type="number" step="0.01" min="0" max="4" value={diplomaGpa} onChange={(e) => setDiplomaGpa(e.target.value)} />
+            </div>
+            <div>
+              <Label>{lang === "ar" ? "العام الأكاديمي" : "Academic Year"}</Label>
+              <Input value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} placeholder="2025/2026" />
+            </div>
+            <div>
+              <Label>{lang === "ar" ? "الفصل" : "Semester"}</Label>
+              <Input value={semester} onChange={(e) => setSemester(e.target.value)}
+                placeholder={lang === "ar" ? "الأول / الثاني / الصيفي" : "1st / 2nd / Summer"} />
+            </div>
+            <div className="md:col-span-2">
+              <Label>{lang === "ar" ? "نوع الانتقال" : "Transfer type"} *</Label>
+              <Select value={studentType} onValueChange={(v) => setStudentType(v as StudentType)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="same_major">
+                    {lang === "ar" ? "نفس التخصص — سقف 66 ساعة" : "Same major — cap 66 credits"}
+                  </SelectItem>
+                  <SelectItem value="different_major">
+                    {lang === "ar" ? "تخصص مختلف — سقف 30 ساعة" : "Different major — cap 30 credits"}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                {lang === "ar"
+                  ? `الحد الأقصى للساعات المعادَلة: ${creditsCap} ساعة معتمدة.`
+                  : `Maximum equivalent credits: ${creditsCap} credit hours.`}
+              </p>
+            </div>
           </div>
         </Card>
 
+        {/* Section 2: Courses table */}
+        <Card className="p-6 md:p-7 border-2">
+          <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              <h2 className="font-heading font-bold text-lg text-foreground">
+                {lang === "ar" ? "مواد الدبلوم السابق" : "Prior Diploma Courses"}
+              </h2>
+              <Badge variant="outline">
+                {rows.length} {lang === "ar" ? "مادة" : "courses"} · {totalSourceCredits} {lang === "ar" ? "ساعة" : "hrs"}
+              </Badge>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={addRow} className="gap-1">
+              <Plus className="h-4 w-4" /> {lang === "ar" ? "إضافة مادة" : "Add course"}
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {/* Header row (md+) */}
+            <div className="hidden md:grid md:grid-cols-12 gap-2 text-xs font-bold text-muted-foreground px-2">
+              <div className="md:col-span-5">{lang === "ar" ? "اسم المادة" : "Course name"}</div>
+              <div className="md:col-span-2">{lang === "ar" ? "الرقم" : "Code"}</div>
+              <div className="md:col-span-2">{lang === "ar" ? "الساعات" : "Credits"}</div>
+              <div className="md:col-span-2">{lang === "ar" ? "العلامة" : "Grade"}</div>
+              <div className="md:col-span-1"></div>
+            </div>
+
+            {rows.map((r, i) => (
+              <div key={i} className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end p-3 md:p-2 rounded-lg border bg-accent/20">
+                <div className="md:col-span-5">
+                  <Label className="md:hidden text-xs">{lang === "ar" ? "اسم المادة" : "Course name"}</Label>
+                  <Input value={r.source_course_name} onChange={(e) => updateRow(i, { source_course_name: e.target.value })}
+                    placeholder={lang === "ar" ? "مثال: مقدمة في الذكاء الاصطناعي" : "e.g. Introduction to AI"} />
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="md:hidden text-xs">{lang === "ar" ? "الرقم" : "Code"}</Label>
+                  <Input value={r.source_course_code} onChange={(e) => updateRow(i, { source_course_code: e.target.value })}
+                    placeholder="CS101" />
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="md:hidden text-xs">{lang === "ar" ? "الساعات" : "Credits"}</Label>
+                  <Input type="number" min="0" max="10" step="1" value={r.source_credits}
+                    onChange={(e) => updateRow(i, { source_credits: Number(e.target.value) })} />
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="md:hidden text-xs">{lang === "ar" ? "العلامة" : "Grade"}</Label>
+                  <Input value={r.source_grade} onChange={(e) => updateRow(i, { source_grade: e.target.value })}
+                    placeholder="A / 85 / جيد جداً" />
+                </div>
+                <div className="md:col-span-1 flex md:justify-center">
+                  <Button type="button" variant="ghost" size="sm" className="text-destructive"
+                    onClick={() => removeRow(i)} disabled={rows.length === 1}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-3 text-xs text-muted-foreground">
+            {lang === "ar"
+              ? "💡 لا حاجة لكتابة وصف المادة — المرشد الأكاديمي سيقوم بمطابقتها يدوياً مع مواد AUT."
+              : "💡 No course description needed — the academic advisor will manually match each course to AUT courses."}
+          </div>
+        </Card>
+
+        {/* Section 3: Optional transcript upload */}
+        <Card className="p-6 md:p-7 border-2 border-dashed">
+          <div className="flex items-center gap-2 mb-3">
+            <Upload className="h-5 w-5 text-secondary" />
+            <h2 className="font-heading font-bold text-lg text-foreground">
+              {lang === "ar" ? "رفع كشف العلامات (اختياري)" : "Upload Transcript (optional)"}
+            </h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            {lang === "ar"
+              ? "ارفع صورة أو PDF لكشف علامات الدبلوم. يفيد المرشد الأكاديمي عند المراجعة، وسيتم استخراج المواد تلقائياً عبر OCR لاحقاً (حد أقصى 50MB)."
+              : "Upload a transcript image or PDF. Helps the advisor during review; OCR auto-extraction available later (max 50MB)."}
+          </p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf,image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          {!file ? (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full border-2 border-dashed border-primary/40 rounded-xl p-8 text-center hover:bg-accent/40 hover:border-primary transition-colors flex flex-col items-center gap-2"
+            >
+              <Upload className="h-8 w-8 text-primary" />
+              <span className="font-heading font-bold text-foreground text-sm">
+                {lang === "ar" ? "اختر ملف PDF أو صورة" : "Choose PDF or image"}
+              </span>
+              <span className="text-xs text-muted-foreground">PDF / JPG / PNG · 50MB</span>
+            </button>
+          ) : (
+            <div className="border rounded-xl p-4 bg-accent/30 flex items-center gap-3">
+              {file.type.startsWith("image/") ? (
+                <ImageIcon className="h-8 w-8 text-primary shrink-0" />
+              ) : (
+                <FileType2 className="h-8 w-8 text-primary shrink-0" />
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="font-heading font-bold text-foreground text-sm truncate">{file.name}</div>
+                <div className="text-xs text-muted-foreground">{Math.round(file.size / 1024)} KB</div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setFile(null)} className="text-destructive gap-1">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </Card>
+
+        {/* Errors */}
         {error && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>{t("eq.error")}</AlertTitle>
+            <AlertTitle>{lang === "ar" ? "خطأ" : "Error"}</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        {result && (() => {
-          const courses = result.courses ?? [];
-          const isBatch = (result.is_batch ?? courses.length > 1) && courses.length > 1;
-          return (
-            <div className="space-y-5 animate-fade-up">
-              {/* بانر الدفعة */}
-              {isBatch && (
-                <Alert className="border-2 border-secondary/40 bg-secondary/5">
-                  <Sparkles className="h-4 w-4 text-secondary" />
-                  <AlertTitle className="text-secondary font-bold">
-                    تم استخراج {courses.length} مواد دراسية من الملف
-                  </AlertTitle>
-                  <AlertDescription className="text-sm">
-                    سيتم إرسال الطلب كحزمة واحدة. سيقوم المشرف الأكاديمي بمراجعة كل مادة على حدة، ويمكنه قبول أو رفض كل مادة بشكل منفصل.
-                  </AlertDescription>
-                </Alert>
-              )}
+        {/* Submit */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div className="text-sm text-muted-foreground">
+            {lang === "ar"
+              ? `سيقوم المرشد الأكاديمي بمراجعة طلبك ضمن سقف ${creditsCap} ساعة معتمدة.`
+              : `The advisor will review within a ${creditsCap}-credit cap.`}
+          </div>
+          <Button onClick={handleSubmit} disabled={submitting} size="lg" className="gap-2 shadow-elegant">
+            {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+            {submitting
+              ? (lang === "ar" ? "جارٍ الإرسال..." : "Submitting...")
+              : (lang === "ar" ? "إرسال الطلب للمرشد الأكاديمي" : "Submit to Academic Advisor")}
+          </Button>
+        </div>
 
-              {result.extracted_course && mode !== "text" && !isBatch && (
-                <Card className="p-5 bg-accent/40 border-dashed">
-                  <div className="text-xs font-heading font-bold text-muted-foreground mb-2">
-                    {dir === "rtl" ? "النص المُستخرَج من الملف" : "Extracted text from the file"}
-                  </div>
-                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">
-                    {result.extracted_course}
-                  </p>
-                </Card>
-              )}
-
-              {/* عرض كل مادة */}
-              {(isBatch ? courses : [
-                {
-                  saudi_course_name:
-                    courses[0]?.saudi_course_name ||
-                    result.extracted_course?.split("\n")[0]?.slice(0, 80) ||
-                    "المادة المعروضة",
-                  extracted_course: courses[0]?.extracted_course ?? result.extracted_course,
-                  matches: result.matches,
-                  verdict: result.verdict,
-                  overall_similarity: result.overall_similarity,
-                  summary: result.summary,
-                } as CourseResult,
-              ]).map((c, idx) => {
-                return (
-                  <Card key={idx} className="p-6 md:p-7 border-2 shadow-elegant">
-                    {isBatch && (
-                      <div className="flex items-center gap-3 mb-4 pb-4 border-b">
-                        <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/30 font-bold text-sm md:text-base px-3 py-1">
-                          مادة #{idx + 1}
-                        </Badge>
-                        <span className="font-heading font-bold text-foreground text-base md:text-lg truncate">
-                          {c.saudi_course_name}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
-                      <div className="space-y-1.5">
-                        <div className="text-xs text-muted-foreground font-heading">
-                          {dir === "rtl" ? "حالة المعادلة" : "Equivalency status"}
-                        </div>
-                        <Badge className="bg-primary/10 text-primary hover:bg-primary/10 dark:bg-primary/15 dark:text-primary-foreground text-xs md:text-sm px-2.5 py-1 font-semibold gap-1.5 border border-primary/30">
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                          {dir === "rtl" ? "بانتظار قرار المرشد الأكاديمي" : "Pending advisor decision"}
-                        </Badge>
-                      </div>
-                      <div className={dir === "rtl" ? "text-center md:text-left" : "text-center md:text-right"}>
-                        <div className="text-xs text-muted-foreground font-heading mb-0.5">{t("eq.overall")}</div>
-                        <div className="font-heading font-bold text-lg md:text-xl text-primary">{Math.round(c.overall_similarity)}%</div>
-                      </div>
-                    </div>
-                    <Progress value={c.overall_similarity} className="h-2 mb-3 [&>div]:bg-primary" />
-                    <p className="text-xs md:text-sm text-foreground leading-relaxed bg-primary/5 dark:bg-primary/10 border border-primary/20 p-2.5 rounded-lg mb-4">
-                      {c.summary}
-                    </p>
-                    <div className="space-y-2.5">
-                      <div className="text-xs font-heading font-bold text-muted-foreground">
-                        {t("eq.bestMatches")} ({c.matches.length})
-                      </div>
-                      {c.matches.map((m, i) => (
-                        <div key={i} className={`p-2.5 rounded-lg bg-card border ${dir === "rtl" ? "border-r-2 border-r-primary/60" : "border-l-2 border-l-primary/60"}`}>
-                          <div className="flex items-start justify-between gap-3 mb-1.5">
-                            <div>
-                              <div className="font-heading font-bold text-xs md:text-sm text-foreground">{m.aut_name}</div>
-                              <div className="text-[11px] text-muted-foreground mt-0.5">{m.aut_code}</div>
-                            </div>
-                            <div className="font-heading font-bold text-sm md:text-base text-primary shrink-0">
-                              {Math.round(m.similarity)}%
-                            </div>
-                          </div>
-                          <Progress value={m.similarity} className="h-1 mb-1.5 [&>div]:bg-primary/70" />
-                          <p className="text-[11px] md:text-xs text-muted-foreground leading-relaxed">{m.reasoning}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                );
-              })}
-
-              {/* بدلاً من ملف أولي: نُعلم الطالب بأن الملف النهائي سيظهر في "طلباتي" بعد قرار المشرف */}
-              {user && savedId && (
-                <Alert className="border-2 border-primary/30 bg-primary/5">
-                  <FileText className="h-4 w-4 text-primary" />
-                  <AlertTitle className="text-primary font-bold">
-                    تم إرسال طلبك إلى المرشد الأكاديمي
-                  </AlertTitle>
-                  <AlertDescription className="text-sm leading-relaxed space-y-3">
-                    <div>
-                      سيتم إصدار <span className="font-bold">الملف النهائي الرسمي (PDF)</span> فور قبول أو رفض المشرف الأكاديمي للمعادلة، وسيظهر لك مباشرةً داخل صفحة <span className="font-bold">طلباتي</span> ليُحمَّل بنسختين (عربي وإنجليزي).
-                    </div>
-                    <Button asChild size="sm" variant="outline" className="gap-2">
-                      <Link to="/my-requests"><Save className="h-3.5 w-3.5" /> {t("auth.myReqs")}</Link>
-                    </Button>
-                  </AlertDescription>
-                </Alert>
-              )}
-            {!user && (
-              <Alert>
-                <LogIn className="h-4 w-4" />
-                <AlertTitle>{t("eq.signinToSave")}</AlertTitle>
-                <AlertDescription className="flex items-center justify-between gap-3 flex-wrap">
-                  <span>{t("auth.subtitle")}</span>
-                  <Button asChild size="sm">
-                    <Link to="/auth">{t("auth.signin.cta")}</Link>
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            )}
-            {saving && (
-              <div className="text-xs text-muted-foreground flex items-center gap-2 justify-center">
-                <Loader2 className="h-3 w-3 animate-spin" /> {t("eq.analyzing")}
-              </div>
-            )}
-
-            <div className="text-center pt-4">
-              <Button asChild variant="outline" className="gap-2">
-                <Link to="/college">
-                  {t("eq.exploreMore")}
-                  <Arrow className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-            </div>
-          );
-        })()}
-
-        {!result && !loading && (
-          <Alert>
-            <Sparkles className="h-4 w-4" />
-            <AlertTitle>{t("eq.tip.title")}</AlertTitle>
-            <AlertDescription className="text-sm leading-relaxed">{t("eq.tip.desc")}</AlertDescription>
-          </Alert>
-        )}
+        <div className="text-center pt-4">
+          <Button asChild variant="outline" className="gap-2">
+            <Link to="/college">
+              <Sparkles className="h-4 w-4" />
+              {lang === "ar" ? "تصفح خطة AUT الكاملة" : "Browse AUT full curriculum"}
+              <Arrow className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
       </section>
     </SiteLayout>
-  );
-}
-
-function SelectedFile({
-  file, onRemove, preview, t,
-}: { file: File; onRemove: () => void; preview?: boolean; t: (k: string) => string }) {
-  const previewUrl = preview ? URL.createObjectURL(file) : null;
-  const sizeKB = Math.round(file.size / 1024);
-  return (
-    <div className="border rounded-xl p-4 bg-accent/30 flex items-start gap-3">
-      {preview && previewUrl ? (
-        <img src={previewUrl} alt="preview" className="h-20 w-20 object-cover rounded-md border" />
-      ) : (
-        <div className="h-20 w-20 rounded-md border bg-card flex items-center justify-center">
-          <FileType2 className="h-8 w-8 text-primary" />
-        </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <div className="text-xs text-muted-foreground font-heading mb-1">{t("eq.fileSelected")}</div>
-        <div className="font-heading font-bold text-foreground text-sm truncate">{file.name}</div>
-        <div className="text-xs text-muted-foreground">{sizeKB} KB</div>
-      </div>
-      <Button variant="ghost" size="sm" onClick={onRemove} className="text-destructive gap-1">
-        <X className="h-4 w-4" /> {t("eq.remove")}
-      </Button>
-    </div>
   );
 }
