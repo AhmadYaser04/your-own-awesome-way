@@ -124,7 +124,38 @@ export default function AdminReview() {
       setReviewerName((r as ReqRow).reviewer_name || "");
       setOverallNotes((r as ReqRow).admin_notes || "");
     }
-    setItems((it ?? []) as ItemRow[]);
+    let itemsList = (it ?? []) as ItemRow[];
+
+    // Backfill: legacy requests stored extracted courses inside ai_result.courses
+    // (before the equivalency_request_items table existed). If we have none, migrate them now.
+    if (itemsList.length === 0 && r) {
+      const legacy = (r as any)?.ai_result?.courses;
+      if (Array.isArray(legacy) && legacy.length > 0) {
+        const toInsert = legacy.map((c: any, idx: number) => ({
+          request_id: id,
+          source_course_name:
+            c.saudi_course_name?.toString().trim() ||
+            c.source_course_name?.toString().trim() ||
+            (c.extracted_course?.toString().split("\n")[0] || "").slice(0, 200) ||
+            `مادة ${idx + 1}`,
+          source_course_code: c.source_course_code?.toString().trim() || null,
+          source_credits: Number(c.source_credits) || 3,
+          source_grade: c.source_grade?.toString().trim() || null,
+          source_semester: c.source_semester?.toString().trim() || null,
+          display_order: idx,
+        }));
+        const { data: inserted, error: insErr } = await supabase
+          .from("equivalency_request_items")
+          .insert(toInsert)
+          .select("*");
+        if (!insErr && inserted) {
+          itemsList = inserted as ItemRow[];
+        } else if (insErr) {
+          console.warn("[AdminReview] Backfill items failed:", insErr);
+        }
+      }
+    }
+    setItems(itemsList);
     setAutCourses((aut ?? []) as AutCourse[]);
     const mss = (ms ?? []) as MatchRow[];
     setMatches(mss);
