@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Env
+.env
+
+# Models / cache
+*.pkl
+.cache/
+~/.cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log

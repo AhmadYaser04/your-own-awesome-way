@@ -1,0 +1,25 @@
+# Core
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+python-multipart==0.0.12
+python-dotenv==1.0.1
+pydantic==2.9.2
+
+# OCR & PDF
+paddlepaddle==2.6.2
+paddleocr==2.9.1
+pdfplumber==0.11.4
+Pillow==11.0.0
+
+# AI / Embeddings
+sentence-transformers==3.2.1
+scikit-learn==1.5.2
+numpy==1.26.4
+torch==2.5.1
+
+# Optional: Supabase sync
+supabase==2.9.1
+httpx==0.27.2
+
+# Arabic helpers
+pyarabic==0.6.15
