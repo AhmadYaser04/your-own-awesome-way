@@ -218,13 +218,14 @@ export default function AdminReview() {
   const CATEGORY_LIMITS: Record<string, { ar: string; en: string; max: number }> = {
     university_required: { ar: "متطلبات جامعة إجبارية", en: "University Required", max: 15 },
     university_elective: { ar: "متطلبات جامعة اختيارية", en: "University Elective", max: 12 },
-    department_required: { ar: "متطلبات تخصص إجبارية",   en: "Department Required", max: 84 },
+    college_required:    { ar: "متطلبات كلية إجبارية",   en: "College Required",    max: 21 },
+    department_required: { ar: "متطلبات تخصص إجبارية",   en: "Department Required", max: 72 },
     department_elective: { ar: "متطلبات تخصص اختيارية",  en: "Department Elective", max: 12 },
     remedial:            { ar: "مواد استدراكية",          en: "Remedial",            max: 9  },
   };
   const categoryTotals = useMemo(() => {
     const totals: Record<string, number> = {
-      university_required: 0, university_elective: 0,
+      university_required: 0, university_elective: 0, college_required: 0,
       department_required: 0, department_elective: 0, remedial: 0,
     };
     const autById = new Map(autCourses.map((c) => [c.id, c] as const));
