@@ -115,58 +115,71 @@ function renderHtml(d: EquivalencyPrintData, title: string): string {
   }
   .page { padding: 4mm 0; }
   .hdr {
-    display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 3px double #1e3a8a; padding-bottom: 8px; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    border-bottom: 4px double #14306b; padding-bottom: 10px; margin-bottom: 12px;
+    background: linear-gradient(135deg, #f7f9ff 0%, #fffaf0 100%);
+    padding: 10px 12px; border-radius: 6px;
   }
   .hdr .uni { text-align: center; flex: 1; }
-  .hdr h1 { margin: 0; font-size: 16pt; color: #1e3a8a; font-weight: 700; }
-  .hdr h2 { margin: 2px 0 0; font-size: 11pt; color: #555; font-weight: normal; }
+  .hdr h1 { margin: 0; font-size: 17pt; color: #14306b; font-weight: 800; letter-spacing: 0.3px; }
+  .hdr h2 { margin: 3px 0 0; font-size: 11pt; color: #b58a2b; font-weight: 600; }
+  .hdr .logo-box {
+    width: 78px; height: 78px; display: flex; align-items: center; justify-content: center;
+    background: #fff; border: 2px solid #14306b; border-radius: 12px; padding: 4px;
+  }
+  .hdr .logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
   .hdr .seal {
-    width: 70px; height: 70px; border: 2px solid #1e3a8a; border-radius: 50%;
+    width: 78px; height: 78px; border: 2px solid #b58a2b; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 8pt; color: #1e3a8a; font-weight: bold; text-align: center; padding: 4px;
+    font-size: 8pt; color: #b58a2b; font-weight: bold; text-align: center; padding: 4px;
+    background: #fffdf5;
   }
   .form-title {
-    text-align: center; font-size: 14pt; font-weight: bold; color: #1e3a8a;
-    background: #f0f4ff; padding: 6px; margin-bottom: 12px; border: 1px solid #1e3a8a;
+    text-align: center; font-size: 14pt; font-weight: bold; color: #fff;
+    background: linear-gradient(90deg, #14306b, #1e4a9e); padding: 8px;
+    margin-bottom: 12px; border-radius: 4px;
+    box-shadow: 0 2px 0 #b58a2b;
   }
   .student-grid {
     display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px 12px;
-    border: 1px solid #999; padding: 8px; margin-bottom: 12px; font-size: 10pt;
+    border: 1px solid #c9d1e3; padding: 8px 10px; margin-bottom: 12px; font-size: 10pt;
+    background: #fafbff; border-radius: 4px;
   }
   .student-grid .field { padding: 2px 0; }
-  .student-grid .label { color: #555; font-weight: bold; }
-  .student-grid .value { color: #111; border-bottom: 1px dotted #999; padding: 1px 4px; min-height: 16px; }
+  .student-grid .label { color: #14306b; font-weight: bold; font-size: 9pt; }
+  .student-grid .value { color: #111; border-bottom: 1px dotted #888; padding: 1px 4px; min-height: 16px; }
   .section-title {
-    font-size: 12pt; font-weight: bold; color: #1e3a8a;
-    background: #f0f4ff; padding: 4px 8px; margin: 14px 0 6px; border-right: 4px solid #1e3a8a;
+    font-size: 12pt; font-weight: bold; color: #14306b;
+    background: #f0f4ff; padding: 5px 10px; margin: 14px 0 6px;
+    border-right: 4px solid #b58a2b; border-radius: 0 4px 4px 0;
   }
   table.eq {
     width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 8px;
     page-break-inside: auto;
   }
   table.eq th, table.eq td {
-    border: 1px solid #888; padding: 4px 6px; vertical-align: top;
+    border: 1px solid #b8c0d6; padding: 4px 6px; vertical-align: top;
   }
   table.eq th {
-    background: #1e3a8a; color: #fff; font-weight: bold; text-align: center; font-size: 9.5pt;
+    background: #14306b; color: #fff; font-weight: bold; text-align: center; font-size: 9.5pt;
   }
   table.eq tr { page-break-inside: avoid; }
   table.eq td.center { text-align: center; }
   table.eq tr.merged-row td { background: #fff8e1; }
   .brace {
-    display: inline-block; font-size: 22pt; line-height: 0.8; color: #b45309;
+    display: inline-block; font-size: 22pt; line-height: 0.8; color: #b58a2b;
     vertical-align: middle; padding: 0 4px;
   }
   .merged-group td:first-child {
-    border-left: 3px solid #b45309;
+    border-left: 3px solid #b58a2b;
   }
   .totals {
     display: flex; justify-content: space-between; gap: 12px; font-size: 11pt;
-    border: 2px solid #1e3a8a; padding: 8px 12px; background: #f0f4ff; margin-top: 8px;
+    border: 2px solid #14306b; padding: 10px 12px; background: #f0f4ff; margin-top: 8px;
+    border-radius: 6px;
   }
   .totals .item { display: flex; flex-direction: column; align-items: center; }
-  .totals .item b { color: #1e3a8a; font-size: 13pt; }
+  .totals .item b { color: #14306b; font-size: 14pt; }
   .cap-warning {
     margin-top: 6px; color: #b91c1c; font-weight: bold; font-size: 10pt; text-align: center;
   }
@@ -175,9 +188,10 @@ function renderHtml(d: EquivalencyPrintData, title: string): string {
     page-break-inside: avoid;
   }
   .sig-box {
-    border: 1px solid #888; padding: 8px; min-height: 80px; font-size: 9.5pt;
+    border: 1px solid #b8c0d6; padding: 8px; min-height: 80px; font-size: 9.5pt;
+    background: #fafbff; border-radius: 4px;
   }
-  .sig-box .role { font-weight: bold; color: #1e3a8a; margin-bottom: 4px; }
+  .sig-box .role { font-weight: bold; color: #14306b; margin-bottom: 4px; }
   .sig-box .name-line { border-bottom: 1px dotted #888; min-height: 18px; margin-top: 24px; }
   .sig-box .label { font-size: 8pt; color: #777; }
   .footer {
@@ -186,16 +200,16 @@ function renderHtml(d: EquivalencyPrintData, title: string): string {
   }
   .badge-mode {
     display: inline-block; padding: 3px 10px; border-radius: 12px;
-    font-size: 9pt; font-weight: bold; margin-inline-start: 8px;
+    font-size: 9pt; font-weight: bold; margin-inline-start: 8px; background: #fff;
   }
   .badge-mode.approved { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
   .badge-mode.rejected { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
-  .badge-mode.full { background: #dbeafe; color: #1e3a8a; border: 1px solid #1e3a8a; }
+  .badge-mode.full { background: #fffaf0; color: #b58a2b; border: 1px solid #b58a2b; }
   .empty { text-align: center; color: #999; padding: 12px; font-style: italic; }
   @media print { .no-print { display: none !important; } }
   .no-print { text-align: center; padding: 12px; background: #fef3c7; border-bottom: 1px solid #f59e0b; }
   .no-print button {
-    padding: 8px 16px; font-size: 11pt; cursor: pointer; background: #1e3a8a; color: #fff;
+    padding: 8px 16px; font-size: 11pt; cursor: pointer; background: #14306b; color: #fff;
     border: none; border-radius: 4px; font-weight: bold;
   }
 </style>
