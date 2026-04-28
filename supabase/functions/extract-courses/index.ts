@@ -152,13 +152,46 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const courses = (parsed.courses ?? []).map((c) => ({
-      name: String(c.name ?? "").trim(),
-      code: String(c.code ?? "").trim(),
-      credits: Number(c.credits ?? 3) || 3,
-      grade: String(c.grade ?? "").trim(),
-      semester: String(c.semester ?? "").trim(),
-    })).filter((c) => c.name.length > 0);
+    // تطبيع الأرقام العربية ← لاتينية
+    const arabicToLatinDigits = (s: string) =>
+      s.replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+       .replace(/[\u06F0-\u06F9]/g, (d) => String(d.charCodeAt(0) - 0x06F0));
+
+    // تطبيع الدرجة: لو رقمية حوّلها إلى رقم نظيف، لو حرفية ابقها بالحروف اللاتينية الكبيرة، لو عربية ابقها كما هي
+    const cleanGrade = (raw: string): string => {
+      if (!raw) return "";
+      const g = arabicToLatinDigits(raw).trim();
+      // محاولة رقمية
+      const numMatch = g.match(/^-?\d+(\.\d+)?$/);
+      if (numMatch) return g;
+      // حرفي لاتيني A-F مع +/-
+      const letterMatch = g.match(/^[A-Fa-f][+\-]?$/);
+      if (letterMatch) return letterMatch[0].toUpperCase();
+      // أبقِ النص الأصلي (عربي أو غيره) دون تعديل
+      return raw.trim();
+    };
+
+    // تنظيف الرمز: إزالة المسافات الزائدة، وإذا كان طويلاً جداً (>20 حرف) فهو غالباً اسم وليس رمزاً → أفرغه
+    const cleanCode = (raw: string): string => {
+      const c = arabicToLatinDigits(String(raw ?? "")).trim().replace(/\s+/g, "");
+      if (!c) return "";
+      if (c.length > 20) return "";
+      // الرمز الصالح: حروف+أرقام+- (مثل CS101 أو 0905101 أو MATH-A)
+      if (!/[A-Za-z0-9]/.test(c)) return "";
+      return c;
+    };
+
+    const courses = (parsed.courses ?? []).map((c) => {
+      const credRaw = arabicToLatinDigits(String(c.credits ?? "3"));
+      const credNum = Number(credRaw);
+      return {
+        name: String(c.name ?? "").trim(),
+        code: cleanCode(c.code as string),
+        credits: Number.isFinite(credNum) && credNum >= 1 && credNum <= 6 ? credNum : 3,
+        grade: cleanGrade(String(c.grade ?? "")),
+        semester: String(c.semester ?? "").trim(),
+      };
+    }).filter((c) => c.name.length > 0);
 
     return new Response(
       JSON.stringify({
