@@ -92,7 +92,7 @@ export function exportEquivalencyForm(data: EquivalencyPrintData) {
 
 function renderHtml(d: EquivalencyPrintData, title: string): string {
   const s = d.student;
-  const logoUrl = new URL(autLogo, window.location.origin).href;
+  const logoUrl = autLogo as unknown as string;
   const showApproved = d.mode === "approved" || d.mode === "full";
   const showRejected = d.mode === "rejected" || d.mode === "full";
 
