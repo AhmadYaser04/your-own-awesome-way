@@ -105,7 +105,7 @@ export default function MyRequests() {
       }
       setLoading(false);
     })();
-  }, [user]);
+  }, [user, role]);
 
   const badge = (s: ReqRow["status"]) => {
     if (s === "approved") return <Badge className="bg-success text-white gap-1"><CheckCircle2 className="h-3 w-3" /> {t("admin.statusApproved")}</Badge>;
