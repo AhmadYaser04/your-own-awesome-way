@@ -170,8 +170,9 @@ ${autText}`;
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        // Pro model: deep reasoning over course descriptions, large context.
-        model: "google/gemini-2.5-pro",
+        // Flash: ~3-5x faster than Pro, still strong reasoning for this task,
+        // and far cheaper. Pro caused 30-60s response times for the user.
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: "حلّل وصف كل مادة AUT بعمق، استنتج محتوى مواد الطالب من أسمائها وأكوادها ومعرفتك بالمناهج، ثم أعد المعادلات عبر الدالة. ركّز على تطابق المحتوى لا تطابق الاسم." },
