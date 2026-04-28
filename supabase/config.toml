@@ -2,3 +2,6 @@ project_id = "efqdalevthaapgvxqamz"
 
 [functions.equivalency]
 verify_jwt = false
+
+[functions.extract-courses]
+verify_jwt = false
