@@ -207,7 +207,7 @@ ${autText}`;
         source_item_ids: sourceIds,
         total_source_credits: totalCredits,
         aut_credits: aut.credits,
-        similarity: Math.max(0, Math.min(100, Number(s.similarity) || 0)),
+        similarity: Math.max(0, Math.min(1, (Number(s.similarity) || 0) / 100)),
         verdict: "pending",
         is_manual: false,
         notes: s.reasoning ? `🤖 اقتراح AI: ${s.reasoning}` : "🤖 اقتراح AI",
