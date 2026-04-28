@@ -168,10 +168,17 @@ export default function AdminReview() {
     setAutCourses((aut ?? []) as AutCourse[]);
     const mss = (ms ?? []) as MatchRow[];
     setMatches(mss);
-    const noteMap: Record<string, string> = {};
-    mss.forEach((m) => { noteMap[m.id] = m.notes || ""; });
-    setMatchNotes(noteMap);
-    setLoading(false);
+    // Merge match notes — keep unsaved text the advisor is typing, only seed
+    // notes for matches we haven't seen before.
+    setMatchNotes((prev) => {
+      const next = { ...prev };
+      mss.forEach((m) => {
+        if (!(m.id in next)) next[m.id] = m.notes || "";
+      });
+      return next;
+    });
+    if (!opts.preserveInputs) setLoading(false);
+    setInitialized(true);
   };
 
   useEffect(() => { loadAll(); }, [id]);
