@@ -30,7 +30,7 @@ export interface EquivalencyPrintData {
     diplomaGpa: number | null;
     academicYear: string;
     semester: string;
-    studentType: "same_major" | "different_major";
+    studentType: string;
     creditsCap: number;
   };
   reviewerName: string;

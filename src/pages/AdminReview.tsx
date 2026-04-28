@@ -35,11 +35,15 @@ interface ReqRow {
   student_college: string | null;
   student_major: string | null;
   previous_diploma_source: string | null;
+  previous_university: string | null;
+  previous_major_name: string | null;
+  transfer_semester: string | null;
+  transfer_type: string | null;
   cumulative_gpa: number | null;
   diploma_gpa: number | null;
   academic_year: string | null;
   semester: string | null;
-  student_type: "same_major" | "different_major";
+  student_type: string;
   credits_cap: number;
   status: Status;
   admin_notes: string | null;
