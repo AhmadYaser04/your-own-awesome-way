@@ -124,8 +124,16 @@ export default function MyRequests() {
             <div className="flex items-center gap-4">
               <div className="bg-primary-foreground/15 backdrop-blur-md p-3 rounded-2xl"><FileText className="h-8 w-8" /></div>
               <div>
-                <h1 className="font-heading text-2xl md:text-3xl font-bold">{t("myReq.title")}</h1>
-                <p className="text-primary-foreground/85 text-sm mt-1">{t("myReq.subtitle")}</p>
+                <h1 className="font-heading text-2xl md:text-3xl font-bold">
+                  {role === "admin"
+                    ? (lang === "ar" ? "كل طلبات المعادلة" : "All equivalency requests")
+                    : t("myReq.title")}
+                </h1>
+                <p className="text-primary-foreground/85 text-sm mt-1">
+                  {role === "admin"
+                    ? (lang === "ar" ? "عرض جميع الطلبات المقدمة من الطلاب" : "View all student-submitted requests")
+                    : t("myReq.subtitle")}
+                </p>
               </div>
             </div>
             <Button asChild variant="secondary" className="gap-2">
