@@ -844,10 +844,8 @@ export default function AdminReview() {
             </Alert>
           )}
 
-          <div>
-            <Label>{lang === "ar" ? "ملاحظات عامة على الطلب" : "Overall notes"}</Label>
-            <Textarea value={overallNotes} onChange={(e) => setOverallNotes(e.target.value)} className="min-h-[80px]" />
-          </div>
+
+
 
           <div className="flex flex-wrap gap-2 justify-end">
             <Button variant="outline" onClick={() => finalizeRequest("pending")} disabled={busy} className="gap-1">
