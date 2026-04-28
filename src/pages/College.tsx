@@ -34,14 +34,14 @@ interface AutCourse {
   prerequisites: string[] | null;
 }
 
-const CATEGORY_META: Record<Category, { ar: string; en: string; icon: typeof Brain; color: string }> = {
-  university_required:  { ar: "متطلبات جامعة إجبارية", en: "University Required",   icon: GraduationCap, color: "text-primary" },
-  university_elective:  { ar: "متطلبات جامعة اختيارية", en: "University Electives",  icon: Layers,        color: "text-secondary" },
-  department_required:  { ar: "متطلبات تخصص إجبارية",  en: "Department Required",   icon: Brain,         color: "text-primary" },
-  department_elective:  { ar: "متطلبات تخصص اختيارية", en: "Department Electives",  icon: BookMarked,    color: "text-gold" },
-  supporting:           { ar: "مواد مساندة",           en: "Supporting",            icon: Wrench,        color: "text-success" },
-  remedial:             { ar: "مواد استدراكية",        en: "Remedial",              icon: RefreshCw,     color: "text-muted-foreground" },
-  training:             { ar: "تدريب عملي / مشروع",   en: "Training / Project",    icon: Briefcase,     color: "text-secondary" },
+const CATEGORY_META: Record<Category, { ar: string; en: string; icon: typeof Brain; color: string; bg: string; ring: string }> = {
+  university_required:  { ar: "متطلبات الجامعة الإجبارية", en: "University Required",   icon: GraduationCap, color: "text-primary",          bg: "bg-primary/10",     ring: "ring-primary/30" },
+  university_elective:  { ar: "متطلبات الجامعة الاختيارية", en: "University Electives",  icon: Layers,        color: "text-secondary",        bg: "bg-secondary/10",   ring: "ring-secondary/30" },
+  department_required:  { ar: "متطلبات التخصص الإجبارية",  en: "Department Required",   icon: Brain,         color: "text-primary",          bg: "bg-primary/10",     ring: "ring-primary/40" },
+  department_elective:  { ar: "متطلبات التخصص الاختيارية", en: "Department Electives",  icon: BookMarked,    color: "text-gold",             bg: "bg-gold/15",        ring: "ring-gold/40" },
+  supporting:           { ar: "المواد المساندة",            en: "Supporting",            icon: Wrench,        color: "text-success",          bg: "bg-success/10",     ring: "ring-success/30" },
+  remedial:             { ar: "المواد الاستدراكية",         en: "Remedial",              icon: RefreshCw,     color: "text-muted-foreground", bg: "bg-muted",          ring: "ring-muted-foreground/20" },
+  training:             { ar: "التدريب العملي / المشروع",   en: "Training / Project",    icon: Briefcase,     color: "text-secondary",        bg: "bg-secondary/15",   ring: "ring-secondary/40" },
 };
 
 const CATEGORY_ORDER: Category[] = [
