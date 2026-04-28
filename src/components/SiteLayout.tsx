@@ -73,15 +73,14 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
             <img
               src={logo}
               alt={lang === "ar" ? "شعار جامعة العقبة للتكنولوجيا" : "Aqaba University of Technology logo"}
-              width={56}
-              height={48}
-              className="h-11 w-auto rounded-md bg-card object-contain shrink-0 px-1.5 py-1 group-hover:scale-105 transition-transform"
+              width={36}
+              height={36}
+              className="h-8 w-auto rounded-md bg-card object-contain shrink-0 px-1 py-0.5 group-hover:scale-105 transition-transform"
             />
             <div className="text-primary-foreground min-w-0 hidden sm:block">
               <h1 className="font-heading text-sm md:text-base font-bold leading-tight truncate">
-                {t("header.title")}
+                {lang === "ar" ? "موقع معادلة المواد الذكي" : "Smart Course Equivalency"}
               </h1>
-              <p className="text-[10px] md:text-xs opacity-75 truncate">{t("header.subtitle")}</p>
             </div>
           </a>
 
@@ -258,22 +257,27 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <footer className="bg-primary py-8 mt-12">
-        <div className="container mx-auto px-4 text-center text-primary-foreground/90 text-sm font-heading space-y-3">
-          <div className="flex items-center justify-center gap-4 mb-2">
+      <footer className="bg-primary py-6 mt-12">
+        <div className="container mx-auto px-4 text-center text-primary-foreground/90 text-sm font-heading space-y-2">
+          <div className="flex items-center justify-center gap-3 mb-1">
             <a href={AUT_URL} target="_blank" rel="noopener noreferrer">
               <img
                 src={logo}
                 alt={lang === "ar" ? "شعار جامعة العقبة للتكنولوجيا" : "Aqaba University of Technology logo"}
-                className="h-20 md:h-24 w-auto rounded-xl bg-card object-contain px-3 py-2 shadow-lg"
+                className="h-12 md:h-14 w-auto rounded-lg bg-card object-contain px-2 py-1 shadow"
               />
             </a>
-            <span className="font-bold text-base md:text-lg">{t("footer.uni")}</span>
+            <span className="font-bold text-sm md:text-base">{t("footer.uni")}</span>
           </div>
-          <p className="text-sm md:text-base font-bold">
+          <p className="text-xs md:text-sm opacity-90">
             {lang === "ar"
-              ? "مشروعنا لتخصص الذكاء الاصطناعي"
-              : "Our graduation project — AI specialization"}
+              ? "© 2026 موقع معادلة المواد الذكي — جميع الحقوق محفوظة."
+              : "© 2026 Smart Course Equivalency — All rights reserved."}
+          </p>
+          <p className="text-[10px] md:text-xs opacity-75">
+            {lang === "ar"
+              ? "مشروع تخرج — تخصص الذكاء الاصطناعي · جامعة العقبة للتكنولوجيا"
+              : "Graduation project — AI specialization · Aqaba University of Technology"}
           </p>
         </div>
       </footer>

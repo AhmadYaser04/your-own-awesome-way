@@ -34,14 +34,14 @@ interface AutCourse {
   prerequisites: string[] | null;
 }
 
-const CATEGORY_META: Record<Category, { ar: string; en: string; icon: typeof Brain; color: string }> = {
-  university_required:  { ar: "متطلبات جامعة إجبارية", en: "University Required",   icon: GraduationCap, color: "text-primary" },
-  university_elective:  { ar: "متطلبات جامعة اختيارية", en: "University Electives",  icon: Layers,        color: "text-secondary" },
-  department_required:  { ar: "متطلبات تخصص إجبارية",  en: "Department Required",   icon: Brain,         color: "text-primary" },
-  department_elective:  { ar: "متطلبات تخصص اختيارية", en: "Department Electives",  icon: BookMarked,    color: "text-gold" },
-  supporting:           { ar: "مواد مساندة",           en: "Supporting",            icon: Wrench,        color: "text-success" },
-  remedial:             { ar: "مواد استدراكية",        en: "Remedial",              icon: RefreshCw,     color: "text-muted-foreground" },
-  training:             { ar: "تدريب عملي / مشروع",   en: "Training / Project",    icon: Briefcase,     color: "text-secondary" },
+const CATEGORY_META: Record<Category, { ar: string; en: string; icon: typeof Brain; color: string; bg: string; ring: string }> = {
+  university_required:  { ar: "متطلبات الجامعة الإجبارية", en: "University Required",   icon: GraduationCap, color: "text-primary",          bg: "bg-primary/10",     ring: "ring-primary/30" },
+  university_elective:  { ar: "متطلبات الجامعة الاختيارية", en: "University Electives",  icon: Layers,        color: "text-secondary",        bg: "bg-secondary/10",   ring: "ring-secondary/30" },
+  department_required:  { ar: "متطلبات التخصص الإجبارية",  en: "Department Required",   icon: Brain,         color: "text-primary",          bg: "bg-primary/10",     ring: "ring-primary/40" },
+  department_elective:  { ar: "متطلبات التخصص الاختيارية", en: "Department Electives",  icon: BookMarked,    color: "text-gold",             bg: "bg-gold/15",        ring: "ring-gold/40" },
+  supporting:           { ar: "المواد المساندة",            en: "Supporting",            icon: Wrench,        color: "text-success",          bg: "bg-success/10",     ring: "ring-success/30" },
+  remedial:             { ar: "المواد الاستدراكية",         en: "Remedial",              icon: RefreshCw,     color: "text-muted-foreground", bg: "bg-muted",          ring: "ring-muted-foreground/20" },
+  training:             { ar: "التدريب العملي / المشروع",   en: "Training / Project",    icon: Briefcase,     color: "text-secondary",        bg: "bg-secondary/15",   ring: "ring-secondary/40" },
 };
 
 const CATEGORY_ORDER: Category[] = [
@@ -55,7 +55,7 @@ const CATEGORY_ORDER: Category[] = [
 ];
 
 export default function College() {
-  const { t, lang } = useLang();
+  const { t, lang, dir } = useLang();
   const [courses, setCourses] = useState<AutCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Category>("department_required");
@@ -120,7 +120,7 @@ export default function College() {
         {[
           { icon: Award, label: t("college.founded"), value: "2019" },
           { icon: BookOpen, label: t("college.totalCourses"), value: loading ? "…" : courses.length },
-          { icon: Sparkles, label: t("college.totalCredits"), value: loading ? "…" : totalCredits },
+          { icon: Sparkles, label: t("college.totalCredits"), value: 132 },
           { icon: Users, label: t("college.faculty"), value: "PhD" },
         ].map((s) => (
           <Card key={s.label} className="p-5 text-center bg-gradient-to-b from-card to-accent/40">
@@ -154,6 +154,9 @@ export default function College() {
         <div className="text-center mb-8 space-y-2">
           <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground">{t("college.plan")}</h2>
           <p className="text-muted-foreground text-sm">{t("college.planSub")}</p>
+          <Badge className="bg-gold/15 text-gold border border-gold/40 mt-2">
+            {lang === "ar" ? "مجموع الساعات: 132 ساعة معتمدة" : "Total credits: 132"}
+          </Badge>
         </div>
 
         {loading ? (
@@ -167,17 +170,23 @@ export default function College() {
           </Card>
         ) : (
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Category)}>
-            <TabsList className="flex flex-wrap h-auto justify-center gap-1 bg-accent/40 p-1.5 mb-6">
+            <TabsList className="flex flex-wrap h-auto justify-center gap-1.5 bg-accent/40 p-2 mb-8 rounded-2xl">
               {CATEGORY_ORDER.filter((cat) => (grouped.get(cat)?.length ?? 0) > 0).map((cat) => {
                 const meta = CATEGORY_META[cat];
                 const list = grouped.get(cat) ?? [];
                 const credits = list.reduce((s, c) => s + c.credits, 0);
                 const Icon = meta.icon;
                 return (
-                  <TabsTrigger key={cat} value={cat} className="gap-2 data-[state=active]:bg-card data-[state=active]:shadow-sm text-xs md:text-sm">
+                  <TabsTrigger
+                    key={cat}
+                    value={cat}
+                    className="gap-2 data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:ring-1 data-[state=active]:ring-primary/20 text-xs md:text-sm rounded-xl px-3 py-2"
+                  >
                     <Icon className={`h-4 w-4 ${meta.color}`} />
-                    <span>{lang === "ar" ? meta.ar : meta.en}</span>
-                    <Badge variant="outline" className="ml-1 text-[10px]">{list.length} · {credits}{lang === "ar" ? "س" : "h"}</Badge>
+                    <span className="font-heading font-bold">{lang === "ar" ? meta.ar : meta.en}</span>
+                    <Badge variant="outline" className="ml-1 text-[10px]">
+                      {list.length} · {credits}{lang === "ar" ? " س" : "h"}
+                    </Badge>
                   </TabsTrigger>
                 );
               })}
@@ -186,43 +195,83 @@ export default function College() {
             {CATEGORY_ORDER.map((cat) => {
               const list = grouped.get(cat) ?? [];
               if (!list.length) return null;
+              const meta = CATEGORY_META[cat];
+              const Icon = meta.icon;
+              const catCredits = list.reduce((s, c) => s + c.credits, 0);
               return (
                 <TabsContent key={cat} value={cat} className="mt-0">
+                  {/* Category header banner */}
+                  <div className={`flex items-center justify-between gap-3 mb-5 p-4 rounded-2xl ${meta.bg} ring-1 ${meta.ring}`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`h-11 w-11 rounded-xl bg-card flex items-center justify-center shadow-sm ${meta.color}`}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="font-heading font-bold text-foreground">
+                          {lang === "ar" ? meta.ar : meta.en}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {list.length} {lang === "ar" ? "مادة" : "courses"} · {catCredits} {lang === "ar" ? "ساعة معتمدة" : "credits"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid md:grid-cols-2 gap-4">
-                    {list.map((c) => {
+                    {list.map((c, idx) => {
                       const isOpen = expanded.has(c.id);
                       const desc = lang === "ar" ? (c.description_ar || c.description_en) : (c.description_en || c.description_ar);
                       const name = lang === "ar" ? c.course_name_ar : (c.course_name_en || c.course_name_ar);
                       return (
-                        <Card key={c.id} className="p-5 hover:shadow-elegant transition-all hover:border-primary/40">
-                          <div className="flex items-start justify-between gap-3 mb-2">
+                        <Card
+                          key={c.id}
+                          className="group relative p-5 hover:shadow-elegant transition-all hover:-translate-y-0.5 hover:border-primary/40 overflow-hidden"
+                        >
+                          {/* Vertical accent bar */}
+                          <div className={`absolute inset-y-0 ${dir === "rtl" ? "right-0" : "left-0"} w-1.5 ${meta.color.replace("text-", "bg-")}`} />
+
+                          <div className="flex items-start gap-3">
+                            {/* Order badge */}
+                            <div className={`shrink-0 h-10 w-10 rounded-xl ${meta.bg} ${meta.color} flex items-center justify-center font-heading font-bold text-sm ring-1 ${meta.ring}`}>
+                              {idx + 1}
+                            </div>
+
                             <div className="min-w-0 flex-1">
-                              <div className="font-heading font-bold text-foreground">{name}</div>
-                              <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
-                                <Badge variant="outline" className="text-[10px] font-mono">{c.course_code}</Badge>
-                                <span>{c.credits} {t("college.creditsLabel")}</span>
+                              <div className="font-heading font-bold text-foreground leading-snug">{name}</div>
+
+                              {/* Meta row */}
+                              <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <Badge variant="outline" className="text-[10px] font-mono bg-card">
+                                  {c.course_code}
+                                </Badge>
+                                <Badge className="text-[10px] bg-primary/10 text-primary border border-primary/30 hover:bg-primary/15">
+                                  {c.credits} {lang === "ar" ? "ساعة معتمدة" : "credit hrs"}
+                                </Badge>
                                 {c.prerequisites && c.prerequisites.length > 0 && (
-                                  <span className="text-[10px]">
-                                    · {lang === "ar" ? "متطلب سابق" : "Prereq"}: {c.prerequisites.join(", ")}
-                                  </span>
+                                  <Badge variant="outline" className="text-[10px] border-gold/40 text-gold bg-gold/5">
+                                    {lang === "ar" ? "متطلب سابق" : "Prereq"}: {c.prerequisites.join(", ")}
+                                  </Badge>
                                 )}
                               </div>
                             </div>
                           </div>
+
                           {desc && (
-                            <>
-                              <p className={`text-sm text-muted-foreground leading-relaxed ${isOpen ? "" : "line-clamp-3"}`}>{desc}</p>
-                              {desc.length > 140 && (
+                            <div className="mt-3 ps-13">
+                              <p className={`text-sm text-muted-foreground leading-relaxed ${isOpen ? "" : "line-clamp-2"}`}>
+                                {desc}
+                              </p>
+                              {desc.length > 120 && (
                                 <button
                                   onClick={() => toggle(c.id)}
                                   className="mt-2 text-xs text-primary hover:underline flex items-center gap-1 font-bold"
                                 >
                                   {isOpen
                                     ? (<>{lang === "ar" ? "إخفاء" : "Hide"} <ChevronUp className="h-3 w-3" /></>)
-                                    : (<>{lang === "ar" ? "المزيد" : "More"} <ChevronDown className="h-3 w-3" /></>)}
+                                    : (<>{lang === "ar" ? "عرض الوصف" : "Show description"} <ChevronDown className="h-3 w-3" /></>)}
                                 </button>
                               )}
-                            </>
+                            </div>
                           )}
                         </Card>
                       );
