@@ -226,17 +226,13 @@ function renderHtml(d: EquivalencyPrintData, title: string): string {
 
   <div class="student-grid">
     <div class="field"><div class="label">اسم الطالب</div><div class="value">${esc(s.fullName)}</div></div>
-    <div class="field"><div class="label">الرقم الجامعي</div><div class="value">${esc(s.studentId)}</div></div>
     <div class="field"><div class="label">الكلية</div><div class="value">${esc(s.college)}</div></div>
     <div class="field"><div class="label">التخصص</div><div class="value">${esc(s.major)}</div></div>
-    <div class="field"><div class="label">العام / الفصل</div><div class="value">${esc(s.academicYear)} / ${esc(s.semester)}</div></div>
     <div class="field"><div class="label">نوع الانتقال</div><div class="value">${
-      s.studentType === "same_major" ? "نفس التخصص (سقف 66 ساعة)" : "تخصص مختلف (سقف 30 ساعة)"
+      s.studentType === "same_major" ? "نفس التخصص" : "تخصص مختلف"
     }</div></div>
-    <div class="field" style="grid-column: span 3"><div class="label">الجامعة / الدبلوم السابق</div><div class="value">${esc(s.previousDiplomaSource)}</div></div>
-    <div class="field"><div class="label">المعدل التراكمي</div><div class="value">${s.cumulativeGpa ?? "—"}</div></div>
-    <div class="field"><div class="label">معدل الدبلوم</div><div class="value">${s.diplomaGpa ?? "—"}</div></div>
-    <div class="field"><div class="label">رقم الطلب</div><div class="value" style="font-family: monospace; font-size: 9pt">${esc(d.requestId.slice(0, 8))}</div></div>
+    <div class="field" style="grid-column: span 2"><div class="label">الجامعة / الدبلوم السابق</div><div class="value">${esc(s.previousDiplomaSource)}</div></div>
+    <div class="field" style="grid-column: span 3"><div class="label">رقم الطلب</div><div class="value" style="font-family: monospace; font-size: 9pt">${esc(d.requestId.slice(0, 8))}</div></div>
   </div>
 
   ${showApproved ? renderTable("المواد المعادَلة", approvedRows, "approved") : ""}
@@ -288,10 +284,9 @@ function renderTable(heading: string, rows: PrintRow[], kind: "approved" | "reje
   const trs = rows.map((r) => {
     const sourceCount = r.sources.length;
     const merged = sourceCount > 1;
-    // Render multi-row student side with rowspan if merged, single row otherwise
     if (!merged) {
       const s0 = r.sources[0];
-      return `<tr class="${kind === "approved" ? "" : ""}">
+      return `<tr>
         <td>${esc(s0?.name || "—")}</td>
         <td class="center">${esc(s0?.code || "—")}</td>
         <td class="center">${s0?.credits ?? "—"}</td>
@@ -300,10 +295,8 @@ function renderTable(heading: string, rows: PrintRow[], kind: "approved" | "reje
         <td class="center">${esc(r.aut?.code || "—")}</td>
         <td>${esc(r.aut?.name || "—")}</td>
         <td class="center">${r.aut?.credits ?? "—"}</td>
-        <td>${esc(r.notes || "")}</td>
       </tr>`;
     }
-    // Merged: each source gets a row; AUT cells span all source rows; brace shown in arrow column
     return r.sources.map((s, idx) => {
       const isFirst = idx === 0;
       return `<tr class="merged-group merged-row">
@@ -315,7 +308,6 @@ function renderTable(heading: string, rows: PrintRow[], kind: "approved" | "reje
         ${isFirst ? `<td class="center" rowspan="${sourceCount}">${esc(r.aut?.code || "—")}</td>` : ""}
         ${isFirst ? `<td rowspan="${sourceCount}">${esc(r.aut?.name || "—")}</td>` : ""}
         ${isFirst ? `<td class="center" rowspan="${sourceCount}">${r.aut?.credits ?? "—"}</td>` : ""}
-        ${isFirst ? `<td rowspan="${sourceCount}">${esc(r.notes || "")} <small style="color:#b45309">(دمج ${sourceCount})</small></td>` : ""}
       </tr>`;
     }).join("");
   }).join("");
@@ -328,7 +320,6 @@ function renderTable(heading: string, rows: PrintRow[], kind: "approved" | "reje
         <th colspan="4" style="background:#0f766e">مواد الطالب (الدبلوم السابق)</th>
         <th rowspan="2" style="width:18px"></th>
         <th colspan="3" style="background:#1e3a8a">مواد جامعة AUT المعادِلة</th>
-        <th rowspan="2">ملاحظات</th>
       </tr>
       <tr>
         <th>اسم المادة</th><th>الرقم</th><th>الساعات</th><th>العلامة</th>
