@@ -798,7 +798,7 @@ export default function AdminReview() {
                           <div className="mt-2 text-[11px] text-muted-foreground">
                             {lang === "ar"
                               ? `ملاحظة: فرق ${Math.abs(m.total_source_credits - m.aut_credits)} ساعة بين مواد الطالب ومادة AUT.`
-                              : `Note: ${Math.abs(m.total_source_credits - m.aut_credits)}h difference between student and AUT credits.`}
+                              : `Note: ${Math.abs(m.total_source_credits - m.aut_credits)} hours difference between student and AUT credits.`}
                           </div>
                         )}
                       </div>
