@@ -200,6 +200,54 @@ export default function MyRequests() {
                       <Link to={`/admin/review/${r.id}`}>{lang === "ar" ? "مراجعة" : "Review"}</Link>
                     </Button>
                   )}
+                  {role !== "admin" && r.user_id === user?.id && r.status === "pending" && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="outline" className="gap-1 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30">
+                          <Trash2 className="h-3.5 w-3.5" />
+                          {lang === "ar" ? "تجاهل الطلب" : "Discard"}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            {lang === "ar" ? "تأكيد تجاهل الطلب" : "Discard request?"}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {lang === "ar"
+                              ? "سيتم حذف هذا الطلب وكل بياناته نهائياً ولا يمكن التراجع. هل أنت متأكد؟"
+                              : "This will permanently delete this request and all its data. Are you sure?"}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{lang === "ar" ? "إلغاء" : "Cancel"}</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={async () => {
+                              const { error } = await supabase
+                                .from("equivalency_requests")
+                                .delete()
+                                .eq("id", r.id);
+                              if (error) {
+                                toast({
+                                  title: lang === "ar" ? "تعذّر الحذف" : "Delete failed",
+                                  description: error.message,
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              setRows((prev) => prev.filter((x) => x.id !== r.id));
+                              toast({
+                                title: lang === "ar" ? "تم تجاهل الطلب" : "Request discarded",
+                              });
+                            }}
+                          >
+                            {lang === "ar" ? "نعم، احذف" : "Yes, delete"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
 
                 {/* Credits cap progress */}
