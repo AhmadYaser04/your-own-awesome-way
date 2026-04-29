@@ -369,7 +369,7 @@ export function exportDecisionPdf(data: DecisionPdfData) {
   let yy = y + 38;
   yy = drawInfoRow(doc, "Full Name:", safeStudentName, margin, yy, contentW);
   yy = drawInfoRow(doc, "Email:", safeStudentEmail, margin, yy, contentW);
-  yy = drawInfoRow(doc, "Saudi University:", safeUniversity, margin, yy, contentW);
+  yy = drawInfoRow(doc, "Previous University:", safeUniversity, margin, yy, contentW);
   yy = drawInfoRow(doc, "Submitted At:", formatDate(data.submittedAt), margin, yy, contentW);
   y = Math.max(y + studentBoxH, yy) + 12;
 

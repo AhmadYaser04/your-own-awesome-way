@@ -438,7 +438,7 @@ export default function Equivalency() {
             <div>
               <Label>{isAr ? "الجامعة السابقة *" : "Previous University *"}</Label>
               <Input value={previousUniversity} onChange={(e) => setPreviousUniversity(e.target.value)}
-                placeholder={isAr ? "مثال: جامعة الملك سعود" : "e.g. King Saud University"} />
+                placeholder={isAr ? "اسم الجامعة/الكلية السابقة" : "Previous university/college name"} />
             </div>
             <div>
               <Label>{isAr ? "التخصص السابق" : "Previous Major"}</Label>

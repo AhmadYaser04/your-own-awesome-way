@@ -236,7 +236,7 @@ function buildStudentInfo(data: DecisionPdfData): Paragraph[] {
     bannerRow("معلومات الطالب", COLOR_PRIMARY),
     infoLine("الاسم الكامل:", data.studentName),
     infoLine("البريد الإلكتروني:", data.studentEmail),
-    infoLine("الجامعة السعودية:", data.saudiUniversity),
+    infoLine("الجامعة المُحوَّل منها:", data.saudiUniversity),
     infoLine("تاريخ التقديم:", formatDateArabic(data.submittedAt)),
     new Paragraph({ children: [new TextRun(" ")], spacing: { after: 120 } }),
   ];

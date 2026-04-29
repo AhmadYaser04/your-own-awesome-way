@@ -331,7 +331,7 @@ export function exportDecisionPdfArabic(data: DecisionPdfData) {
   let yy = y + 38;
   yy = drawInfoRowAr(doc, "الاسم الكامل:", studentName, rightX, yy, contentW);
   yy = drawInfoRowAr(doc, "البريد الإلكتروني:", studentEmail, rightX, yy, contentW);
-  yy = drawInfoRowAr(doc, "الجامعة السعودية:", university, rightX, yy, contentW);
+  yy = drawInfoRowAr(doc, "الجامعة المُحوَّل منها:", university, rightX, yy, contentW);
   yy = drawInfoRowAr(doc, "تاريخ التقديم:", formatDateAr(data.submittedAt), rightX, yy, contentW);
   y = Math.max(y + studentBoxH, yy) + 12;
 

@@ -39,7 +39,7 @@ export function safePdfStudentName(name: string | null | undefined, email: strin
 }
 
 export function safePdfUniversity(university: string | null | undefined): string {
-  return safePdfText(university, "Saudi university record");
+  return safePdfText(university, "Previous university record");
 }
 
 export function safePdfReviewerName(name: string | null | undefined): string {

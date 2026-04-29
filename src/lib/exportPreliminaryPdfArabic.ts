@@ -80,7 +80,7 @@ export async function exportPreliminaryPdfArabic(data: PreliminaryPdfData) {
   };
   drawRow("الاسم:", studentName);
   drawRow("البريد:", studentEmail);
-  drawRow("الجامعة السعودية:", university);
+  drawRow("الجامعة المُحوَّل منها:", university);
   y += boxH + 12;
 
   // Notice
