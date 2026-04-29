@@ -47,7 +47,7 @@ serve(async (req) => {
     if (inputMode === "text") {
       if (!body.saudiCourse || typeof body.saudiCourse !== "string" || body.saudiCourse.trim().length < 20) {
         return new Response(
-          JSON.stringify({ error: "يرجى إدخال وصف مادة سعودية لا يقل عن 20 حرفاً." }),
+          JSON.stringify({ error: "يرجى إدخال وصف مادة لا يقل عن 20 حرفاً." }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -74,14 +74,14 @@ serve(async (req) => {
       (c) => `- ${c.code} | ${c.name} (${c.credits} س.م): ${c.description}`
     ).join("\n");
 
-    const systemPrompt = `أنت خبير أكاديمي مختص في معادلة المواد الدراسية بين الجامعات السعودية وجامعة العقبة للتكنولوجيا (AUT) — تخصص علم الحاسوب/الذكاء الاصطناعي.
+    const systemPrompt = `أنت خبير أكاديمي مختص في معادلة المواد الدراسية بين الجامعات والكليات والدبلومات وجامعة العقبة للتكنولوجيا (AUT) — تخصص علم الحاسوب/الذكاء الاصطناعي.
 
 عند استلامك ملفاً (PDF أو صورة) قد يحتوي على **مادة واحدة أو عدّة مواد دراسية** (مثلاً: كشف علامات، خطة جامعية كاملة، أو قائمة من المواد).
 - استخرج كل مادة موجودة في المدخل بدقة (الاسم، الساعات إن وُجدت، المخرجات، المواضيع).
 - إذا كان النص يصف مادة واحدة فقط، أعِد مادة واحدة في المصفوفة.
 - إذا كان يحتوي على أكثر من مادة، أعِد كل واحدة منها في عنصر مستقل داخل المصفوفة.
 
-لكل مادة سعودية مستخرَجة:
+لكل مادة مستخرَجة من الجامعة المُحوَّل منها:
 1. قارنها مع مواد AUT أدناه.
 2. اختر أفضل مادة (أو مادتين كحد أقصى) في AUT تتطابق معها.
 3. احسب نسبة التطابق الدلالي (0-100٪) بناءً على: تقاطع المخرجات، المواضيع المشتركة، عمق التغطية، الساعات.
@@ -98,13 +98,13 @@ ${catalogText}
     if (inputMode === "text") {
       userMessage = {
         role: "user",
-        content: `وصف المادة (أو المواد) السعودية المراد معادلتها:\n\n${body.saudiCourse}`,
+        content: `وصف المادة (أو المواد) المراد معادلتها:\n\n${body.saudiCourse}`,
       };
     } else if (inputMode === "image") {
       userMessage = {
         role: "user",
         content: [
-          { type: "text", text: "هذه صورة من ميثاق/خطة جامعية سعودية. اقرأها بدقة (OCR عربي/إنجليزي)، استخرج كل المواد التي تظهر فيها، ثم أجرِ المعادلة لكل مادة على حدة وأعد النتيجة عبر الدالة." },
+          { type: "text", text: "هذه صورة من ميثاق/خطة جامعية. اقرأها بدقة (OCR عربي/إنجليزي)، استخرج كل المواد التي تظهر فيها، ثم أجرِ المعادلة لكل مادة على حدة وأعد النتيجة عبر الدالة." },
           { type: "image_url", image_url: { url: body.fileDataUrl } },
         ],
       };
@@ -121,7 +121,7 @@ ${catalogText}
     const courseSchema = {
       type: "object",
       properties: {
-        saudi_course_name: { type: "string", description: "اسم المادة السعودية كما استُخرج." },
+        saudi_course_name: { type: "string", description: "اسم المادة كما استُخرج." },
         extracted_course: { type: "string", description: "وصف المادة كما استُخرج (المخرجات + المواضيع)." },
         matches: {
           type: "array",
@@ -157,7 +157,7 @@ ${catalogText}
             properties: {
               courses: {
                 type: "array",
-                description: "كل مادة سعودية تم استخراجها مع نتيجة معادلتها. مادة واحدة أو أكثر.",
+                description: "كل مادة تم استخراجها مع نتيجة معادلتها. مادة واحدة أو أكثر.",
                 items: courseSchema,
               },
             },
