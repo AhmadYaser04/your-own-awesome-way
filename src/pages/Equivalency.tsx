@@ -31,18 +31,12 @@ const DIFFERENT_MAJOR_CAP = 30;
 
 interface CourseRow {
   source_course_name: string;
-  source_course_code: string;
   source_credits: number;
-  source_grade: string;
-  source_semester?: string;
 }
 
 const emptyRow = (): CourseRow => ({
   source_course_name: "",
-  source_course_code: "",
   source_credits: 3,
-  source_grade: "",
-  source_semester: "",
 });
 
 export default function Equivalency() {
