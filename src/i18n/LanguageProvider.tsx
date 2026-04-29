@@ -173,7 +173,7 @@ const AR: Dict = {
   "admin.student": "الطالب",
   "admin.email": "البريد",
   "admin.submitted": "تاريخ التقديم",
-  "admin.saudiDesc": "وصف المادة المُحوَّلة",
+  "admin.saudiDesc": "وصف المادة من الجامعة المُحوَّل منها",
   "admin.aiVerdict": "نتيجة الذكاء الاصطناعي",
   "admin.notesLabel": "ملاحظات لجنة المعادلات",
   "admin.notesPh": "اكتب تعليقاً للطالب يوضّح أسباب القرار، أو الشروط المطلوبة...",
