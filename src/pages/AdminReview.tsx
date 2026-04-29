@@ -348,7 +348,7 @@ export default function AdminReview() {
     loadAll({ preserveInputs: true });
   };
 
-  const finalizeRequest = async (status: Status) => {
+  const finalizeRequest = async (status: Status, pendingReason?: string) => {
     if (!id || !user) return;
     if (!reviewerName.trim()) {
       toast({
@@ -357,27 +357,66 @@ export default function AdminReview() {
       });
       return;
     }
+    // عند التعليق: ادمج سبب التعليق في الملاحظات الإدارية ليصل للطالب
+    let finalNotes = overallNotes.trim() || null;
+    if (status === "pending" && pendingReason) {
+      const prefix = lang === "ar" ? "سبب التعليق: " : "Hold reason: ";
+      finalNotes = `${prefix}${pendingReason.trim()}${finalNotes ? `\n\n${finalNotes}` : ""}`;
+    }
     setBusy(true);
     const { error } = await supabase
       .from("equivalency_requests")
       .update({
         status,
         reviewer_name: reviewerName.trim(),
-        admin_notes: overallNotes.trim() || null,
+        admin_notes: finalNotes,
         reviewed_by: user.id,
         reviewed_at: new Date().toISOString(),
       })
       .eq("id", id);
     setBusy(false);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    if (status === "pending" && pendingReason) {
+      setOverallNotes(finalNotes || "");
+    }
     toast({
       title: status === "approved"
         ? (lang === "ar" ? "تم اعتماد الطلب" : "Request approved")
         : status === "rejected"
         ? (lang === "ar" ? "تم رفض الطلب" : "Request rejected")
-        : (lang === "ar" ? "أعيد للمراجعة" : "Marked pending"),
+        : (lang === "ar" ? "تم تعليق الطلب وإرسال السبب للطالب" : "Request put on hold — reason sent to student"),
     });
     loadAll({ preserveInputs: true });
+  };
+
+  // حالة حوار "سبب التعليق"
+  const [holdDialogOpen, setHoldDialogOpen] = useState(false);
+  const [holdReason, setHoldReason] = useState("");
+
+  const openHoldDialog = () => {
+    if (!reviewerName.trim()) {
+      toast({
+        title: lang === "ar" ? "اسم المرشد مطلوب" : "Advisor name required",
+        description: lang === "ar" ? "أدخل اسمك قبل تعليق الطلب." : "Enter your name first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setHoldReason("");
+    setHoldDialogOpen(true);
+  };
+
+  const submitHold = async () => {
+    if (!holdReason.trim()) {
+      toast({
+        title: lang === "ar" ? "السبب مطلوب" : "Reason required",
+        description: lang === "ar" ? "اكتب سبب تعليق الطلب ليتم إرساله للطالب." : "Write the hold reason to send to the student.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setHoldDialogOpen(false);
+    await finalizeRequest("pending", holdReason);
   };
 
   const buildPrintData = (mode: PrintMode): EquivalencyPrintData | null => {
