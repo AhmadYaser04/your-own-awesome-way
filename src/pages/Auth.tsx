@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { Loader2, LogIn, UserPlus, ArrowLeft, ArrowRight, ShieldCheck, Mail, Lock, User as UserIcon, Building2, KeyRound, Copy, Check, Zap } from "lucide-react";
+import { Loader2, LogIn, UserPlus, ShieldCheck, Mail, Lock, User as UserIcon, KeyRound, Copy, Check, Zap } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
