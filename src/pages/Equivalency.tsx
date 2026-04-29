@@ -577,11 +577,17 @@ export default function Equivalency() {
           )}
 
           {inputMode === "manual" && (
-            <div className="text-sm text-muted-foreground bg-muted/40 rounded-lg p-3">
-              {isAr
-                ? "أدخل المواد التي اجتزتها يدوياً في الجدول أدناه. يمكنك إضافة المزيد من الصفوف."
-                : "Enter your completed courses manually in the table below. You can add more rows."}
-            </div>
+            <Alert className="border-2 border-primary/40 bg-primary/5 p-5">
+              <FileText className="h-6 w-6 text-primary" />
+              <AlertTitle className="font-bold text-lg mb-1">
+                {isAr ? "ملاحظة هامة" : "Important Note"}
+              </AlertTitle>
+              <AlertDescription className="text-base leading-relaxed">
+                {isAr
+                  ? "أدخل المواد التي اجتزتها يدوياً في الجدول أدناه. يمكنك إضافة المزيد من الصفوف بالضغط على زر «إضافة مادة يدوياً»."
+                  : "Enter your completed courses manually in the table below. You can add more rows using the “Add row manually” button."}
+              </AlertDescription>
+            </Alert>
           )}
         </Card>
 
