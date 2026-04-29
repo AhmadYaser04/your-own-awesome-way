@@ -557,12 +557,12 @@ export default function AdminReview() {
         <Card className="p-5">
           <div className="grid md:grid-cols-3 gap-4">
             <div className="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-              <Field label={lang === "ar" ? "الرقم الجامعي" : "Student ID"} value={req.student_id} />
+              <Field label={lang === "ar" ? "الاسم" : "Name"} value={req.student_full_name} />
               <Field label={lang === "ar" ? "الكلية" : "College"} value={req.student_college} />
-              <Field label={lang === "ar" ? "التخصص" : "Major"} value={req.student_major} />
-              <Field label={lang === "ar" ? "المعدل التراكمي" : "Cumulative GPA"} value={req.cumulative_gpa?.toString() ?? null} />
-              <Field label={lang === "ar" ? "معدل الدبلوم" : "Diploma GPA"} value={req.diploma_gpa?.toString() ?? null} />
-              <Field label={lang === "ar" ? "العام / الفصل" : "Year / Semester"} value={[req.academic_year, req.semester].filter(Boolean).join(" · ") || null} />
+              <Field label={lang === "ar" ? "التخصص الجديد" : "New Major"} value={req.student_major} />
+              <Field label={lang === "ar" ? "الجامعة السابقة" : "Previous University"} value={req.previous_university || req.previous_diploma_source} />
+              <Field label={lang === "ar" ? "التخصص السابق" : "Previous Major"} value={req.previous_major_name} />
+              <Field label={lang === "ar" ? "فصل الانتقال" : "Transfer Semester"} value={req.transfer_semester} />
             </div>
             <div className="space-y-2">
               <Label>{lang === "ar" ? "اسم المرشد الأكاديمي *" : "Academic Advisor Name *"}</Label>
