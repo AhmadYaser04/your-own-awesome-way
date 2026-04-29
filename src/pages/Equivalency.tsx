@@ -698,7 +698,22 @@ export default function Equivalency() {
         )}
 
         {/* الإرسال */}
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button
+            variant="ghost"
+            type="button"
+            onClick={() => {
+              if (window.confirm(isAr
+                ? "هل تريد إلغاء الطلب وعدم استكماله؟ سيتم فقدان البيانات المُدخَلة."
+                : "Cancel this request? Entered data will be lost.")) {
+                nav("/my-requests");
+              }
+            }}
+            className="text-destructive hover:bg-destructive/10"
+          >
+            <X className="me-2 h-4 w-4" />
+            {isAr ? "تجاهل الطلب" : "Discard request"}
+          </Button>
           <Button variant="outline" asChild>
             <Link to="/my-requests"><Arrow className="me-2 h-4 w-4" /> {isAr ? "طلباتي" : "My Requests"}</Link>
           </Button>
