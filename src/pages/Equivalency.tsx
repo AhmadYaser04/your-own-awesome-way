@@ -547,17 +547,19 @@ export default function Equivalency() {
                     </Button>
 
                     {isAiCreditError(error) && (
-                      <Alert>
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>{isAr ? "الإدخال اليدوي متاح" : "Manual entry available"}</AlertTitle>
-                        <AlertDescription className="space-y-3">
+                      <Alert className="border-2 border-gold/50 bg-gold/10 p-6">
+                        <AlertCircle className="h-6 w-6 text-gold" />
+                        <AlertTitle className="font-bold text-lg mb-2">
+                          {isAr ? "الإدخال اليدوي متاح" : "Manual entry available"}
+                        </AlertTitle>
+                        <AlertDescription className="space-y-4 text-base leading-relaxed">
                           <p>
                             {isAr
                               ? "تعذر تشغيل الاستخراج الذكي حالياً، لكن يمكنك إدخال المواد بنفسك ومتابعة إرسال الطلب بدون توقف."
                               : "Automatic extraction is unavailable right now, but you can still enter courses manually and continue."}
                           </p>
-                          <Button type="button" variant="outline" onClick={handleEnableManualEntry}>
-                            <Plus className="me-2 h-4 w-4" />
+                          <Button type="button" variant="outline" size="lg" onClick={handleEnableManualEntry}>
+                            <Plus className="me-2 h-5 w-5" />
                             {isAr ? "إدخال المواد يدوياً" : "Enter courses manually"}
                           </Button>
                         </AlertDescription>
