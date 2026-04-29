@@ -604,10 +604,7 @@ export default function Equivalency() {
                   <tr>
                     <th className="p-2 text-start">#</th>
                     <th className="p-2 text-start">{isAr ? "اسم المادة" : "Course Name"}</th>
-                    <th className="p-2 text-start">{isAr ? "الرمز" : "Code"}</th>
-                    <th className="p-2 text-start">{isAr ? "الساعات" : "Credits"}</th>
-                    <th className="p-2 text-start">{isAr ? "الدرجة" : "Grade"}</th>
-                    <th className="p-2 text-start">{isAr ? "الفصل" : "Semester"}</th>
+                    <th className="p-2 text-start">{isAr ? "عدد الساعات" : "Credit Hours"}</th>
                     <th className="p-2"></th>
                   </tr>
                 </thead>
@@ -617,19 +614,17 @@ export default function Equivalency() {
                       <td className="p-2 align-middle">{i + 1}</td>
                       <td className="p-2"><Input value={row.source_course_name}
                         onChange={(e) => updateRow(i, { source_course_name: e.target.value })} /></td>
-                      <td className="p-2"><Input value={row.source_course_code}
-                        onChange={(e) => updateRow(i, { source_course_code: e.target.value })}
-                        className="w-24" /></td>
-                      <td className="p-2"><Input type="number" min={1} max={6} step={0.5}
-                        value={row.source_credits}
-                        onChange={(e) => updateRow(i, { source_credits: Number(e.target.value) })}
-                        className="w-20" /></td>
-                      <td className="p-2"><Input value={row.source_grade}
-                        onChange={(e) => updateRow(i, { source_grade: e.target.value })}
-                        className="w-20" /></td>
-                      <td className="p-2"><Input value={row.source_semester ?? ""}
-                        onChange={(e) => updateRow(i, { source_semester: e.target.value })}
-                        className="w-24" /></td>
+                      <td className="p-2">
+                        <div className="flex items-center gap-2">
+                          <Input type="number" min={1} max={6} step={0.5}
+                            value={row.source_credits}
+                            onChange={(e) => updateRow(i, { source_credits: Number(e.target.value) })}
+                            className="w-20" />
+                          <span className="text-sm text-muted-foreground whitespace-nowrap">
+                            {isAr ? "ساعات" : "hours"}
+                          </span>
+                        </div>
+                      </td>
                       <td className="p-2">
                         <Button variant="ghost" size="icon" onClick={() => removeRow(i)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
