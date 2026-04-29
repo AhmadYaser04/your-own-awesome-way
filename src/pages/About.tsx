@@ -139,17 +139,6 @@ export default function About() {
 
         <div className="grid md:grid-cols-2 gap-5">
           <Card className="p-6">
-            <Code2 className="h-8 w-8 text-primary mb-3" />
-            <h3 className="font-heading font-bold text-foreground mb-2">المعمارية التقنية</h3>
-            <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pr-5">
-              <li>React 18 + TypeScript + Vite</li>
-              <li>TailwindCSS + shadcn/ui</li>
-              <li>Lovable Cloud (Supabase) Edge Functions</li>
-              <li>Lovable AI Gateway — Google Gemini 2.5 Flash</li>
-              <li>Tool Calling لإخراج JSON منظّم وموثوق</li>
-            </ul>
-          </Card>
-          <Card className="p-6">
             <Brain className="h-8 w-8 text-secondary mb-3" />
             <h3 className="font-heading font-bold text-foreground mb-2">منهجية المعادلة</h3>
             <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pr-5">
