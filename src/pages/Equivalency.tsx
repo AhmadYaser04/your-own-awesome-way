@@ -312,10 +312,10 @@ export default function Equivalency() {
       const items = extractedCourses.map((c, idx) => ({
         request_id: req.id,
         source_course_name: c.source_course_name.trim(),
-        source_course_code: c.source_course_code.trim() || null,
+        source_course_code: null,
         source_credits: Number(c.source_credits) || 3,
-        source_grade: c.source_grade.trim() || null,
-        source_semester: c.source_semester?.trim() || null,
+        source_grade: null,
+        source_semester: null,
         display_order: idx,
       }));
       console.log("[Equivalency] Inserting items:", items.length);
