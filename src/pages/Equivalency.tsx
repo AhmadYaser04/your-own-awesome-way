@@ -472,78 +472,122 @@ export default function Equivalency() {
           </Alert>
         </Card>
 
-        {/* القسم 2: رفع الملف */}
+        {/* القسم 2: طريقة إدخال المواد */}
         <Card className="p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <Upload className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold">{isAr ? "كشف المواد المُجتازة *" : "Transcript *"}</h2>
+          <div className="flex items-center gap-2 flex-wrap">
+            <FileText className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-semibold">{isAr ? "المواد المُجتازة *" : "Completed Courses *"}</h2>
           </div>
 
-          {!file ? (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed rounded-xl p-10 text-center cursor-pointer hover:bg-muted/40 transition"
+          {/* اختيار وضع الإدخال */}
+          <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-lg">
+            <button
+              type="button"
+              onClick={() => {
+                setInputMode("manual");
+                if (extractedCourses.length === 0) setExtractedCourses([emptyRow()]);
+                setExtractionDone(true);
+                setError(null);
+              }}
+              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-medium transition ${
+                inputMode === "manual" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
-              <div className="font-medium">{isAr ? "اضغط لرفع الملف" : "Click to upload file"}</div>
-              <div className="text-xs text-muted-foreground mt-1">PDF / JPG / PNG / WEBP</div>
-              <input ref={fileInputRef} type="file" hidden accept=".pdf,image/*" onChange={handleFileChange} />
-            </div>
-          ) : (
-            <div className="border rounded-xl p-4 space-y-3">
-              <div className="flex items-center gap-3">
-                {file.type.startsWith("image/") ? (
-                  <ImageIcon className="h-6 w-6 text-primary" />
-                ) : (
-                  <FileType2 className="h-6 w-6 text-primary" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{file.name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
-                  </div>
-                </div>
-                <Button variant="ghost" size="icon" onClick={clearFile}><X className="h-4 w-4" /></Button>
+              <Plus className="h-4 w-4" />
+              {isAr ? "إدخال يدوي" : "Manual entry"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setInputMode("file");
+                setExtractedCourses([]);
+                setExtractionDone(false);
+                setError(null);
+              }}
+              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-medium transition ${
+                inputMode === "file" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Upload className="h-4 w-4" />
+              {isAr ? "رفع ملف / صورة" : "Upload file / image"}
+            </button>
+          </div>
+
+          {inputMode === "file" && (
+            !file ? (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed rounded-xl p-10 text-center cursor-pointer hover:bg-muted/40 transition"
+              >
+                <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
+                <div className="font-medium">{isAr ? "اضغط لرفع الملف" : "Click to upload file"}</div>
+                <div className="text-xs text-muted-foreground mt-1">PDF / JPG / PNG / WEBP</div>
+                <input ref={fileInputRef} type="file" hidden accept=".pdf,image/*" onChange={handleFileChange} />
               </div>
-
-              {filePreviewUrl && (
-                <img src={filePreviewUrl} alt="preview" className="max-h-60 rounded border mx-auto" />
-              )}
-
-               {!extractionDone ? (
-                 <div className="space-y-3">
-                   <Button onClick={handleExtract} disabled={extracting} className="w-full">
-                     {extracting ? (
-                       <><Loader2 className="me-2 h-4 w-4 animate-spin" /> {isAr ? "جاري الاستخراج..." : "Extracting..."}</>
-                     ) : (
-                       <><Wand2 className="me-2 h-4 w-4" /> {isAr ? "استخراج المواد" : "Extract Courses"}</>
-                     )}
-                   </Button>
-
-                   {isAiCreditError(error) && (
-                     <Alert>
-                       <AlertCircle className="h-4 w-4" />
-                       <AlertTitle>{isAr ? "الإدخال اليدوي متاح" : "Manual entry available"}</AlertTitle>
-                       <AlertDescription className="space-y-3">
-                         <p>
-                           {isAr
-                             ? "تعذر تشغيل الاستخراج الذكي حالياً، لكن يمكنك إدخال المواد بنفسك ومتابعة إرسال الطلب بدون توقف."
-                             : "Automatic extraction is unavailable right now, but you can still enter courses manually and continue."}
-                         </p>
-                         <Button type="button" variant="outline" onClick={handleEnableManualEntry}>
-                           <Plus className="me-2 h-4 w-4" />
-                           {isAr ? "إدخال المواد يدوياً" : "Enter courses manually"}
-                         </Button>
-                       </AlertDescription>
-                     </Alert>
-                   )}
-                 </div>
-               ) : (
-                <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-500">
-                  <CheckCircle2 className="h-4 w-4" />
-                  {isAr ? `تم استخراج ${extractedCourses.length} مادة` : `Extracted ${extractedCourses.length} courses`}
+            ) : (
+              <div className="border rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  {file.type.startsWith("image/") ? (
+                    <ImageIcon className="h-6 w-6 text-primary" />
+                  ) : (
+                    <FileType2 className="h-6 w-6 text-primary" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{file.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={clearFile}><X className="h-4 w-4" /></Button>
                 </div>
-              )}
+
+                {filePreviewUrl && (
+                  <img src={filePreviewUrl} alt="preview" className="max-h-60 rounded border mx-auto" />
+                )}
+
+                {!extractionDone ? (
+                  <div className="space-y-3">
+                    <Button onClick={handleExtract} disabled={extracting} className="w-full">
+                      {extracting ? (
+                        <><Loader2 className="me-2 h-4 w-4 animate-spin" /> {isAr ? "جاري الاستخراج..." : "Extracting..."}</>
+                      ) : (
+                        <><Wand2 className="me-2 h-4 w-4" /> {isAr ? "استخراج المواد" : "Extract Courses"}</>
+                      )}
+                    </Button>
+
+                    {isAiCreditError(error) && (
+                      <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>{isAr ? "الإدخال اليدوي متاح" : "Manual entry available"}</AlertTitle>
+                        <AlertDescription className="space-y-3">
+                          <p>
+                            {isAr
+                              ? "تعذر تشغيل الاستخراج الذكي حالياً، لكن يمكنك إدخال المواد بنفسك ومتابعة إرسال الطلب بدون توقف."
+                              : "Automatic extraction is unavailable right now, but you can still enter courses manually and continue."}
+                          </p>
+                          <Button type="button" variant="outline" onClick={handleEnableManualEntry}>
+                            <Plus className="me-2 h-4 w-4" />
+                            {isAr ? "إدخال المواد يدوياً" : "Enter courses manually"}
+                          </Button>
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-500">
+                    <CheckCircle2 className="h-4 w-4" />
+                    {isAr ? `تم استخراج ${extractedCourses.length} مادة` : `Extracted ${extractedCourses.length} courses`}
+                  </div>
+                )}
+              </div>
+            )
+          )}
+
+          {inputMode === "manual" && (
+            <div className="text-sm text-muted-foreground bg-muted/40 rounded-lg p-3">
+              {isAr
+                ? "أدخل المواد التي اجتزتها يدوياً في الجدول أدناه. يمكنك إضافة المزيد من الصفوف."
+                : "Enter your completed courses manually in the table below. You can add more rows."}
             </div>
           )}
         </Card>
