@@ -591,8 +591,8 @@ export default function Equivalency() {
               <h2 className="text-xl font-semibold">
                 {isAr ? "المواد المستخرجة (قابلة للتعديل)" : "Extracted Courses (editable)"}
               </h2>
-              <Badge className="ms-auto" variant="secondary">
-                {isAr ? `الإجمالي: ${totalSourceCredits} ساعة` : `Total: ${totalSourceCredits}h`}
+              <Badge className="ms-auto text-base px-3 py-1" variant="secondary">
+                {isAr ? `الإجمالي: ${totalSourceCredits} ساعات` : `Total: ${totalSourceCredits} hours`}
               </Badge>
             </div>
 
