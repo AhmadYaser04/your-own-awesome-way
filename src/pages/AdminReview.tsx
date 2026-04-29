@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Loader2, ArrowLeft, ShieldCheck, GraduationCap, Search, Link2, Unlink,
-  CheckCircle2, XCircle, Clock, AlertTriangle, Printer, FileCheck, FileX, FileText,
+  CheckCircle2, XCircle, Clock, AlertTriangle, Printer, FileCheck, FileText,
   Trash2, Save, Sparkles, Layers,
 } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
@@ -209,7 +209,8 @@ export default function AdminReview() {
     () => matches.filter((m) => m.verdict === "approved").reduce((s, m) => s + (Number(m.total_source_credits) || 0), 0),
     [matches]
   );
-  const cap = req?.credits_cap ?? 132;
+  // الحد ديناميكي: 66 لنفس التخصص، 30 لتخصص مختلف. (لا نعتمد credits_cap القديم).
+  const cap = (req?.transfer_type === "same_major" || req?.student_type === "same_major") ? 66 : 30;
   const capPct = Math.min(100, (approvedAutCredits / cap) * 100);
   const overCap = approvedAutCredits > cap;
 
@@ -250,6 +251,16 @@ export default function AdminReview() {
     if (!id || !req) return;
     if (selectedItemIds.size === 0) {
       toast({ title: lang === "ar" ? "اختر مادة طالب أو أكثر أولاً" : "Select at least one student course", variant: "destructive" });
+      return;
+    }
+    if (selectedItemIds.size > 3) {
+      toast({
+        title: lang === "ar" ? "تجاوز حد الدمج" : "Merge limit exceeded",
+        description: lang === "ar"
+          ? "الحد الأقصى لدمج المواد هو 3 مواد طالب مقابل مادة AUT واحدة."
+          : "Maximum 3 student courses can be merged into one AUT course.",
+        variant: "destructive",
+      });
       return;
     }
     if (!selectedAutId) {
@@ -385,13 +396,13 @@ export default function AdminReview() {
         studentId: req.student_id || "—",
         college: req.student_college || "—",
         major: req.student_major || "—",
-        previousDiplomaSource: req.previous_diploma_source || "—",
+        previousDiplomaSource: req.previous_university || req.previous_diploma_source || "—",
         cumulativeGpa: req.cumulative_gpa,
         diplomaGpa: req.diploma_gpa,
         academicYear: req.academic_year || "—",
         semester: req.semester || "—",
-        studentType: req.student_type,
-        creditsCap: req.credits_cap,
+        studentType: req.transfer_type || req.student_type,
+        creditsCap: cap,
       },
       reviewerName: reviewerName || req.reviewer_name || "—",
       reviewedAt: req.reviewed_at || new Date().toISOString(),
@@ -482,9 +493,9 @@ export default function AdminReview() {
                 <Badge className="bg-gold text-gold-foreground border-0 mb-1">
                   {lang === "ar" ? "مراجعة لجنة المعادلات" : "Equivalency Committee Review"}
                 </Badge>
-                <h1 className="font-heading text-xl md:text-2xl font-bold">{req.student_full_name || "—"}</h1>
+                <h1 className="font-heading text-xl md:text-2xl font-bold">{req.student_full_name || (lang === "ar" ? "بدون اسم" : "Unnamed")}</h1>
                 <p className="text-primary-foreground/85 text-xs md:text-sm mt-1">
-                  {req.previous_diploma_source} · {req.student_type === "same_major" ? (lang === "ar" ? "نفس التخصص" : "Same major") : (lang === "ar" ? "تخصص مختلف" : "Different major")}
+                  {(req.previous_university || req.previous_diploma_source || "—")} · {(req.transfer_type || req.student_type) === "same_major" ? (lang === "ar" ? "نفس التخصص" : "Same major") : (lang === "ar" ? "تخصص مختلف" : "Different major")}
                 </p>
               </div>
             </div>
@@ -546,12 +557,12 @@ export default function AdminReview() {
         <Card className="p-5">
           <div className="grid md:grid-cols-3 gap-4">
             <div className="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-              <Field label={lang === "ar" ? "الرقم الجامعي" : "Student ID"} value={req.student_id} />
+              <Field label={lang === "ar" ? "الاسم" : "Name"} value={req.student_full_name} />
               <Field label={lang === "ar" ? "الكلية" : "College"} value={req.student_college} />
-              <Field label={lang === "ar" ? "التخصص" : "Major"} value={req.student_major} />
-              <Field label={lang === "ar" ? "المعدل التراكمي" : "Cumulative GPA"} value={req.cumulative_gpa?.toString() ?? null} />
-              <Field label={lang === "ar" ? "معدل الدبلوم" : "Diploma GPA"} value={req.diploma_gpa?.toString() ?? null} />
-              <Field label={lang === "ar" ? "العام / الفصل" : "Year / Semester"} value={[req.academic_year, req.semester].filter(Boolean).join(" · ") || null} />
+              <Field label={lang === "ar" ? "التخصص الجديد" : "New Major"} value={req.student_major} />
+              <Field label={lang === "ar" ? "الجامعة السابقة" : "Previous University"} value={req.previous_university || req.previous_diploma_source} />
+              <Field label={lang === "ar" ? "التخصص السابق" : "Previous Major"} value={req.previous_major_name} />
+              <Field label={lang === "ar" ? "فصل الانتقال" : "Transfer Semester"} value={req.transfer_semester} />
             </div>
             <div className="space-y-2">
               <Label>{lang === "ar" ? "اسم المرشد الأكاديمي *" : "Academic Advisor Name *"}</Label>
@@ -622,9 +633,7 @@ export default function AdminReview() {
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-sm text-foreground">{it.source_course_name}</div>
                       <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
-                        {it.source_course_code && <Badge variant="outline" className="text-[10px] font-mono">{it.source_course_code}</Badge>}
                         <span>{it.source_credits}{lang === "ar" ? "س" : "h"}</span>
-                        {it.source_grade && <span>· {it.source_grade}</span>}
                         {linked && <Badge className="bg-success text-white text-[10px]">{lang === "ar" ? "مربوطة" : "linked"}</Badge>}
                       </div>
                     </div>
@@ -786,9 +795,10 @@ export default function AdminReview() {
                           </div>
                         </div>
                         {creditMismatch && (
-                          <div className="mt-2 inline-flex items-center gap-1 text-[11px] bg-gold/15 text-gold-foreground border border-gold/40 px-2 py-1 rounded">
-                            <AlertTriangle className="h-3 w-3" />
-                            {lang === "ar" ? `فرق ساعات: ${m.total_source_credits} ↔ ${m.aut_credits}` : `Credit mismatch: ${m.total_source_credits} ↔ ${m.aut_credits}`}
+                          <div className="mt-2 text-[11px] text-muted-foreground">
+                            {lang === "ar"
+                              ? `ملاحظة: فرق ${Math.abs(m.total_source_credits - m.aut_credits)} ساعة بين مواد الطالب ومادة AUT.`
+                              : `Note: ${Math.abs(m.total_source_credits - m.aut_credits)}h difference between student and AUT credits.`}
                           </div>
                         )}
                       </div>
@@ -805,10 +815,6 @@ export default function AdminReview() {
 
 
                     <div className="flex flex-wrap gap-2 justify-end">
-                      <Button variant="outline" size="sm" onClick={() => setMatchVerdict(m.id, "pending")} disabled={busy} className="gap-1">
-                        <Clock className="h-3.5 w-3.5" />
-                        {lang === "ar" ? "معلَّقة" : "Pending"}
-                      </Button>
                       <Button variant="outline" size="sm" onClick={() => setMatchVerdict(m.id, "rejected")} disabled={busy} className="gap-1 border-destructive/40 text-destructive hover:bg-destructive/10">
                         <XCircle className="h-3.5 w-3.5" />
                         {lang === "ar" ? "غير معادَلة" : "Reject"}
@@ -865,14 +871,10 @@ export default function AdminReview() {
               <Printer className="h-4 w-4 text-primary" />
               {lang === "ar" ? "طباعة النموذج الرسمي" : "Print official form"}
             </h3>
-            <div className="grid sm:grid-cols-3 gap-2">
+            <div className="grid sm:grid-cols-2 gap-2">
               <Button variant="outline" onClick={() => handlePrint("approved")} className="gap-2 border-success/40 text-success hover:bg-success/10">
                 <FileCheck className="h-4 w-4" />
-                {lang === "ar" ? "المعادَلة فقط" : "Approved only"}
-              </Button>
-              <Button variant="outline" onClick={() => handlePrint("rejected")} className="gap-2 border-destructive/40 text-destructive hover:bg-destructive/10">
-                <FileX className="h-4 w-4" />
-                {lang === "ar" ? "المرفوضة فقط" : "Rejected only"}
+                {lang === "ar" ? "نموذج المواد المعادَلة" : "Approved courses form"}
               </Button>
               <Button onClick={() => handlePrint("full")} className="gap-2 bg-primary">
                 <Printer className="h-4 w-4" />

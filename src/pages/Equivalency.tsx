@@ -23,7 +23,11 @@ import { useAuth } from "@/hooks/useAuth";
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
 const BUCKET = "equivalency-uploads";
 
-type TransferType = "same_major" | "different_major" | "diploma" | "non_enrolled";
+type TransferType = "same_major" | "different_major";
+type InputMode = "manual" | "file";
+
+const SAME_MAJOR_CAP = 66;
+const DIFFERENT_MAJOR_CAP = 30;
 
 interface CourseRow {
   source_course_name: string;
@@ -61,11 +65,14 @@ export default function Equivalency() {
   // ============ بيانات الطالب المبسطة ============
   const [studentFullName, setStudentFullName] = useState("");
   const [studentCollege, setStudentCollege] = useState("");
-  const [studentMajor, setStudentMajor] = useState(""); // التخصص الجديد في AUT
-  const [previousUniversity, setPreviousUniversity] = useState(""); // الجامعة/الدبلوم السابق
+  const [studentMajor, setStudentMajor] = useState(""); // التخصص الجديد في AUT (يظهر فقط لو مختلف)
+  const [previousUniversity, setPreviousUniversity] = useState(""); // الجامعة السابقة
   const [previousMajorName, setPreviousMajorName] = useState(""); // التخصص السابق
   const [transferSemester, setTransferSemester] = useState(""); // فصل الانتقال
   const [transferType, setTransferType] = useState<TransferType>("different_major");
+
+  // ============ وضع الإدخال: يدوي أو ملف ============
+  const [inputMode, setInputMode] = useState<InputMode>("manual");
 
   // ============ ملف كشف المواد + الاستخراج ============
   const [file, setFile] = useState<File | null>(null);
@@ -79,6 +86,9 @@ export default function Equivalency() {
   // ============ حالات الإرسال ============
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // الحد الأقصى للساعات حسب نوع الانتقال
+  const creditsCap = transferType === "same_major" ? SAME_MAJOR_CAP : DIFFERENT_MAJOR_CAP;
 
   const totalSourceCredits = extractedCourses.reduce((s, r) => s + (Number(r.source_credits) || 0), 0);
 
@@ -212,13 +222,16 @@ export default function Equivalency() {
   const validate = (): string | null => {
     if (!studentFullName.trim()) return isAr ? "اسم الطالب مطلوب" : "Student name required";
     if (!studentCollege.trim()) return isAr ? "الكلية مطلوبة" : "College required";
-    if (!studentMajor.trim()) return isAr ? "التخصص الجديد مطلوب" : "New major required";
-    if (!previousUniversity.trim()) return isAr ? "الجامعة/الدبلوم السابق مطلوب" : "Previous source required";
-    if (!file) return isAr ? "يرجى رفع كشف المواد" : "Transcript file required";
-    if (!extractionDone && extractedCourses.length === 0) {
-      return isAr ? "يرجى استخراج المواد أولاً أو إدخالها يدوياً" : "Please extract courses first or enter them manually";
+    if (transferType === "different_major" && !studentMajor.trim()) {
+      return isAr ? "التخصص الجديد مطلوب" : "New major required";
     }
-    if (extractedCourses.length === 0) return isAr ? "لا توجد مواد للمعادلة" : "No courses to evaluate";
+    if (!previousUniversity.trim()) return isAr ? "الجامعة السابقة مطلوبة" : "Previous university required";
+    if (inputMode === "file" && !file) {
+      return isAr ? "يرجى رفع كشف المواد أو التبديل للإدخال اليدوي" : "Upload a transcript or switch to manual entry";
+    }
+    if (extractedCourses.length === 0) {
+      return isAr ? "لا توجد مواد للمعادلة — أضف مادة واحدة على الأقل" : "Add at least one course";
+    }
     if (extractedCourses.some((r) => !r.source_course_name.trim())) {
       return isAr ? "اسم كل مادة مطلوب" : "Each course must have a name";
     }
@@ -275,14 +288,16 @@ export default function Equivalency() {
         user_id: user.id,
         student_full_name: studentFullName.trim(),
         student_college: studentCollege.trim(),
-        student_major: studentMajor.trim(),
+        student_major: (transferType === "same_major"
+          ? (previousMajorName.trim() || studentMajor.trim() || "نفس التخصص")
+          : studentMajor.trim()),
         previous_university: previousUniversity.trim(),
         previous_major_name: previousMajorName.trim() || null,
         transfer_semester: transferSemester.trim() || null,
         transfer_type: transferType,
         student_type: transferType,
-        credits_cap: 132,
-        input_mode: "file",
+        credits_cap: creditsCap,
+        input_mode: inputMode,
         uploaded_file_url: uploadedFileUrl,
         extraction_status: "completed",
         extraction_raw_text: rawText.slice(0, 10000),
@@ -404,24 +419,24 @@ export default function Equivalency() {
                 placeholder={isAr ? "مثال: كلية تكنولوجيا المعلومات" : "e.g. College of IT"} />
             </div>
             <div>
-              <Label>{isAr ? "التخصص الجديد *" : "New Major *"}</Label>
-              <Input value={studentMajor} onChange={(e) => setStudentMajor(e.target.value)}
-                placeholder={isAr ? "مثال: الذكاء الاصطناعي" : "e.g. Artificial Intelligence"} />
-            </div>
-            <div>
               <Label>{isAr ? "نوع الانتقال *" : "Transfer Type *"}</Label>
               <Select value={transferType} onValueChange={(v) => setTransferType(v as TransferType)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="same_major">{isAr ? "نفس التخصص" : "Same major"}</SelectItem>
                   <SelectItem value="different_major">{isAr ? "تخصص مختلف" : "Different major"}</SelectItem>
-                  <SelectItem value="diploma">{isAr ? "من دبلوم" : "From diploma"}</SelectItem>
-                  <SelectItem value="non_enrolled">{isAr ? "لم ينتسب بعد" : "Not yet enrolled"}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+            {transferType === "different_major" && (
+              <div>
+                <Label>{isAr ? "التخصص الجديد في AUT *" : "New Major at AUT *"}</Label>
+                <Input value={studentMajor} onChange={(e) => setStudentMajor(e.target.value)}
+                  placeholder={isAr ? "مثال: الذكاء الاصطناعي" : "e.g. Artificial Intelligence"} />
+              </div>
+            )}
             <div>
-              <Label>{isAr ? "الجامعة / الدبلوم السابق *" : "Previous University / Diploma *"}</Label>
+              <Label>{isAr ? "الجامعة السابقة *" : "Previous University *"}</Label>
               <Input value={previousUniversity} onChange={(e) => setPreviousUniversity(e.target.value)}
                 placeholder={isAr ? "مثال: جامعة الملك سعود" : "e.g. King Saud University"} />
             </div>
@@ -436,80 +451,143 @@ export default function Equivalency() {
                 placeholder={isAr ? "مثال: الفصل الأول 2025-2026" : "e.g. Fall 2025-2026"} />
             </div>
           </div>
+
+          {/* تنبيه الحد الأقصى للمعادلة */}
+          <Alert className="border-2 border-primary/30 bg-primary/5">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <AlertTitle className="font-bold">
+              {isAr
+                ? `الحد الأقصى لمعادلة المواد: ${creditsCap} ساعة`
+                : `Equivalency cap: ${creditsCap} credit hours`}
+            </AlertTitle>
+            <AlertDescription className="text-xs">
+              {transferType === "same_major"
+                ? (isAr
+                    ? "للطلاب المنتقلين من نفس التخصص، الحد الأقصى للساعات التي يمكن معادلتها هو 66 ساعة معتمدة."
+                    : "For students transferring within the same major, up to 66 AUT credit hours can be equated.")
+                : (isAr
+                    ? "للطلاب المنتقلين من تخصص مختلف، الحد الأقصى للساعات التي يمكن معادلتها هو 30 ساعة معتمدة."
+                    : "For students transferring from a different major, up to 30 AUT credit hours can be equated.")}
+            </AlertDescription>
+          </Alert>
         </Card>
 
-        {/* القسم 2: رفع الملف */}
+        {/* القسم 2: طريقة إدخال المواد */}
         <Card className="p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <Upload className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold">{isAr ? "كشف المواد المُجتازة *" : "Transcript *"}</h2>
+          <div className="flex items-center gap-2 flex-wrap">
+            <FileText className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-semibold">{isAr ? "المواد المُجتازة *" : "Completed Courses *"}</h2>
           </div>
 
-          {!file ? (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed rounded-xl p-10 text-center cursor-pointer hover:bg-muted/40 transition"
+          {/* اختيار وضع الإدخال */}
+          <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-lg">
+            <button
+              type="button"
+              onClick={() => {
+                setInputMode("manual");
+                if (extractedCourses.length === 0) setExtractedCourses([emptyRow()]);
+                setExtractionDone(true);
+                setError(null);
+              }}
+              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-medium transition ${
+                inputMode === "manual" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
-              <div className="font-medium">{isAr ? "اضغط لرفع الملف" : "Click to upload file"}</div>
-              <div className="text-xs text-muted-foreground mt-1">PDF / JPG / PNG / WEBP</div>
-              <input ref={fileInputRef} type="file" hidden accept=".pdf,image/*" onChange={handleFileChange} />
-            </div>
-          ) : (
-            <div className="border rounded-xl p-4 space-y-3">
-              <div className="flex items-center gap-3">
-                {file.type.startsWith("image/") ? (
-                  <ImageIcon className="h-6 w-6 text-primary" />
-                ) : (
-                  <FileType2 className="h-6 w-6 text-primary" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{file.name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
-                  </div>
-                </div>
-                <Button variant="ghost" size="icon" onClick={clearFile}><X className="h-4 w-4" /></Button>
+              <Plus className="h-4 w-4" />
+              {isAr ? "إدخال يدوي" : "Manual entry"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setInputMode("file");
+                setExtractedCourses([]);
+                setExtractionDone(false);
+                setError(null);
+              }}
+              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-medium transition ${
+                inputMode === "file" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Upload className="h-4 w-4" />
+              {isAr ? "رفع ملف / صورة" : "Upload file / image"}
+            </button>
+          </div>
+
+          {inputMode === "file" && (
+            !file ? (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed rounded-xl p-10 text-center cursor-pointer hover:bg-muted/40 transition"
+              >
+                <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
+                <div className="font-medium">{isAr ? "اضغط لرفع الملف" : "Click to upload file"}</div>
+                <div className="text-xs text-muted-foreground mt-1">PDF / JPG / PNG / WEBP</div>
+                <input ref={fileInputRef} type="file" hidden accept=".pdf,image/*" onChange={handleFileChange} />
               </div>
-
-              {filePreviewUrl && (
-                <img src={filePreviewUrl} alt="preview" className="max-h-60 rounded border mx-auto" />
-              )}
-
-               {!extractionDone ? (
-                 <div className="space-y-3">
-                   <Button onClick={handleExtract} disabled={extracting} className="w-full">
-                     {extracting ? (
-                       <><Loader2 className="me-2 h-4 w-4 animate-spin" /> {isAr ? "جاري الاستخراج..." : "Extracting..."}</>
-                     ) : (
-                       <><Wand2 className="me-2 h-4 w-4" /> {isAr ? "استخراج المواد" : "Extract Courses"}</>
-                     )}
-                   </Button>
-
-                   {isAiCreditError(error) && (
-                     <Alert>
-                       <AlertCircle className="h-4 w-4" />
-                       <AlertTitle>{isAr ? "الإدخال اليدوي متاح" : "Manual entry available"}</AlertTitle>
-                       <AlertDescription className="space-y-3">
-                         <p>
-                           {isAr
-                             ? "تعذر تشغيل الاستخراج الذكي حالياً، لكن يمكنك إدخال المواد بنفسك ومتابعة إرسال الطلب بدون توقف."
-                             : "Automatic extraction is unavailable right now, but you can still enter courses manually and continue."}
-                         </p>
-                         <Button type="button" variant="outline" onClick={handleEnableManualEntry}>
-                           <Plus className="me-2 h-4 w-4" />
-                           {isAr ? "إدخال المواد يدوياً" : "Enter courses manually"}
-                         </Button>
-                       </AlertDescription>
-                     </Alert>
-                   )}
-                 </div>
-               ) : (
-                <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-500">
-                  <CheckCircle2 className="h-4 w-4" />
-                  {isAr ? `تم استخراج ${extractedCourses.length} مادة` : `Extracted ${extractedCourses.length} courses`}
+            ) : (
+              <div className="border rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  {file.type.startsWith("image/") ? (
+                    <ImageIcon className="h-6 w-6 text-primary" />
+                  ) : (
+                    <FileType2 className="h-6 w-6 text-primary" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{file.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={clearFile}><X className="h-4 w-4" /></Button>
                 </div>
-              )}
+
+                {filePreviewUrl && (
+                  <img src={filePreviewUrl} alt="preview" className="max-h-60 rounded border mx-auto" />
+                )}
+
+                {!extractionDone ? (
+                  <div className="space-y-3">
+                    <Button onClick={handleExtract} disabled={extracting} className="w-full">
+                      {extracting ? (
+                        <><Loader2 className="me-2 h-4 w-4 animate-spin" /> {isAr ? "جاري الاستخراج..." : "Extracting..."}</>
+                      ) : (
+                        <><Wand2 className="me-2 h-4 w-4" /> {isAr ? "استخراج المواد" : "Extract Courses"}</>
+                      )}
+                    </Button>
+
+                    {isAiCreditError(error) && (
+                      <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>{isAr ? "الإدخال اليدوي متاح" : "Manual entry available"}</AlertTitle>
+                        <AlertDescription className="space-y-3">
+                          <p>
+                            {isAr
+                              ? "تعذر تشغيل الاستخراج الذكي حالياً، لكن يمكنك إدخال المواد بنفسك ومتابعة إرسال الطلب بدون توقف."
+                              : "Automatic extraction is unavailable right now, but you can still enter courses manually and continue."}
+                          </p>
+                          <Button type="button" variant="outline" onClick={handleEnableManualEntry}>
+                            <Plus className="me-2 h-4 w-4" />
+                            {isAr ? "إدخال المواد يدوياً" : "Enter courses manually"}
+                          </Button>
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-500">
+                    <CheckCircle2 className="h-4 w-4" />
+                    {isAr ? `تم استخراج ${extractedCourses.length} مادة` : `Extracted ${extractedCourses.length} courses`}
+                  </div>
+                )}
+              </div>
+            )
+          )}
+
+          {inputMode === "manual" && (
+            <div className="text-sm text-muted-foreground bg-muted/40 rounded-lg p-3">
+              {isAr
+                ? "أدخل المواد التي اجتزتها يدوياً في الجدول أدناه. يمكنك إضافة المزيد من الصفوف."
+                : "Enter your completed courses manually in the table below. You can add more rows."}
             </div>
           )}
         </Card>
