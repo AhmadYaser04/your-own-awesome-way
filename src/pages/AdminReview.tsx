@@ -675,7 +675,7 @@ export default function AdminReview() {
                   >
                     <div className="flex items-center gap-2 mb-0.5">
                       <Badge variant="outline" className="text-[10px] font-mono">{c.course_code}</Badge>
-                      <Badge variant="outline" className="text-[10px]">{c.credits}{lang === "ar" ? "س" : "h"}</Badge>
+                      <Badge variant="outline" className="text-[11px]">{c.credits} {lang === "ar" ? "ساعات" : "hours"}</Badge>
                     </div>
                     <div className="text-sm font-bold text-foreground">{c.course_name_ar}</div>
                     {c.course_name_en && <div className="text-xs text-muted-foreground">{c.course_name_en}</div>}
