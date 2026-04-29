@@ -787,8 +787,8 @@ export default function AdminReview() {
                                   <Badge variant="outline" className="text-[10px] font-mono me-1">{aut.course_code}</Badge>
                                   <span className="font-bold">{aut.course_name_ar}</span>
                                 </div>
-                                <div className="text-xs font-bold text-primary">
-                                  Σ {m.aut_credits}{lang === "ar" ? "س" : "h"}
+                                <div className="text-sm font-bold text-primary">
+                                  Σ {m.aut_credits} {lang === "ar" ? "ساعات" : "hours"}
                                 </div>
                               </>
                             ) : <div className="text-xs text-muted-foreground">—</div>}
