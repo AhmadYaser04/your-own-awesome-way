@@ -959,6 +959,45 @@ export default function AdminReview() {
           </div>
         </Card>
       </section>
+
+      {/* Hold (pending) reason dialog */}
+      <Dialog open={holdDialogOpen} onOpenChange={setHoldDialogOpen}>
+        <DialogContent dir={dir}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-gold" />
+              {lang === "ar" ? "تعليق الطلب — سبب التعليق" : "Hold request — reason"}
+            </DialogTitle>
+            <DialogDescription>
+              {lang === "ar"
+                ? "اكتب سبب تعليق الطلب. سيتم إرسال هذا السبب للطالب وسيظهر في صفحة طلباته."
+                : "Write the hold reason. It will be sent to the student and shown on their requests page."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label className="text-sm font-bold">
+              {lang === "ar" ? "السبب *" : "Reason *"}
+            </Label>
+            <Textarea
+              value={holdReason}
+              onChange={(e) => setHoldReason(e.target.value)}
+              placeholder={lang === "ar"
+                ? "مثال: الطلب معلَّق بانتظار قرار من الجامعة بشأن المواد الاستدراكية."
+                : "e.g. On hold pending a university decision on remedial courses."}
+              className="min-h-[120px]"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHoldDialogOpen(false)}>
+              {lang === "ar" ? "إلغاء" : "Cancel"}
+            </Button>
+            <Button onClick={submitHold} disabled={busy} className="bg-gold text-gold-foreground hover:bg-gold/90">
+              <Clock className="h-4 w-4 me-1" />
+              {lang === "ar" ? "تعليق وإرسال للطالب" : "Hold & notify student"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SiteLayout>
   );
 }
