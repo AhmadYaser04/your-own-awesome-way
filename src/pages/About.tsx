@@ -114,7 +114,7 @@ export default function About() {
           </h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
             معادلة المواد بين الجامعات عملية يدوية بطيئة، تحتاج خبيراً أكاديمياً لمراجعة كل مادة وفحص توافقها مع الخطة
-            المُستهدَفة. تأخذ هذه العملية أسابيع، وقد تتأثر بالعامل البشري. الطلاب الراغبون في التحويل من جامعات سعودية
+            المُستهدَفة. تأخذ هذه العملية أسابيع، وقد تتأثر بالعامل البشري. الطلاب المنتقلون من جامعات أو كليات أو دبلومات
             إلى تخصص الذكاء الاصطناعي في AUT يحتاجون أداة سريعة تعطيهم تصوراً أولياً لفرص معادلة موادهم.
           </p>
         </Card>
@@ -125,7 +125,7 @@ export default function About() {
             الحل المقترح
           </h2>
           <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-            نظام ويب يستخدم نماذج اللغة الكبيرة (LLM) لمقارنة وصف المادة السعودية دلالياً مع كامل خطة بكالوريوس الذكاء
+            نظام ويب يستخدم نماذج اللغة الكبيرة (LLM) لمقارنة وصف المادة المُحوَّلة دلالياً مع كامل خطة بكالوريوس الذكاء
             الاصطناعي في AUT، ويُرجع: نسبة تطابق دقيقة، أفضل المواد المُعادِلة، تبريراً واضحاً، وحكماً نهائياً (تُعادَل
             / تُعادَل بشروط / لا تُعادَل).
           </p>
@@ -179,7 +179,7 @@ export default function About() {
             <Zap className="h-12 w-12 shrink-0" />
             <div className="flex-1">
               <h3 className="font-heading font-bold text-lg mb-1">جاهز لتجربة النظام؟</h3>
-              <p className="text-primary-foreground/85 text-sm">الصق وصف مادة من ميثاقك السعودي واحصل على معادلة فورية.</p>
+              <p className="text-primary-foreground/85 text-sm">الصق وصف مادة من ميثاق جامعتك السابقة واحصل على معادلة فورية.</p>
             </div>
             <Button asChild variant="secondary" className="gap-2">
               <Link to="/equivalency">
