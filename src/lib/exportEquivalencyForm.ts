@@ -271,7 +271,7 @@ function renderHtml(d: EquivalencyPrintData, title: string, logoUrl: string): st
     <div class="field"><div class="label">نوع الانتقال</div><div class="value">${
       s.studentType === "same_major" ? "نفس التخصص" : "تخصص مختلف"
     }</div></div>
-    <div class="field" style="grid-column: span 2"><div class="label">الجامعة / الدبلوم السابق</div><div class="value">${esc(s.previousDiplomaSource)}</div></div>
+    <div class="field" style="grid-column: span 2"><div class="label">الجامعة السابقة</div><div class="value">${esc(s.previousDiplomaSource)}</div></div>
     <div class="field" style="grid-column: span 3"><div class="label">رقم الطلب</div><div class="value" style="font-family: monospace; font-size: 9pt">${esc(d.requestId.slice(0, 8))}</div></div>
   </div>
 
@@ -357,7 +357,7 @@ function renderTable(heading: string, rows: PrintRow[], kind: "approved" | "reje
   <table class="eq">
     <thead>
       <tr>
-       <th colspan="4" style="background:#b58a2b">مواد الطالب (الدبلوم السابق)</th>
+       <th colspan="4" style="background:#b58a2b">مواد الطالب (الجامعة السابقة)</th>
        <th rowspan="2" style="width:18px"></th>
        <th colspan="3" style="background:#14306b">مواد جامعة AUT المعادِلة</th>
       </tr>
