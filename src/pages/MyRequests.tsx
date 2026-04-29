@@ -236,9 +236,8 @@ export default function MyRequests() {
                           <div key={it.id} className="flex flex-wrap items-center justify-between gap-2 text-sm bg-card border rounded-md p-2.5">
                             <div className="min-w-0 flex-1">
                               <div className="font-bold text-foreground truncate">{it.source_course_name}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {it.source_course_code || "—"} · {it.source_credits}{lang === "ar" ? "س" : "h"}
-                                {it.source_grade && <> · {it.source_grade}</>}
+                              <div className="text-sm text-muted-foreground font-medium">
+                                {it.source_credits} {lang === "ar" ? "ساعات" : "hours"}
                               </div>
                             </div>
                             {itMatch ? (
