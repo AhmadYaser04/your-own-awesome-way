@@ -222,7 +222,7 @@ export default function MyRequests() {
                   {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   {isOpen
                     ? (lang === "ar" ? "إخفاء التفاصيل" : "Hide details")
-                    : (lang === "ar" ? `استعراض ${items.length} مادة (${totalSource}س)` : `View ${items.length} courses (${totalSource}h)`)}
+                    : (lang === "ar" ? `استعراض ${items.length} مادة (${totalSource} ساعات)` : `View ${items.length} courses (${totalSource} hours)`)}
                 </Button>
 
                 {isOpen && (
