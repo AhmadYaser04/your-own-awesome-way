@@ -209,7 +209,8 @@ export default function AdminReview() {
     () => matches.filter((m) => m.verdict === "approved").reduce((s, m) => s + (Number(m.total_source_credits) || 0), 0),
     [matches]
   );
-  const cap = req?.credits_cap ?? 132;
+  // الحد ديناميكي: 66 لنفس التخصص، 30 لتخصص مختلف. (لا نعتمد credits_cap القديم).
+  const cap = (req?.transfer_type === "same_major" || req?.student_type === "same_major") ? 66 : 30;
   const capPct = Math.min(100, (approvedAutCredits / cap) * 100);
   const overCap = approvedAutCredits > cap;
 
