@@ -222,13 +222,16 @@ export default function Equivalency() {
   const validate = (): string | null => {
     if (!studentFullName.trim()) return isAr ? "اسم الطالب مطلوب" : "Student name required";
     if (!studentCollege.trim()) return isAr ? "الكلية مطلوبة" : "College required";
-    if (!studentMajor.trim()) return isAr ? "التخصص الجديد مطلوب" : "New major required";
-    if (!previousUniversity.trim()) return isAr ? "الجامعة/الدبلوم السابق مطلوب" : "Previous source required";
-    if (!file) return isAr ? "يرجى رفع كشف المواد" : "Transcript file required";
-    if (!extractionDone && extractedCourses.length === 0) {
-      return isAr ? "يرجى استخراج المواد أولاً أو إدخالها يدوياً" : "Please extract courses first or enter them manually";
+    if (transferType === "different_major" && !studentMajor.trim()) {
+      return isAr ? "التخصص الجديد مطلوب" : "New major required";
     }
-    if (extractedCourses.length === 0) return isAr ? "لا توجد مواد للمعادلة" : "No courses to evaluate";
+    if (!previousUniversity.trim()) return isAr ? "الجامعة السابقة مطلوبة" : "Previous university required";
+    if (inputMode === "file" && !file) {
+      return isAr ? "يرجى رفع كشف المواد أو التبديل للإدخال اليدوي" : "Upload a transcript or switch to manual entry";
+    }
+    if (extractedCourses.length === 0) {
+      return isAr ? "لا توجد مواد للمعادلة — أضف مادة واحدة على الأقل" : "Add at least one course";
+    }
     if (extractedCourses.some((r) => !r.source_course_name.trim())) {
       return isAr ? "اسم كل مادة مطلوب" : "Each course must have a name";
     }
@@ -285,14 +288,16 @@ export default function Equivalency() {
         user_id: user.id,
         student_full_name: studentFullName.trim(),
         student_college: studentCollege.trim(),
-        student_major: studentMajor.trim(),
+        student_major: (transferType === "same_major"
+          ? (previousMajorName.trim() || studentMajor.trim() || "نفس التخصص")
+          : studentMajor.trim()),
         previous_university: previousUniversity.trim(),
         previous_major_name: previousMajorName.trim() || null,
         transfer_semester: transferSemester.trim() || null,
         transfer_type: transferType,
         student_type: transferType,
-        credits_cap: 132,
-        input_mode: "file",
+        credits_cap: creditsCap,
+        input_mode: inputMode,
         uploaded_file_url: uploadedFileUrl,
         extraction_status: "completed",
         extraction_raw_text: rawText.slice(0, 10000),
