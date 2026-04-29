@@ -632,8 +632,8 @@ export default function AdminReview() {
                     />
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-sm text-foreground">{it.source_course_name}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
-                        <span>{it.source_credits}{lang === "ar" ? "س" : "h"}</span>
+                      <div className="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
+                        <span className="font-medium">{it.source_credits} {lang === "ar" ? "ساعات" : "hours"}</span>
                         {linked && <Badge className="bg-success text-white text-[10px]">{lang === "ar" ? "مربوطة" : "linked"}</Badge>}
                       </div>
                     </div>
