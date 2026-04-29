@@ -26,7 +26,6 @@ const signInSchema = z.object({
 
 const signUpSchema = z.object({
   full_name: z.string().trim().min(2).max(100),
-  saudi_university: z.string().trim().min(2).max(150),
   email: z.string().trim().email().max(255),
   password: z.string().min(8).max(128),
 });
@@ -52,7 +51,6 @@ export default function Auth() {
 
   // Sign up form
   const [suName, setSuName] = useState("");
-  const [suUni, setSuUni] = useState("");
   const [suEmail, setSuEmail] = useState("");
   const [suPwd, setSuPwd] = useState("");
 
@@ -105,7 +103,6 @@ export default function Auth() {
     setErr(null);
     const parsed = signUpSchema.safeParse({
       full_name: suName,
-      saudi_university: suUni,
       email: suEmail,
       password: suPwd,
     });
@@ -121,7 +118,6 @@ export default function Auth() {
         emailRedirectTo: `${window.location.origin}/`,
         data: {
           full_name: parsed.data.full_name,
-          saudi_university: parsed.data.saudi_university,
         },
       },
     });
@@ -278,9 +274,6 @@ export default function Auth() {
               <form onSubmit={handleSignUp} className="space-y-4">
                 <Field id="su-name" label={t("auth.fullName")} icon={UserIcon}>
                   <Input id="su-name" type="text" required value={suName} onChange={(e) => setSuName(e.target.value)} />
-                </Field>
-                <Field id="su-uni" label={t("auth.saudiUni")} icon={Building2}>
-                  <Input id="su-uni" type="text" required value={suUni} onChange={(e) => setSuUni(e.target.value)} placeholder={t("auth.saudiUniPh")} />
                 </Field>
                 <Field id="su-email" label={t("auth.email")} icon={Mail}>
                   <Input id="su-email" type="email" autoComplete="email" required value={suEmail} onChange={(e) => setSuEmail(e.target.value)} dir="ltr" />
