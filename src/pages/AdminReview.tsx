@@ -502,7 +502,7 @@ export default function AdminReview() {
             <div className="flex flex-col items-stretch sm:items-end gap-2 min-w-[300px] w-full md:w-auto">
               <div className="flex items-center justify-between text-xs">
                 <span>{lang === "ar" ? "إجمالي الساعات المعتمَدة" : "Total approved credits"}</span>
-                <span className="font-bold">{approvedAutCredits} / {cap} {lang === "ar" ? "س" : "h"}</span>
+                <span className="font-bold">{approvedAutCredits} / {cap} {lang === "ar" ? "ساعة" : "hours"}</span>
               </div>
               <Progress
                 value={capPct}
