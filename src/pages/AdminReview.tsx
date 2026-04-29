@@ -493,9 +493,9 @@ export default function AdminReview() {
                 <Badge className="bg-gold text-gold-foreground border-0 mb-1">
                   {lang === "ar" ? "مراجعة لجنة المعادلات" : "Equivalency Committee Review"}
                 </Badge>
-                <h1 className="font-heading text-xl md:text-2xl font-bold">{req.student_full_name || "—"}</h1>
+                <h1 className="font-heading text-xl md:text-2xl font-bold">{req.student_full_name || (lang === "ar" ? "بدون اسم" : "Unnamed")}</h1>
                 <p className="text-primary-foreground/85 text-xs md:text-sm mt-1">
-                  {req.previous_diploma_source} · {req.student_type === "same_major" ? (lang === "ar" ? "نفس التخصص" : "Same major") : (lang === "ar" ? "تخصص مختلف" : "Different major")}
+                  {(req.previous_university || req.previous_diploma_source || "—")} · {(req.transfer_type || req.student_type) === "same_major" ? (lang === "ar" ? "نفس التخصص" : "Same major") : (lang === "ar" ? "تخصص مختلف" : "Different major")}
                 </p>
               </div>
             </div>
