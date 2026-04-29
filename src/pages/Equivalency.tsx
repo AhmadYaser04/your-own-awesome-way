@@ -171,10 +171,7 @@ export default function Equivalency() {
 
       const list: CourseRow[] = (data?.courses ?? []).map((c: any) => ({
         source_course_name: c.name ?? "",
-        source_course_code: c.code ?? "",
         source_credits: Number(c.credits ?? 3) || 3,
-        source_grade: c.grade ?? "",
-        source_semester: c.semester ?? "",
       }));
 
       setExtractedCourses(list.length > 0 ? list : [emptyRow()]);
