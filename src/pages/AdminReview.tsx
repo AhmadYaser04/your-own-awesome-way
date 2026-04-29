@@ -926,8 +926,8 @@ export default function AdminReview() {
 
 
           <div className="flex flex-wrap gap-2 justify-end">
-            <Button variant="outline" onClick={() => finalizeRequest("pending")} disabled={busy} className="gap-1">
-              <Clock className="h-4 w-4" /> {lang === "ar" ? "معلَّق" : "Pending"}
+            <Button variant="outline" onClick={openHoldDialog} disabled={busy} className="gap-1 border-gold/60 text-gold-foreground bg-gold/10 hover:bg-gold/20">
+              <Clock className="h-4 w-4" /> {lang === "ar" ? "تعليق الطلب" : "Hold (pending)"}
             </Button>
             <Button variant="outline" onClick={() => finalizeRequest("rejected")} disabled={busy} className="gap-1 border-destructive/40 text-destructive hover:bg-destructive/10">
               <XCircle className="h-4 w-4" /> {lang === "ar" ? "رفض الطلب" : "Reject request"}
