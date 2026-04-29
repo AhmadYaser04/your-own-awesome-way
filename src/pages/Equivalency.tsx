@@ -419,24 +419,24 @@ export default function Equivalency() {
                 placeholder={isAr ? "مثال: كلية تكنولوجيا المعلومات" : "e.g. College of IT"} />
             </div>
             <div>
-              <Label>{isAr ? "التخصص الجديد *" : "New Major *"}</Label>
-              <Input value={studentMajor} onChange={(e) => setStudentMajor(e.target.value)}
-                placeholder={isAr ? "مثال: الذكاء الاصطناعي" : "e.g. Artificial Intelligence"} />
-            </div>
-            <div>
               <Label>{isAr ? "نوع الانتقال *" : "Transfer Type *"}</Label>
               <Select value={transferType} onValueChange={(v) => setTransferType(v as TransferType)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="same_major">{isAr ? "نفس التخصص" : "Same major"}</SelectItem>
                   <SelectItem value="different_major">{isAr ? "تخصص مختلف" : "Different major"}</SelectItem>
-                  <SelectItem value="diploma">{isAr ? "من دبلوم" : "From diploma"}</SelectItem>
-                  <SelectItem value="non_enrolled">{isAr ? "لم ينتسب بعد" : "Not yet enrolled"}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+            {transferType === "different_major" && (
+              <div>
+                <Label>{isAr ? "التخصص الجديد في AUT *" : "New Major at AUT *"}</Label>
+                <Input value={studentMajor} onChange={(e) => setStudentMajor(e.target.value)}
+                  placeholder={isAr ? "مثال: الذكاء الاصطناعي" : "e.g. Artificial Intelligence"} />
+              </div>
+            )}
             <div>
-              <Label>{isAr ? "الجامعة / الدبلوم السابق *" : "Previous University / Diploma *"}</Label>
+              <Label>{isAr ? "الجامعة السابقة *" : "Previous University *"}</Label>
               <Input value={previousUniversity} onChange={(e) => setPreviousUniversity(e.target.value)}
                 placeholder={isAr ? "مثال: جامعة الملك سعود" : "e.g. King Saud University"} />
             </div>
@@ -451,6 +451,25 @@ export default function Equivalency() {
                 placeholder={isAr ? "مثال: الفصل الأول 2025-2026" : "e.g. Fall 2025-2026"} />
             </div>
           </div>
+
+          {/* تنبيه الحد الأقصى للمعادلة */}
+          <Alert className="border-2 border-primary/30 bg-primary/5">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <AlertTitle className="font-bold">
+              {isAr
+                ? `الحد الأقصى لمعادلة المواد: ${creditsCap} ساعة`
+                : `Equivalency cap: ${creditsCap} credit hours`}
+            </AlertTitle>
+            <AlertDescription className="text-xs">
+              {transferType === "same_major"
+                ? (isAr
+                    ? "للطلاب المنتقلين من نفس التخصص، الحد الأقصى للساعات التي يمكن معادلتها هو 66 ساعة معتمدة."
+                    : "For students transferring within the same major, up to 66 AUT credit hours can be equated.")
+                : (isAr
+                    ? "للطلاب المنتقلين من تخصص مختلف، الحد الأقصى للساعات التي يمكن معادلتها هو 30 ساعة معتمدة."
+                    : "For students transferring from a different major, up to 30 AUT credit hours can be equated.")}
+            </AlertDescription>
+          </Alert>
         </Card>
 
         {/* القسم 2: رفع الملف */}
