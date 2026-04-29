@@ -8,40 +8,40 @@
 
 @layer base {
   :root {
-    /* خلفية ناعمة جداً (أبيض مع لمسة سماء) */
+    /* خلفية ناعمة جداً (أبيض مع لمسة سماء — متناسقة مع لوجو AUT) */
     --background: 210 40% 98%;
-    --foreground: 215 50% 18%;
+    --foreground: 215 60% 15%;
 
-    /* البطاقات بنفس درجة الخلفية تقريباً (أوف-وايت كريمي) */
+    /* البطاقات بنفس درجة الخلفية تقريباً */
     --card: 210 35% 99%;
-    --card-foreground: 215 50% 18%;
+    --card-foreground: 215 60% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 50% 18%;
+    --popover-foreground: 215 60% 15%;
 
-    /* الأزرق الجامعي العميق — يجذب العين بقوة */
-    --primary: 215 75% 28%;
+    /* الأزرق الملكي العميق المطابق للوجو AUT */
+    --primary: 215 82% 24%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 210 70% 50%;
+    --primary-glow: 210 75% 48%;
 
-    /* ثانوي قريب من الأساسي مع لمسة فاتحة */
-    --secondary: 210 60% 45%;
+    /* ثانوي: أزرق متوسط لتدرّج هادئ */
+    --secondary: 210 65% 42%;
     --secondary-foreground: 0 0% 100%;
 
     /* ميوتد قريب جداً من الخلفية */
     --muted: 210 30% 95%;
-    --muted-foreground: 215 20% 45%;
+    --muted-foreground: 215 20% 42%;
 
-    /* اكسنت كريمي قريب من الخلفية */
-    --accent: 40 50% 95%;
-    --accent-foreground: 30 70% 25%;
+    /* اكسنت كريمي — يكمّل الذهبي */
+    --accent: 42 60% 95%;
+    --accent-foreground: 38 80% 22%;
 
-    /* ذهبي دافئ — اللون الجاذب الثاني */
-    --gold: 38 90% 52%;
-    --gold-foreground: 30 70% 15%;
+    /* الذهبي الدافئ المطابق للوجو AUT */
+    --gold: 42 95% 52%;
+    --gold-foreground: 30 75% 12%;
 
     /* تمييز ناعم */
-    --highlight: 215 75% 35%;
+    --highlight: 215 82% 30%;
     --highlight-foreground: 0 0% 100%;
 
     --success: 145 55% 42%;
@@ -51,19 +51,19 @@
 
     --border: 210 25% 88%;
     --input: 210 25% 92%;
-    --ring: 215 75% 28%;
+    --ring: 215 82% 30%;
 
     --radius: 1rem;
 
-    --gradient-hero: linear-gradient(135deg, hsl(215 75% 28%) 0%, hsl(215 70% 40%) 60%, hsl(38 90% 55%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(215 82% 22%) 0%, hsl(215 75% 35%) 55%, hsl(42 95% 55%) 100%);
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 35% 98%));
-    --gradient-vibrant: linear-gradient(135deg, hsl(215 75% 32%) 0%, hsl(38 90% 55%) 100%);
-    --gradient-student: linear-gradient(135deg, hsl(215 70% 35%) 0%, hsl(210 65% 50%) 100%);
+    --gradient-vibrant: linear-gradient(135deg, hsl(215 82% 28%) 0%, hsl(42 95% 55%) 100%);
+    --gradient-student: linear-gradient(135deg, hsl(215 78% 30%) 0%, hsl(210 70% 48%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(145 55% 45%) 0%, hsl(160 50% 45%) 100%);
-    --shadow-elegant: 0 12px 36px -14px hsl(215 75% 25% / 0.22);
-    --shadow-glow: 0 0 60px hsl(215 75% 35% / 0.20);
-    --shadow-warm: 0 10px 30px -10px hsl(38 90% 50% / 0.30);
+    --shadow-elegant: 0 12px 36px -14px hsl(215 82% 22% / 0.25);
+    --shadow-glow: 0 0 60px hsl(215 82% 32% / 0.22);
+    --shadow-warm: 0 10px 30px -10px hsl(42 95% 50% / 0.32);
 
     --sidebar-background: 0 0% 99%;
     --sidebar-foreground: 215 30% 26%;
