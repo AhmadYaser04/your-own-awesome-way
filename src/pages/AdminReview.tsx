@@ -502,7 +502,7 @@ export default function AdminReview() {
             <div className="flex flex-col items-stretch sm:items-end gap-2 min-w-[300px] w-full md:w-auto">
               <div className="flex items-center justify-between text-xs">
                 <span>{lang === "ar" ? "إجمالي الساعات المعتمَدة" : "Total approved credits"}</span>
-                <span className="font-bold">{approvedAutCredits} / {cap} {lang === "ar" ? "س" : "h"}</span>
+                <span className="font-bold">{approvedAutCredits} / {cap} {lang === "ar" ? "ساعة" : "hours"}</span>
               </div>
               <Progress
                 value={capPct}
@@ -511,7 +511,7 @@ export default function AdminReview() {
               {overCap && (
                 <div className="flex items-center gap-1 text-xs bg-destructive/30 backdrop-blur-md text-destructive-foreground px-2 py-1 rounded">
                   <AlertTriangle className="h-3 w-3" />
-                  {lang === "ar" ? `تجاوز السقف بـ ${approvedAutCredits - cap} ساعة!` : `Over cap by ${approvedAutCredits - cap}h!`}
+                  {lang === "ar" ? `تجاوز السقف بـ ${approvedAutCredits - cap} ساعة!` : `Over cap by ${approvedAutCredits - cap} hours!`}
                 </div>
               )}
 
@@ -632,8 +632,8 @@ export default function AdminReview() {
                     />
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-sm text-foreground">{it.source_course_name}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
-                        <span>{it.source_credits}{lang === "ar" ? "س" : "h"}</span>
+                      <div className="text-sm text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
+                        <span className="font-medium">{it.source_credits} {lang === "ar" ? "ساعات" : "hours"}</span>
                         {linked && <Badge className="bg-success text-white text-[10px]">{lang === "ar" ? "مربوطة" : "linked"}</Badge>}
                       </div>
                     </div>
@@ -675,7 +675,7 @@ export default function AdminReview() {
                   >
                     <div className="flex items-center gap-2 mb-0.5">
                       <Badge variant="outline" className="text-[10px] font-mono">{c.course_code}</Badge>
-                      <Badge variant="outline" className="text-[10px]">{c.credits}{lang === "ar" ? "س" : "h"}</Badge>
+                      <Badge variant="outline" className="text-[11px]">{c.credits} {lang === "ar" ? "ساعات" : "hours"}</Badge>
                     </div>
                     <div className="text-sm font-bold text-foreground">{c.course_name_ar}</div>
                     {c.course_name_en && <div className="text-xs text-muted-foreground">{c.course_name_en}</div>}
@@ -767,13 +767,13 @@ export default function AdminReview() {
                               {merged && <Badge className="ms-2 bg-secondary text-primary-foreground text-[10px]">{lang === "ar" ? `دمج ${sourceItems.length}` : `merged ${sourceItems.length}`}</Badge>}
                             </div>
                             {sourceItems.map((s) => (
-                              <div key={s.id} className="text-xs">
+                              <div key={s.id} className="text-sm">
                                 • <span className="font-bold">{s.source_course_name}</span>
-                                <span className="text-muted-foreground"> ({s.source_credits}{lang === "ar" ? "س" : "h"})</span>
+                                <span className="text-muted-foreground"> ({s.source_credits} {lang === "ar" ? "ساعات" : "hours"})</span>
                               </div>
                             ))}
-                            <div className="text-xs font-bold text-secondary pt-1">
-                              Σ {m.total_source_credits}{lang === "ar" ? "س" : "h"}
+                            <div className="text-sm font-bold text-secondary pt-1">
+                              Σ {m.total_source_credits} {lang === "ar" ? "ساعات" : "hours"}
                             </div>
                           </div>
                           {/* AUT side */}
@@ -787,8 +787,8 @@ export default function AdminReview() {
                                   <Badge variant="outline" className="text-[10px] font-mono me-1">{aut.course_code}</Badge>
                                   <span className="font-bold">{aut.course_name_ar}</span>
                                 </div>
-                                <div className="text-xs font-bold text-primary">
-                                  Σ {m.aut_credits}{lang === "ar" ? "س" : "h"}
+                                <div className="text-sm font-bold text-primary">
+                                  Σ {m.aut_credits} {lang === "ar" ? "ساعات" : "hours"}
                                 </div>
                               </>
                             ) : <div className="text-xs text-muted-foreground">—</div>}
@@ -798,7 +798,7 @@ export default function AdminReview() {
                           <div className="mt-2 text-[11px] text-muted-foreground">
                             {lang === "ar"
                               ? `ملاحظة: فرق ${Math.abs(m.total_source_credits - m.aut_credits)} ساعة بين مواد الطالب ومادة AUT.`
-                              : `Note: ${Math.abs(m.total_source_credits - m.aut_credits)}h difference between student and AUT credits.`}
+                              : `Note: ${Math.abs(m.total_source_credits - m.aut_credits)} hours difference between student and AUT credits.`}
                           </div>
                         )}
                       </div>

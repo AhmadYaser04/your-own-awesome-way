@@ -169,7 +169,7 @@ export default function MyRequests() {
                     {r.student_type === "same_major"
                       ? (lang === "ar" ? "نفس التخصص" : "Same major")
                       : (lang === "ar" ? "تخصص مختلف" : "Different major")}
-                    {" · "}{lang === "ar" ? `سقف ${r.credits_cap}س` : `cap ${r.credits_cap}h`}
+                    {" · "}{lang === "ar" ? `سقف ${r.credits_cap} ساعة` : `cap ${r.credits_cap} hours`}
                   </Badge>
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
@@ -203,7 +203,7 @@ export default function MyRequests() {
                       {lang === "ar" ? "ساعات معتمَدة من المعادلة" : "Approved equivalent credits"}
                     </span>
                     <span className="font-bold">
-                      {approvedCredits} / {r.credits_cap} {lang === "ar" ? "س" : "h"}
+                      {approvedCredits} / {r.credits_cap} {lang === "ar" ? "ساعة" : "hours"}
                     </span>
                   </div>
                   <Progress
@@ -222,7 +222,7 @@ export default function MyRequests() {
                   {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   {isOpen
                     ? (lang === "ar" ? "إخفاء التفاصيل" : "Hide details")
-                    : (lang === "ar" ? `استعراض ${items.length} مادة (${totalSource}س)` : `View ${items.length} courses (${totalSource}h)`)}
+                    : (lang === "ar" ? `استعراض ${items.length} مادة (${totalSource} ساعات)` : `View ${items.length} courses (${totalSource} hours)`)}
                 </Button>
 
                 {isOpen && (
@@ -236,9 +236,8 @@ export default function MyRequests() {
                           <div key={it.id} className="flex flex-wrap items-center justify-between gap-2 text-sm bg-card border rounded-md p-2.5">
                             <div className="min-w-0 flex-1">
                               <div className="font-bold text-foreground truncate">{it.source_course_name}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {it.source_course_code || "—"} · {it.source_credits}{lang === "ar" ? "س" : "h"}
-                                {it.source_grade && <> · {it.source_grade}</>}
+                              <div className="text-sm text-muted-foreground font-medium">
+                                {it.source_credits} {lang === "ar" ? "ساعات" : "hours"}
                               </div>
                             </div>
                             {itMatch ? (

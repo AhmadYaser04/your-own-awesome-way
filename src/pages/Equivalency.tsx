@@ -31,18 +31,12 @@ const DIFFERENT_MAJOR_CAP = 30;
 
 interface CourseRow {
   source_course_name: string;
-  source_course_code: string;
   source_credits: number;
-  source_grade: string;
-  source_semester?: string;
 }
 
 const emptyRow = (): CourseRow => ({
   source_course_name: "",
-  source_course_code: "",
   source_credits: 3,
-  source_grade: "",
-  source_semester: "",
 });
 
 export default function Equivalency() {
@@ -177,10 +171,7 @@ export default function Equivalency() {
 
       const list: CourseRow[] = (data?.courses ?? []).map((c: any) => ({
         source_course_name: c.name ?? "",
-        source_course_code: c.code ?? "",
         source_credits: Number(c.credits ?? 3) || 3,
-        source_grade: c.grade ?? "",
-        source_semester: c.semester ?? "",
       }));
 
       setExtractedCourses(list.length > 0 ? list : [emptyRow()]);
@@ -321,10 +312,10 @@ export default function Equivalency() {
       const items = extractedCourses.map((c, idx) => ({
         request_id: req.id,
         source_course_name: c.source_course_name.trim(),
-        source_course_code: c.source_course_code.trim() || null,
+        source_course_code: null,
         source_credits: Number(c.source_credits) || 3,
-        source_grade: c.source_grade.trim() || null,
-        source_semester: c.source_semester?.trim() || null,
+        source_grade: null,
+        source_semester: null,
         display_order: idx,
       }));
       console.log("[Equivalency] Inserting items:", items.length);
@@ -453,14 +444,14 @@ export default function Equivalency() {
           </div>
 
           {/* تنبيه الحد الأقصى للمعادلة */}
-          <Alert className="border-2 border-primary/30 bg-primary/5">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <AlertTitle className="font-bold">
+          <Alert className="border-2 border-primary/50 bg-primary/10 p-6">
+            <Sparkles className="h-6 w-6 text-primary" />
+            <AlertTitle className="font-bold text-lg mb-2">
               {isAr
-                ? `الحد الأقصى لمعادلة المواد: ${creditsCap} ساعة`
+                ? `الحد الأقصى لمعادلة المواد: ${creditsCap} ساعة معتمدة`
                 : `Equivalency cap: ${creditsCap} credit hours`}
             </AlertTitle>
-            <AlertDescription className="text-xs">
+            <AlertDescription className="text-base leading-relaxed">
               {transferType === "same_major"
                 ? (isAr
                     ? "للطلاب المنتقلين من نفس التخصص، الحد الأقصى للساعات التي يمكن معادلتها هو 66 ساعة معتمدة."
@@ -556,17 +547,19 @@ export default function Equivalency() {
                     </Button>
 
                     {isAiCreditError(error) && (
-                      <Alert>
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>{isAr ? "الإدخال اليدوي متاح" : "Manual entry available"}</AlertTitle>
-                        <AlertDescription className="space-y-3">
+                      <Alert className="border-2 border-gold/50 bg-gold/10 p-6">
+                        <AlertCircle className="h-6 w-6 text-gold" />
+                        <AlertTitle className="font-bold text-lg mb-2">
+                          {isAr ? "الإدخال اليدوي متاح" : "Manual entry available"}
+                        </AlertTitle>
+                        <AlertDescription className="space-y-4 text-base leading-relaxed">
                           <p>
                             {isAr
                               ? "تعذر تشغيل الاستخراج الذكي حالياً، لكن يمكنك إدخال المواد بنفسك ومتابعة إرسال الطلب بدون توقف."
                               : "Automatic extraction is unavailable right now, but you can still enter courses manually and continue."}
                           </p>
-                          <Button type="button" variant="outline" onClick={handleEnableManualEntry}>
-                            <Plus className="me-2 h-4 w-4" />
+                          <Button type="button" variant="outline" size="lg" onClick={handleEnableManualEntry}>
+                            <Plus className="me-2 h-5 w-5" />
                             {isAr ? "إدخال المواد يدوياً" : "Enter courses manually"}
                           </Button>
                         </AlertDescription>
@@ -584,11 +577,17 @@ export default function Equivalency() {
           )}
 
           {inputMode === "manual" && (
-            <div className="text-sm text-muted-foreground bg-muted/40 rounded-lg p-3">
-              {isAr
-                ? "أدخل المواد التي اجتزتها يدوياً في الجدول أدناه. يمكنك إضافة المزيد من الصفوف."
-                : "Enter your completed courses manually in the table below. You can add more rows."}
-            </div>
+            <Alert className="border-2 border-primary/40 bg-primary/5 p-5">
+              <FileText className="h-6 w-6 text-primary" />
+              <AlertTitle className="font-bold text-lg mb-1">
+                {isAr ? "ملاحظة هامة" : "Important Note"}
+              </AlertTitle>
+              <AlertDescription className="text-base leading-relaxed">
+                {isAr
+                  ? "أدخل المواد التي اجتزتها يدوياً في الجدول أدناه. يمكنك إضافة المزيد من الصفوف بالضغط على زر «إضافة مادة يدوياً»."
+                  : "Enter your completed courses manually in the table below. You can add more rows using the “Add row manually” button."}
+              </AlertDescription>
+            </Alert>
           )}
         </Card>
 
@@ -600,8 +599,8 @@ export default function Equivalency() {
               <h2 className="text-xl font-semibold">
                 {isAr ? "المواد المستخرجة (قابلة للتعديل)" : "Extracted Courses (editable)"}
               </h2>
-              <Badge className="ms-auto" variant="secondary">
-                {isAr ? `الإجمالي: ${totalSourceCredits} ساعة` : `Total: ${totalSourceCredits}h`}
+              <Badge className="ms-auto text-base px-3 py-1" variant="secondary">
+                {isAr ? `الإجمالي: ${totalSourceCredits} ساعات` : `Total: ${totalSourceCredits} hours`}
               </Badge>
             </div>
 
@@ -613,10 +612,7 @@ export default function Equivalency() {
                   <tr>
                     <th className="p-2 text-start">#</th>
                     <th className="p-2 text-start">{isAr ? "اسم المادة" : "Course Name"}</th>
-                    <th className="p-2 text-start">{isAr ? "الرمز" : "Code"}</th>
-                    <th className="p-2 text-start">{isAr ? "الساعات" : "Credits"}</th>
-                    <th className="p-2 text-start">{isAr ? "الدرجة" : "Grade"}</th>
-                    <th className="p-2 text-start">{isAr ? "الفصل" : "Semester"}</th>
+                    <th className="p-2 text-start">{isAr ? "عدد الساعات" : "Credit Hours"}</th>
                     <th className="p-2"></th>
                   </tr>
                 </thead>
@@ -626,19 +622,17 @@ export default function Equivalency() {
                       <td className="p-2 align-middle">{i + 1}</td>
                       <td className="p-2"><Input value={row.source_course_name}
                         onChange={(e) => updateRow(i, { source_course_name: e.target.value })} /></td>
-                      <td className="p-2"><Input value={row.source_course_code}
-                        onChange={(e) => updateRow(i, { source_course_code: e.target.value })}
-                        className="w-24" /></td>
-                      <td className="p-2"><Input type="number" min={1} max={6} step={0.5}
-                        value={row.source_credits}
-                        onChange={(e) => updateRow(i, { source_credits: Number(e.target.value) })}
-                        className="w-20" /></td>
-                      <td className="p-2"><Input value={row.source_grade}
-                        onChange={(e) => updateRow(i, { source_grade: e.target.value })}
-                        className="w-20" /></td>
-                      <td className="p-2"><Input value={row.source_semester ?? ""}
-                        onChange={(e) => updateRow(i, { source_semester: e.target.value })}
-                        className="w-24" /></td>
+                      <td className="p-2">
+                        <div className="flex items-center gap-2">
+                          <Input type="number" min={1} max={6} step={0.5}
+                            value={row.source_credits}
+                            onChange={(e) => updateRow(i, { source_credits: Number(e.target.value) })}
+                            className="w-20" />
+                          <span className="text-sm text-muted-foreground whitespace-nowrap">
+                            {isAr ? "ساعات" : "hours"}
+                          </span>
+                        </div>
+                      </td>
                       <td className="p-2">
                         <Button variant="ghost" size="icon" onClick={() => removeRow(i)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
