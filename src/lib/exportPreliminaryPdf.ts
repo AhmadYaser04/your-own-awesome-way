@@ -115,7 +115,7 @@ export async function exportPreliminaryPdf(data: PreliminaryPdfData) {
   };
   drawRow("Name:", safeStudentName);
   drawRow("Email:", safeStudentEmail);
-  drawRow("Saudi University:", safeUniversity);
+  drawRow("Previous University:", safeUniversity);
   y += boxH + 12;
 
   // ============ NOTICE ============
