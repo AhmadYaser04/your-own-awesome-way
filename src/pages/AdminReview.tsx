@@ -767,13 +767,13 @@ export default function AdminReview() {
                               {merged && <Badge className="ms-2 bg-secondary text-primary-foreground text-[10px]">{lang === "ar" ? `دمج ${sourceItems.length}` : `merged ${sourceItems.length}`}</Badge>}
                             </div>
                             {sourceItems.map((s) => (
-                              <div key={s.id} className="text-xs">
+                              <div key={s.id} className="text-sm">
                                 • <span className="font-bold">{s.source_course_name}</span>
-                                <span className="text-muted-foreground"> ({s.source_credits}{lang === "ar" ? "س" : "h"})</span>
+                                <span className="text-muted-foreground"> ({s.source_credits} {lang === "ar" ? "ساعات" : "hours"})</span>
                               </div>
                             ))}
-                            <div className="text-xs font-bold text-secondary pt-1">
-                              Σ {m.total_source_credits}{lang === "ar" ? "س" : "h"}
+                            <div className="text-sm font-bold text-secondary pt-1">
+                              Σ {m.total_source_credits} {lang === "ar" ? "ساعات" : "hours"}
                             </div>
                           </div>
                           {/* AUT side */}
