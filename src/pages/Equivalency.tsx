@@ -47,6 +47,12 @@ export default function Equivalency() {
   const nav = useNavigate();
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
   const isAr = lang === "ar";
+  const isManualFallbackError = (payload?: { error?: string | null; errorCode?: string | null; allowManualEntry?: boolean | null } | null) => {
+    if (!payload) return false;
+    return Boolean(payload.allowManualEntry)
+      || payload.errorCode === "AI_BALANCE_EXHAUSTED"
+      || isAiCreditError(payload.error);
+  };
   const isAiCreditError = (message?: string | null) => {
     if (!message) return false;
     return message.includes("402") || message.includes("تم استنفاد رصيد الذكاء الاصطناعي");
@@ -145,7 +151,19 @@ export default function Equivalency() {
         body: { fileUrl: signed.signedUrl },
       });
       if (fnErr) throw fnErr;
-      if (data?.error) throw new Error(data.error);
+      if (data?.error) {
+        if (isManualFallbackError(data)) {
+          setError(isAr
+            ? (data.error || "تعذر تشغيل الاستخراج الذكي حالياً. يمكنك متابعة الطلب عبر إدخال المواد يدوياً.")
+            : (data.error || "Automatic extraction is unavailable right now. You can continue with manual entry."));
+          setExtractedCourses([]);
+          setRawText("");
+          setExtractionDone(false);
+          return;
+        }
+
+        throw new Error(data.error);
+      }
 
       const list: CourseRow[] = (data?.courses ?? []).map((c: any) => ({
         source_course_name: c.name ?? "",
