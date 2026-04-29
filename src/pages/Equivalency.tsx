@@ -209,22 +209,69 @@ export default function Equivalency() {
     });
   };
 
+  // ============ التحقق من البيانات الحقيقية ============
+  // الاسم: حروف عربية/إنجليزية ومسافات فقط، 3 كلمات على الأقل، لا أرقام/رموز عشوائية
+  const isRealName = (s: string) => {
+    const v = s.trim();
+    if (v.length < 6 || v.length > 80) return false;
+    if (!/^[\u0621-\u064Aa-zA-Z\s'.-]+$/.test(v)) return false;
+    const words = v.split(/\s+/).filter(Boolean);
+    return words.length >= 2;
+  };
+  // نص حقيقي: لا يكون كله رموز/أرقام، طول معقول
+  const isRealText = (s: string, min = 3, max = 120) => {
+    const v = s.trim();
+    if (v.length < min || v.length > max) return false;
+    // يجب أن يحتوي على حروف
+    if (!/[\u0621-\u064Aa-zA-Z]/.test(v)) return false;
+    // لا يكون تكراراً مثل aaaaa أو 11111
+    if (/^(.)\1{4,}$/.test(v)) return false;
+    return true;
+  };
+  // اسم مادة: لا يقبل أحرف عشوائية مكررة بكثرة، ولا يقبل قيمة مكونة فقط من نفس الحرف
+  const isRealCourseName = (s: string) => {
+    const v = s.trim();
+    if (v.length < 3 || v.length > 120) return false;
+    if (!/[\u0621-\u064Aa-zA-Z]/.test(v)) return false;
+    // ممنوع: تكرار حرف واحد فقط (asdasd, jjjjjj)
+    const unique = new Set(v.replace(/\s/g, "").toLowerCase()).size;
+    if (unique < 3) return false;
+    // ممنوع: نص يبدو لوحة مفاتيح عشوائية
+    if (/^(asdf|qwer|zxcv|jkjk|aaaa|1234)/i.test(v)) return false;
+    return true;
+  };
+
   // ============ الإرسال النهائي ============
   const validate = (): string | null => {
-    if (!studentFullName.trim()) return isAr ? "اسم الطالب مطلوب" : "Student name required";
-    if (!studentCollege.trim()) return isAr ? "الكلية مطلوبة" : "College required";
-    if (transferType === "different_major" && !studentMajor.trim()) {
-      return isAr ? "التخصص الجديد مطلوب" : "New major required";
+    if (!isRealName(studentFullName)) {
+      return isAr ? "أدخل الاسم الرباعي الحقيقي بالحروف فقط (دون أرقام أو رموز)" : "Enter your real full name (letters only)";
     }
-    if (!previousUniversity.trim()) return isAr ? "الجامعة السابقة مطلوبة" : "Previous university required";
+    if (!isRealText(studentCollege, 4)) return isAr ? "أدخل اسم الكلية بشكل صحيح" : "Enter a valid college name";
+    if (transferType === "different_major" && !isRealText(studentMajor, 3)) {
+      return isAr ? "أدخل اسم التخصص الجديد بشكل صحيح" : "Enter a valid new major";
+    }
+    if (!isRealText(previousUniversity, 4)) {
+      return isAr ? "أدخل اسم الجامعة السابقة بشكل صحيح" : "Enter a valid previous university";
+    }
     if (inputMode === "file" && !file) {
       return isAr ? "يرجى رفع كشف المواد أو التبديل للإدخال اليدوي" : "Upload a transcript or switch to manual entry";
     }
     if (extractedCourses.length === 0) {
       return isAr ? "لا توجد مواد للمعادلة — أضف مادة واحدة على الأقل" : "Add at least one course";
     }
-    if (extractedCourses.some((r) => !r.source_course_name.trim())) {
-      return isAr ? "اسم كل مادة مطلوب" : "Each course must have a name";
+    for (let i = 0; i < extractedCourses.length; i++) {
+      const r = extractedCourses[i];
+      if (!isRealCourseName(r.source_course_name)) {
+        return isAr
+          ? `اسم المادة رقم ${i + 1} غير صالح — أدخل اسماً حقيقياً (دون رموز عشوائية)`
+          : `Course #${i + 1} has an invalid name — please enter a real course name`;
+      }
+      const credits = Number(r.source_credits);
+      if (!Number.isFinite(credits) || credits < 1 || credits > 6) {
+        return isAr
+          ? `عدد ساعات المادة رقم ${i + 1} يجب أن يكون بين 1 و 6`
+          : `Credits for course #${i + 1} must be between 1 and 6`;
+      }
     }
     return null;
   };
@@ -651,7 +698,22 @@ export default function Equivalency() {
         )}
 
         {/* الإرسال */}
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button
+            variant="ghost"
+            type="button"
+            onClick={() => {
+              if (window.confirm(isAr
+                ? "هل تريد إلغاء الطلب وعدم استكماله؟ سيتم فقدان البيانات المُدخَلة."
+                : "Cancel this request? Entered data will be lost.")) {
+                nav("/my-requests");
+              }
+            }}
+            className="text-destructive hover:bg-destructive/10"
+          >
+            <X className="me-2 h-4 w-4" />
+            {isAr ? "تجاهل الطلب" : "Discard request"}
+          </Button>
           <Button variant="outline" asChild>
             <Link to="/my-requests"><Arrow className="me-2 h-4 w-4" /> {isAr ? "طلباتي" : "My Requests"}</Link>
           </Button>

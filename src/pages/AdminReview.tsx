@@ -15,6 +15,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 import {
@@ -348,7 +351,7 @@ export default function AdminReview() {
     loadAll({ preserveInputs: true });
   };
 
-  const finalizeRequest = async (status: Status) => {
+  const finalizeRequest = async (status: Status, pendingReason?: string) => {
     if (!id || !user) return;
     if (!reviewerName.trim()) {
       toast({
@@ -357,27 +360,66 @@ export default function AdminReview() {
       });
       return;
     }
+    // عند التعليق: ادمج سبب التعليق في الملاحظات الإدارية ليصل للطالب
+    let finalNotes = overallNotes.trim() || null;
+    if (status === "pending" && pendingReason) {
+      const prefix = lang === "ar" ? "سبب التعليق: " : "Hold reason: ";
+      finalNotes = `${prefix}${pendingReason.trim()}${finalNotes ? `\n\n${finalNotes}` : ""}`;
+    }
     setBusy(true);
     const { error } = await supabase
       .from("equivalency_requests")
       .update({
         status,
         reviewer_name: reviewerName.trim(),
-        admin_notes: overallNotes.trim() || null,
+        admin_notes: finalNotes,
         reviewed_by: user.id,
         reviewed_at: new Date().toISOString(),
       })
       .eq("id", id);
     setBusy(false);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    if (status === "pending" && pendingReason) {
+      setOverallNotes(finalNotes || "");
+    }
     toast({
       title: status === "approved"
         ? (lang === "ar" ? "تم اعتماد الطلب" : "Request approved")
         : status === "rejected"
         ? (lang === "ar" ? "تم رفض الطلب" : "Request rejected")
-        : (lang === "ar" ? "أعيد للمراجعة" : "Marked pending"),
+        : (lang === "ar" ? "تم تعليق الطلب وإرسال السبب للطالب" : "Request put on hold — reason sent to student"),
     });
     loadAll({ preserveInputs: true });
+  };
+
+  // حالة حوار "سبب التعليق"
+  const [holdDialogOpen, setHoldDialogOpen] = useState(false);
+  const [holdReason, setHoldReason] = useState("");
+
+  const openHoldDialog = () => {
+    if (!reviewerName.trim()) {
+      toast({
+        title: lang === "ar" ? "اسم المرشد مطلوب" : "Advisor name required",
+        description: lang === "ar" ? "أدخل اسمك قبل تعليق الطلب." : "Enter your name first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setHoldReason("");
+    setHoldDialogOpen(true);
+  };
+
+  const submitHold = async () => {
+    if (!holdReason.trim()) {
+      toast({
+        title: lang === "ar" ? "السبب مطلوب" : "Reason required",
+        description: lang === "ar" ? "اكتب سبب تعليق الطلب ليتم إرساله للطالب." : "Write the hold reason to send to the student.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setHoldDialogOpen(false);
+    await finalizeRequest("pending", holdReason);
   };
 
   const buildPrintData = (mode: PrintMode): EquivalencyPrintData | null => {
@@ -737,9 +779,9 @@ export default function AdminReview() {
           </div>
         </Card>
 
-        {/* CURRENT MATCHES */}
+        {/* CURRENT MATCHES — جدول واضح بألوان الجامعة */}
         <Card className="p-5">
-          <h2 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
+          <h2 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2 text-lg">
             <FileCheck className="h-5 w-5 text-success" />
             {lang === "ar" ? "المعادلات الحالية" : "Current matches"}
             <Badge variant="outline">{matches.length}</Badge>
@@ -749,84 +791,117 @@ export default function AdminReview() {
               {lang === "ar" ? "لم يتم إنشاء أي معادلة بعد." : "No matches created yet."}
             </div>
           ) : (
-            <div className="space-y-3">
-              {matches.map((m) => {
-                const aut = autCourses.find((c) => c.id === m.aut_course_id);
-                const sourceItems = items.filter((i) => (m.source_item_ids || []).includes(i.id));
-                const merged = sourceItems.length > 1;
-                const creditMismatch = Math.abs(m.total_source_credits - m.aut_credits) > 0;
-                return (
-                  <div key={m.id} className="p-4 rounded-lg border-2 bg-card space-y-3">
-                    <div className="flex items-start justify-between gap-3 flex-wrap">
-                      <div className="flex-1 min-w-0">
-                        <div className="grid md:grid-cols-2 gap-3 text-sm">
-                          {/* Student side */}
+            <div className="overflow-x-auto rounded-lg border-2 border-primary/30">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-primary text-primary-foreground">
+                    <th className="p-3 text-start font-heading font-bold border-b-2 border-gold">#</th>
+                    <th className="p-3 text-start font-heading font-bold border-b-2 border-gold">
+                      {lang === "ar" ? "مواد الطالب" : "Student courses"}
+                    </th>
+                    <th className="p-3 text-start font-heading font-bold border-b-2 border-gold">
+                      {lang === "ar" ? "مادة AUT المعادِلة" : "AUT equivalent"}
+                    </th>
+                    <th className="p-3 text-start font-heading font-bold border-b-2 border-gold">
+                      {lang === "ar" ? "الساعات" : "Credits"}
+                    </th>
+                    <th className="p-3 text-start font-heading font-bold border-b-2 border-gold">
+                      {lang === "ar" ? "الملاحظات" : "Notes"}
+                    </th>
+                    <th className="p-3 text-start font-heading font-bold border-b-2 border-gold">
+                      {lang === "ar" ? "القرار" : "Decision"}
+                    </th>
+                    <th className="p-3 font-heading font-bold border-b-2 border-gold"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {matches.map((m, idx) => {
+                    const aut = autCourses.find((c) => c.id === m.aut_course_id);
+                    const sourceItems = items.filter((i) => (m.source_item_ids || []).includes(i.id));
+                    const merged = sourceItems.length > 1;
+                    const creditMismatch = Math.abs(m.total_source_credits - m.aut_credits) > 0;
+                    const rowBg =
+                      m.verdict === "approved" ? "bg-success/10"
+                      : m.verdict === "rejected" ? "bg-destructive/10"
+                      : "bg-gold/5";
+                    return (
+                      <tr key={m.id} className={`border-b border-primary/20 ${rowBg} hover:bg-primary/5 transition-colors`}>
+                        <td className="p-3 align-top font-bold text-primary">{idx + 1}</td>
+                        <td className="p-3 align-top">
+                          {merged && (
+                            <Badge className="mb-1 bg-secondary text-primary-foreground text-[10px]">
+                              {lang === "ar" ? `دمج ${sourceItems.length} مواد` : `merged ${sourceItems.length}`}
+                            </Badge>
+                          )}
                           <div className="space-y-1">
-                            <div className="text-[11px] font-bold text-muted-foreground uppercase">
-                              {lang === "ar" ? "مواد الطالب" : "Student side"}
-                              {merged && <Badge className="ms-2 bg-secondary text-primary-foreground text-[10px]">{lang === "ar" ? `دمج ${sourceItems.length}` : `merged ${sourceItems.length}`}</Badge>}
-                            </div>
                             {sourceItems.map((s) => (
-                              <div key={s.id} className="text-sm">
-                                • <span className="font-bold">{s.source_course_name}</span>
-                                <span className="text-muted-foreground"> ({s.source_credits} {lang === "ar" ? "ساعات" : "hours"})</span>
+                              <div key={s.id} className="text-foreground">
+                                <span className="font-bold">• {s.source_course_name}</span>
+                                <span className="text-muted-foreground text-xs ms-2">
+                                  ({s.source_credits} {lang === "ar" ? "ساعات" : "hours"})
+                                </span>
                               </div>
                             ))}
-                            <div className="text-sm font-bold text-secondary pt-1">
-                              Σ {m.total_source_credits} {lang === "ar" ? "ساعات" : "hours"}
+                          </div>
+                        </td>
+                        <td className="p-3 align-top">
+                          {aut ? (
+                            <div className="space-y-1">
+                              <Badge variant="outline" className="text-[10px] font-mono bg-gold/20 border-gold text-gold-foreground">
+                                {aut.course_code}
+                              </Badge>
+                              <div className="font-bold text-foreground">{aut.course_name_ar}</div>
+                              {aut.course_name_en && (
+                                <div className="text-xs text-muted-foreground">{aut.course_name_en}</div>
+                              )}
                             </div>
+                          ) : <span className="text-muted-foreground">—</span>}
+                        </td>
+                        <td className="p-3 align-top">
+                          <div className="text-foreground font-bold">
+                            {m.total_source_credits} {lang === "ar" ? "ساعات" : "hours"}
                           </div>
-                          {/* AUT side */}
-                          <div className="space-y-1">
-                            <div className="text-[11px] font-bold text-muted-foreground uppercase">
-                              {lang === "ar" ? "مادة AUT" : "AUT course"}
+                          <div className="text-xs text-muted-foreground">
+                            ← {m.aut_credits} {lang === "ar" ? "ساعات AUT" : "AUT hours"}
+                          </div>
+                          {creditMismatch && (
+                            <div className="text-[10px] text-destructive mt-1">
+                              {lang === "ar"
+                                ? `فرق ${Math.abs(m.total_source_credits - m.aut_credits)} ساعات`
+                                : `Δ ${Math.abs(m.total_source_credits - m.aut_credits)} hours`}
                             </div>
-                            {aut ? (
-                              <>
-                                <div className="text-xs">
-                                  <Badge variant="outline" className="text-[10px] font-mono me-1">{aut.course_code}</Badge>
-                                  <span className="font-bold">{aut.course_name_ar}</span>
-                                </div>
-                                <div className="text-sm font-bold text-primary">
-                                  Σ {m.aut_credits} {lang === "ar" ? "ساعات" : "hours"}
-                                </div>
-                              </>
-                            ) : <div className="text-xs text-muted-foreground">—</div>}
+                          )}
+                        </td>
+                        <td className="p-3 align-top min-w-[200px]">
+                          <Textarea
+                            value={matchNotes[m.id] ?? ""}
+                            onChange={(e) => setMatchNotes((prev) => ({ ...prev, [m.id]: e.target.value }))}
+                            placeholder={lang === "ar" ? "أضف ملاحظتك..." : "Add notes..."}
+                            className="min-h-[60px] text-sm text-foreground bg-card border-primary/30 focus-visible:ring-primary"
+                          />
+                        </td>
+                        <td className="p-3 align-top">{verdictBadge(m.verdict)}</td>
+                        <td className="p-3 align-top">
+                          <div className="flex flex-col gap-1.5 min-w-[110px]">
+                            <Button size="sm" onClick={() => setMatchVerdict(m.id, "approved")} disabled={busy} className="gap-1 bg-success text-white hover:bg-success/90 h-7 text-xs">
+                              <CheckCircle2 className="h-3 w-3" />
+                              {lang === "ar" ? "تُعادَل" : "Approve"}
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => setMatchVerdict(m.id, "rejected")} disabled={busy} className="gap-1 border-destructive/40 text-destructive hover:bg-destructive/10 h-7 text-xs">
+                              <XCircle className="h-3 w-3" />
+                              {lang === "ar" ? "غير معادَلة" : "Reject"}
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => removeMatch(m.id)} className="text-destructive gap-1 h-7 text-xs">
+                              <Trash2 className="h-3 w-3" />
+                              {lang === "ar" ? "فك الربط" : "Unlink"}
+                            </Button>
                           </div>
-                        </div>
-                        {creditMismatch && (
-                          <div className="mt-2 text-[11px] text-muted-foreground">
-                            {lang === "ar"
-                              ? `ملاحظة: فرق ${Math.abs(m.total_source_credits - m.aut_credits)} ساعة بين مواد الطالب ومادة AUT.`
-                              : `Note: ${Math.abs(m.total_source_credits - m.aut_credits)} hours difference between student and AUT credits.`}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        {verdictBadge(m.verdict)}
-                        <Button variant="ghost" size="sm" onClick={() => removeMatch(m.id)} className="text-destructive gap-1">
-                          <Trash2 className="h-3.5 w-3.5" />
-                          {lang === "ar" ? "فك الربط" : "Unlink"}
-                        </Button>
-                      </div>
-                    </div>
-
-
-
-
-                    <div className="flex flex-wrap gap-2 justify-end">
-                      <Button variant="outline" size="sm" onClick={() => setMatchVerdict(m.id, "rejected")} disabled={busy} className="gap-1 border-destructive/40 text-destructive hover:bg-destructive/10">
-                        <XCircle className="h-3.5 w-3.5" />
-                        {lang === "ar" ? "غير معادَلة" : "Reject"}
-                      </Button>
-                      <Button size="sm" onClick={() => setMatchVerdict(m.id, "approved")} disabled={busy} className="gap-1 bg-success text-white hover:bg-success/90">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        {lang === "ar" ? "تُعادَل" : "Approve"}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </Card>
@@ -854,8 +929,8 @@ export default function AdminReview() {
 
 
           <div className="flex flex-wrap gap-2 justify-end">
-            <Button variant="outline" onClick={() => finalizeRequest("pending")} disabled={busy} className="gap-1">
-              <Clock className="h-4 w-4" /> {lang === "ar" ? "معلَّق" : "Pending"}
+            <Button variant="outline" onClick={openHoldDialog} disabled={busy} className="gap-1 border-gold/60 text-gold-foreground bg-gold/10 hover:bg-gold/20">
+              <Clock className="h-4 w-4" /> {lang === "ar" ? "تعليق الطلب" : "Hold (pending)"}
             </Button>
             <Button variant="outline" onClick={() => finalizeRequest("rejected")} disabled={busy} className="gap-1 border-destructive/40 text-destructive hover:bg-destructive/10">
               <XCircle className="h-4 w-4" /> {lang === "ar" ? "رفض الطلب" : "Reject request"}
@@ -884,6 +959,45 @@ export default function AdminReview() {
           </div>
         </Card>
       </section>
+
+      {/* Hold (pending) reason dialog */}
+      <Dialog open={holdDialogOpen} onOpenChange={setHoldDialogOpen}>
+        <DialogContent dir={dir}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-gold" />
+              {lang === "ar" ? "تعليق الطلب — سبب التعليق" : "Hold request — reason"}
+            </DialogTitle>
+            <DialogDescription>
+              {lang === "ar"
+                ? "اكتب سبب تعليق الطلب. سيتم إرسال هذا السبب للطالب وسيظهر في صفحة طلباته."
+                : "Write the hold reason. It will be sent to the student and shown on their requests page."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label className="text-sm font-bold">
+              {lang === "ar" ? "السبب *" : "Reason *"}
+            </Label>
+            <Textarea
+              value={holdReason}
+              onChange={(e) => setHoldReason(e.target.value)}
+              placeholder={lang === "ar"
+                ? "مثال: الطلب معلَّق بانتظار قرار من الجامعة بشأن المواد الاستدراكية."
+                : "e.g. On hold pending a university decision on remedial courses."}
+              className="min-h-[120px]"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHoldDialogOpen(false)}>
+              {lang === "ar" ? "إلغاء" : "Cancel"}
+            </Button>
+            <Button onClick={submitHold} disabled={busy} className="bg-gold text-gold-foreground hover:bg-gold/90">
+              <Clock className="h-4 w-4 me-1" />
+              {lang === "ar" ? "تعليق وإرسال للطالب" : "Hold & notify student"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SiteLayout>
   );
 }

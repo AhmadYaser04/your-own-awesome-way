@@ -599,7 +599,7 @@ export default function Admin() {
                 : r.status === "rejected" ? (dir === "rtl" ? "border-r-destructive" : "border-l-destructive")
                 : (dir === "rtl" ? "border-r-gold" : "border-l-gold")
               } hover:shadow-elegant transition-all`}>
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     <Checkbox
                       checked={selected.has(r.id)}
@@ -609,48 +609,38 @@ export default function Admin() {
                     <div className="flex-1 min-w-0 space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
                         {statusBadge(r.status)}
-                        <Badge variant="outline" className="gap-1"><FileText className="h-3 w-3" /> {r.input_mode.toUpperCase()}</Badge>
-                        <button
-                          type="button"
-                          onClick={() => copyId(r.id)}
-                          className="text-xs text-muted-foreground flex items-center gap-1 hover:text-primary transition-colors"
-                          title={t("admin.copyId")}
-                        >
-                          <Hash className="h-3 w-3" /> {r.id.slice(0, 8)} <Copy className="h-3 w-3" />
-                        </button>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(r.created_at).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US")}
-                        </span>
+                        <Badge variant="outline" className="gap-1">
+                          <FileText className="h-3 w-3" />
+                          {r.input_mode === "file"
+                            ? (lang === "ar" ? "رفع ملف" : "File upload")
+                            : (lang === "ar" ? "إدخال يدوي" : "Manual entry")}
+                        </Badge>
                       </div>
-                      <div className="font-heading font-bold text-foreground">
-                        {r.saudi_course_name || r.saudi_course_description?.slice(0, 70) || t("admin.unnamed")}
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyId(r.id)}
+                        className="text-sm font-heading font-bold text-foreground flex items-center gap-1.5 hover:text-primary transition-colors"
+                        title={t("admin.copyId")}
+                      >
+                        <Hash className="h-4 w-4 text-primary" />
+                        <span>{lang === "ar" ? "رقم العملية:" : "Request ID:"}</span>
+                        <span className="font-mono text-primary">{r.id.slice(0, 8)}</span>
+                        <Copy className="h-3 w-3 text-muted-foreground" />
+                      </button>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><UserIcon className="h-3 w-3" /> {r.profile?.full_name || "—"}</span>
-                        <span className="flex items-center gap-1"><Building2 className="h-3 w-3" /> {r.profile?.saudi_university || "—"}</span>
-                        {r.matched_aut_name && (
-                          <span className="flex items-center gap-1 text-primary font-bold">
-                            <BookOpen className="h-3 w-3" /> → {r.matched_aut_name} ({r.matched_aut_code})
-                          </span>
-                        )}
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {lang === "ar" ? "تاريخ الإرسال: " : "Submitted: "}
+                          {new Date(r.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US")}
+                        </span>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                    {r.similarity !== null && (
-                      <div className={dir === "rtl" ? "text-left" : "text-right"}>
-                        <div className="font-heading font-bold text-2xl text-primary leading-none">{Math.round(Number(r.similarity))}%</div>
-                        <div className="text-[10px] text-muted-foreground">{t("admin.aiSimilarity")}</div>
-                      </div>
-                    )}
                     <Button asChild size="sm" className="gap-1 bg-primary">
                       <Link to={`/admin/review/${r.id}`}>
                         <ShieldCheck className="h-4 w-4" /> {lang === "ar" ? "مراجعة كاملة" : "Full review"}
                       </Link>
-                    </Button>
-                    <Button size="sm" variant="outline" className="gap-1" onClick={() => { setActive(r); setNotes(r.admin_notes || ""); setReviewerName(r.reviewer_name || ""); setDescExpanded(false); }}>
-                      <Eye className="h-4 w-4" /> {t("admin.review")}
                     </Button>
                   </div>
                 </div>
