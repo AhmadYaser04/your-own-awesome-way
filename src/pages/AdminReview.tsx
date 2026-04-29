@@ -253,6 +253,16 @@ export default function AdminReview() {
       toast({ title: lang === "ar" ? "اختر مادة طالب أو أكثر أولاً" : "Select at least one student course", variant: "destructive" });
       return;
     }
+    if (selectedItemIds.size > 3) {
+      toast({
+        title: lang === "ar" ? "تجاوز حد الدمج" : "Merge limit exceeded",
+        description: lang === "ar"
+          ? "الحد الأقصى لدمج المواد هو 3 مواد طالب مقابل مادة AUT واحدة."
+          : "Maximum 3 student courses can be merged into one AUT course.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (!selectedAutId) {
       toast({ title: lang === "ar" ? "اختر مادة AUT للربط" : "Select an AUT course", variant: "destructive" });
       return;
