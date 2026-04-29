@@ -203,7 +203,7 @@ export default function MyRequests() {
                       {lang === "ar" ? "ساعات معتمَدة من المعادلة" : "Approved equivalent credits"}
                     </span>
                     <span className="font-bold">
-                      {approvedCredits} / {r.credits_cap} {lang === "ar" ? "س" : "h"}
+                      {approvedCredits} / {r.credits_cap} {lang === "ar" ? "ساعة" : "hours"}
                     </span>
                   </div>
                   <Progress
