@@ -169,7 +169,7 @@ export default function MyRequests() {
                     {r.student_type === "same_major"
                       ? (lang === "ar" ? "نفس التخصص" : "Same major")
                       : (lang === "ar" ? "تخصص مختلف" : "Different major")}
-                    {" · "}{lang === "ar" ? `سقف ${r.credits_cap}س` : `cap ${r.credits_cap}h`}
+                    {" · "}{lang === "ar" ? `سقف ${r.credits_cap} ساعة` : `cap ${r.credits_cap} hours`}
                   </Badge>
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
