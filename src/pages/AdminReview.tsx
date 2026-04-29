@@ -797,9 +797,10 @@ export default function AdminReview() {
                           </div>
                         </div>
                         {creditMismatch && (
-                          <div className="mt-2 inline-flex items-center gap-1 text-[11px] bg-gold/15 text-gold-foreground border border-gold/40 px-2 py-1 rounded">
-                            <AlertTriangle className="h-3 w-3" />
-                            {lang === "ar" ? `فرق ساعات: ${m.total_source_credits} ↔ ${m.aut_credits}` : `Credit mismatch: ${m.total_source_credits} ↔ ${m.aut_credits}`}
+                          <div className="mt-2 text-[11px] text-muted-foreground">
+                            {lang === "ar"
+                              ? `ملاحظة: فرق ${Math.abs(m.total_source_credits - m.aut_credits)} ساعة بين مواد الطالب ومادة AUT.`
+                              : `Note: ${Math.abs(m.total_source_credits - m.aut_credits)}h difference between student and AUT credits.`}
                           </div>
                         )}
                       </div>
@@ -816,10 +817,6 @@ export default function AdminReview() {
 
 
                     <div className="flex flex-wrap gap-2 justify-end">
-                      <Button variant="outline" size="sm" onClick={() => setMatchVerdict(m.id, "pending")} disabled={busy} className="gap-1">
-                        <Clock className="h-3.5 w-3.5" />
-                        {lang === "ar" ? "معلَّقة" : "Pending"}
-                      </Button>
                       <Button variant="outline" size="sm" onClick={() => setMatchVerdict(m.id, "rejected")} disabled={busy} className="gap-1 border-destructive/40 text-destructive hover:bg-destructive/10">
                         <XCircle className="h-3.5 w-3.5" />
                         {lang === "ar" ? "غير معادَلة" : "Reject"}
@@ -876,14 +873,10 @@ export default function AdminReview() {
               <Printer className="h-4 w-4 text-primary" />
               {lang === "ar" ? "طباعة النموذج الرسمي" : "Print official form"}
             </h3>
-            <div className="grid sm:grid-cols-3 gap-2">
+            <div className="grid sm:grid-cols-2 gap-2">
               <Button variant="outline" onClick={() => handlePrint("approved")} className="gap-2 border-success/40 text-success hover:bg-success/10">
                 <FileCheck className="h-4 w-4" />
-                {lang === "ar" ? "المعادَلة فقط" : "Approved only"}
-              </Button>
-              <Button variant="outline" onClick={() => handlePrint("rejected")} className="gap-2 border-destructive/40 text-destructive hover:bg-destructive/10">
-                <FileX className="h-4 w-4" />
-                {lang === "ar" ? "المرفوضة فقط" : "Rejected only"}
+                {lang === "ar" ? "نموذج المواد المعادَلة" : "Approved courses form"}
               </Button>
               <Button onClick={() => handlePrint("full")} className="gap-2 bg-primary">
                 <Printer className="h-4 w-4" />
