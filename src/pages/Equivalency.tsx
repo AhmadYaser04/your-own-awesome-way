@@ -23,7 +23,11 @@ import { useAuth } from "@/hooks/useAuth";
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
 const BUCKET = "equivalency-uploads";
 
-type TransferType = "same_major" | "different_major" | "diploma" | "non_enrolled";
+type TransferType = "same_major" | "different_major";
+type InputMode = "manual" | "file";
+
+const SAME_MAJOR_CAP = 66;
+const DIFFERENT_MAJOR_CAP = 30;
 
 interface CourseRow {
   source_course_name: string;
@@ -61,11 +65,14 @@ export default function Equivalency() {
   // ============ بيانات الطالب المبسطة ============
   const [studentFullName, setStudentFullName] = useState("");
   const [studentCollege, setStudentCollege] = useState("");
-  const [studentMajor, setStudentMajor] = useState(""); // التخصص الجديد في AUT
-  const [previousUniversity, setPreviousUniversity] = useState(""); // الجامعة/الدبلوم السابق
+  const [studentMajor, setStudentMajor] = useState(""); // التخصص الجديد في AUT (يظهر فقط لو مختلف)
+  const [previousUniversity, setPreviousUniversity] = useState(""); // الجامعة السابقة
   const [previousMajorName, setPreviousMajorName] = useState(""); // التخصص السابق
   const [transferSemester, setTransferSemester] = useState(""); // فصل الانتقال
   const [transferType, setTransferType] = useState<TransferType>("different_major");
+
+  // ============ وضع الإدخال: يدوي أو ملف ============
+  const [inputMode, setInputMode] = useState<InputMode>("manual");
 
   // ============ ملف كشف المواد + الاستخراج ============
   const [file, setFile] = useState<File | null>(null);
@@ -79,6 +86,9 @@ export default function Equivalency() {
   // ============ حالات الإرسال ============
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // الحد الأقصى للساعات حسب نوع الانتقال
+  const creditsCap = transferType === "same_major" ? SAME_MAJOR_CAP : DIFFERENT_MAJOR_CAP;
 
   const totalSourceCredits = extractedCourses.reduce((s, r) => s + (Number(r.source_credits) || 0), 0);
 
