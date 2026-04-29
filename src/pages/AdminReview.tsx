@@ -511,7 +511,7 @@ export default function AdminReview() {
               {overCap && (
                 <div className="flex items-center gap-1 text-xs bg-destructive/30 backdrop-blur-md text-destructive-foreground px-2 py-1 rounded">
                   <AlertTriangle className="h-3 w-3" />
-                  {lang === "ar" ? `تجاوز السقف بـ ${approvedAutCredits - cap} ساعة!` : `Over cap by ${approvedAutCredits - cap}h!`}
+                  {lang === "ar" ? `تجاوز السقف بـ ${approvedAutCredits - cap} ساعة!` : `Over cap by ${approvedAutCredits - cap} hours!`}
                 </div>
               )}
 
