@@ -47,6 +47,10 @@ export default function Equivalency() {
   const nav = useNavigate();
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
   const isAr = lang === "ar";
+  const isAiCreditError = (message?: string | null) => {
+    if (!message) return false;
+    return message.includes("402") || message.includes("تم استنفاد رصيد الذكاء الاصطناعي");
+  };
 
   // ============ بيانات الطالب المبسطة ============
   const [studentFullName, setStudentFullName] = useState("");
@@ -163,11 +167,27 @@ export default function Equivalency() {
       });
     } catch (e: any) {
       const msg = e?.message ?? String(e);
-      setError(msg);
+      if (isAiCreditError(msg)) {
+        setError(isAr
+          ? "نفد رصيد الاستخراج الذكي حالياً. يمكنك متابعة الطلب عبر إدخال المواد يدوياً."
+          : "AI extraction balance is exhausted right now. You can continue by entering courses manually.");
+      } else {
+        setError(msg);
+      }
       toast({ title: isAr ? "فشل الاستخراج" : "Extraction failed", description: msg, variant: "destructive" });
     } finally {
       setExtracting(false);
     }
+  };
+
+  const handleEnableManualEntry = () => {
+    setExtractedCourses((prev) => (prev.length > 0 ? prev : [emptyRow()]));
+    setExtractionDone(true);
+    setRawText("");
+    toast({
+      title: isAr ? "تم تفعيل الإدخال اليدوي" : "Manual entry enabled",
+      description: isAr ? "أدخل المواد يدوياً ثم أرسل الطلب." : "Enter courses manually, then submit the request.",
+    });
   };
 
   // ============ الإرسال النهائي ============
@@ -177,7 +197,9 @@ export default function Equivalency() {
     if (!studentMajor.trim()) return isAr ? "التخصص الجديد مطلوب" : "New major required";
     if (!previousUniversity.trim()) return isAr ? "الجامعة/الدبلوم السابق مطلوب" : "Previous source required";
     if (!file) return isAr ? "يرجى رفع كشف المواد" : "Transcript file required";
-    if (!extractionDone) return isAr ? "يرجى استخراج المواد أولاً" : "Please extract courses first";
+    if (!extractionDone && extractedCourses.length === 0) {
+      return isAr ? "يرجى استخراج المواد أولاً أو إدخالها يدوياً" : "Please extract courses first or enter them manually";
+    }
     if (extractedCourses.length === 0) return isAr ? "لا توجد مواد للمعادلة" : "No courses to evaluate";
     if (extractedCourses.some((r) => !r.source_course_name.trim())) {
       return isAr ? "اسم كل مادة مطلوب" : "Each course must have a name";
@@ -436,15 +458,35 @@ export default function Equivalency() {
                 <img src={filePreviewUrl} alt="preview" className="max-h-60 rounded border mx-auto" />
               )}
 
-              {!extractionDone ? (
-                <Button onClick={handleExtract} disabled={extracting} className="w-full">
-                  {extracting ? (
-                    <><Loader2 className="me-2 h-4 w-4 animate-spin" /> {isAr ? "جاري الاستخراج..." : "Extracting..."}</>
-                  ) : (
-                    <><Wand2 className="me-2 h-4 w-4" /> {isAr ? "استخراج المواد" : "Extract Courses"}</>
-                  )}
-                </Button>
-              ) : (
+               {!extractionDone ? (
+                 <div className="space-y-3">
+                   <Button onClick={handleExtract} disabled={extracting} className="w-full">
+                     {extracting ? (
+                       <><Loader2 className="me-2 h-4 w-4 animate-spin" /> {isAr ? "جاري الاستخراج..." : "Extracting..."}</>
+                     ) : (
+                       <><Wand2 className="me-2 h-4 w-4" /> {isAr ? "استخراج المواد" : "Extract Courses"}</>
+                     )}
+                   </Button>
+
+                   {isAiCreditError(error) && (
+                     <Alert>
+                       <AlertCircle className="h-4 w-4" />
+                       <AlertTitle>{isAr ? "الإدخال اليدوي متاح" : "Manual entry available"}</AlertTitle>
+                       <AlertDescription className="space-y-3">
+                         <p>
+                           {isAr
+                             ? "تعذر تشغيل الاستخراج الذكي حالياً، لكن يمكنك إدخال المواد بنفسك ومتابعة إرسال الطلب بدون توقف."
+                             : "Automatic extraction is unavailable right now, but you can still enter courses manually and continue."}
+                         </p>
+                         <Button type="button" variant="outline" onClick={handleEnableManualEntry}>
+                           <Plus className="me-2 h-4 w-4" />
+                           {isAr ? "إدخال المواد يدوياً" : "Enter courses manually"}
+                         </Button>
+                       </AlertDescription>
+                     </Alert>
+                   )}
+                 </div>
+               ) : (
                 <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-500">
                   <CheckCircle2 className="h-4 w-4" />
                   {isAr ? `تم استخراج ${extractedCourses.length} مادة` : `Extracted ${extractedCourses.length} courses`}
@@ -455,7 +497,7 @@ export default function Equivalency() {
         </Card>
 
         {/* القسم 3: المواد المستخرجة (قابلة للتعديل) */}
-        {extractionDone && (
+        {(extractionDone || extractedCourses.length > 0) && (
           <Card className="p-6 space-y-4">
             <div className="flex items-center gap-2 flex-wrap">
               <FileText className="h-5 w-5 text-primary" />
