@@ -444,14 +444,14 @@ export default function Equivalency() {
           </div>
 
           {/* تنبيه الحد الأقصى للمعادلة */}
-          <Alert className="border-2 border-primary/30 bg-primary/5">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <AlertTitle className="font-bold">
+          <Alert className="border-2 border-primary/50 bg-primary/10 p-6">
+            <Sparkles className="h-6 w-6 text-primary" />
+            <AlertTitle className="font-bold text-lg mb-2">
               {isAr
-                ? `الحد الأقصى لمعادلة المواد: ${creditsCap} ساعة`
+                ? `الحد الأقصى لمعادلة المواد: ${creditsCap} ساعة معتمدة`
                 : `Equivalency cap: ${creditsCap} credit hours`}
             </AlertTitle>
-            <AlertDescription className="text-xs">
+            <AlertDescription className="text-base leading-relaxed">
               {transferType === "same_major"
                 ? (isAr
                     ? "للطلاب المنتقلين من نفس التخصص، الحد الأقصى للساعات التي يمكن معادلتها هو 66 ساعة معتمدة."
