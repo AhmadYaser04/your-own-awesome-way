@@ -384,10 +384,30 @@ export default function AdminReview() {
     }
     toast({
       title: status === "approved"
-        ? (lang === "ar" ? "تم اعتماد الطلب" : "Request approved")
+        ? (lang === "ar" ? "تم اعتماد الطلب وإرساله للطالب" : "Request approved")
         : status === "rejected"
-        ? (lang === "ar" ? "تم رفض الطلب" : "Request rejected")
+        ? (lang === "ar" ? "تم رفض الطلب وإرساله للطالب" : "Request rejected")
         : (lang === "ar" ? "تم تعليق الطلب وإرسال السبب للطالب" : "Request put on hold — reason sent to student"),
+    });
+    // عند إصدار النتيجة النهائية (اعتماد/رفض): ارجع للوحة الأدمن تلقائياً
+    if (status === "approved" || status === "rejected") {
+      setTimeout(() => nav("/admin"), 600);
+      return;
+    }
+    loadAll({ preserveInputs: true });
+  };
+
+  // حفظ ملاحظة لمادة بعينها بدون تغيير القرار (تصل للطالب في صفحة طلباته)
+  const saveMatchNote = async (matchId: string) => {
+    setBusy(true);
+    const { error } = await supabase
+      .from("equivalency_matches")
+      .update({ notes: matchNotes[matchId] || null })
+      .eq("id", matchId);
+    setBusy(false);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    toast({
+      title: lang === "ar" ? "تم حفظ الملاحظة وإرسالها للطالب" : "Note saved & sent to student",
     });
     loadAll({ preserveInputs: true });
   };
