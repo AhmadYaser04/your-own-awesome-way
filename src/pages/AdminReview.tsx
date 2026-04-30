@@ -831,24 +831,6 @@ export default function AdminReview() {
                   {lang === "ar" ? "مسح التحديد" : "Clear"}
                 </Button>
               )}
-              {selectedItemIds.size > 1 && (
-                <Select
-                  value={selectedAutId ?? ""}
-                  onValueChange={(v) => setSelectedAutId(v || null)}
-                >
-                  <SelectTrigger className="h-10 text-sm min-w-[240px]">
-                    <SelectValue placeholder={lang === "ar" ? "اختر مادة AUT للدمج..." : "Pick AUT course for merge..."} />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    {filteredAut.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        <span className="font-mono text-[10px] text-muted-foreground me-2">{c.course_code}</span>
-                        {c.course_name_ar} ({c.credits}س)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
               <Button
                 onClick={handleLink}
                 disabled={busy || selectedItemIds.size === 0 || !selectedAutId}
