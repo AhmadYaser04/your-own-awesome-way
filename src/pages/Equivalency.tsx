@@ -15,6 +15,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LanguageProvider";
@@ -714,21 +719,39 @@ export default function Equivalency() {
 
         {/* الإرسال */}
         <div className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={() => {
-              if (window.confirm(isAr
-                ? "هل تريد إلغاء الطلب وعدم استكماله؟ سيتم فقدان البيانات المُدخَلة."
-                : "Cancel this request? Entered data will be lost.")) {
-                nav("/my-requests");
-              }
-            }}
-            className="text-destructive hover:bg-destructive/10"
-          >
-            <X className="me-2 h-4 w-4" />
-            {isAr ? "تجاهل الطلب" : "Discard request"}
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                type="button"
+                className="text-destructive hover:bg-destructive/10"
+              >
+                <X className="me-2 h-4 w-4" />
+                {isAr ? "تجاهل الطلب" : "Discard request"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent dir={dir}>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {isAr ? "هل تريد إلغاء الطلب؟" : "Discard this request?"}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {isAr
+                    ? "سيتم إلغاء الطلب الحالي وفقدان جميع البيانات التي أدخلتها."
+                    : "The current request will be cancelled and all entered data will be lost."}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{isAr ? "تراجع" : "Cancel"}</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={() => nav("/my-requests")}
+                >
+                  {isAr ? "نعم، تجاهل الطلب" : "Yes, discard"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Button variant="outline" asChild>
             <Link to="/my-requests"><Arrow className="me-2 h-4 w-4" /> {isAr ? "طلباتي" : "My Requests"}</Link>
           </Button>

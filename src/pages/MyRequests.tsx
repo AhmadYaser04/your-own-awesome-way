@@ -287,23 +287,36 @@ export default function MyRequests() {
                       items.map((it) => {
                         const itMatch = matches.find((m) => (m.source_item_ids || []).includes(it.id));
                         return (
-                          <div key={it.id} className="flex flex-wrap items-center justify-between gap-2 text-sm bg-card border rounded-md p-2.5">
-                            <div className="min-w-0 flex-1">
-                              <div className="font-bold text-foreground truncate">{it.source_course_name}</div>
-                              <div className="text-sm text-muted-foreground font-medium">
-                                {it.source_credits} {lang === "ar" ? "ساعات" : "hours"}
+                          <div key={it.id} className="bg-card border rounded-md p-2.5 space-y-2">
+                            <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                              <div className="min-w-0 flex-1">
+                                <div className="font-bold text-foreground truncate">{it.source_course_name}</div>
+                                <div className="text-sm text-muted-foreground font-medium">
+                                  {it.source_credits} {lang === "ar" ? "ساعات" : "hours"}
+                                </div>
                               </div>
-                            </div>
-                            {itMatch ? (
-                              itMatch.verdict === "approved" ? (
-                                <Badge className="bg-success text-white gap-1"><CheckCircle2 className="h-3 w-3" /> {lang === "ar" ? "معادَلة" : "Equivalent"}</Badge>
-                              ) : itMatch.verdict === "rejected" ? (
-                                <Badge className="bg-destructive text-destructive-foreground gap-1"><XCircle className="h-3 w-3" /> {lang === "ar" ? "غير معادَلة" : "Not equivalent"}</Badge>
+                              {itMatch ? (
+                                itMatch.verdict === "approved" ? (
+                                  <Badge className="bg-success text-white gap-1"><CheckCircle2 className="h-3 w-3" /> {lang === "ar" ? "معادَلة" : "Equivalent"}</Badge>
+                                ) : itMatch.verdict === "rejected" ? (
+                                  <Badge className="bg-destructive text-destructive-foreground gap-1"><XCircle className="h-3 w-3" /> {lang === "ar" ? "غير معادَلة" : "Not equivalent"}</Badge>
+                                ) : (
+                                  <Badge className="bg-gold text-gold-foreground gap-1"><Clock className="h-3 w-3" /> {lang === "ar" ? "قيد المراجعة" : "Pending"}</Badge>
+                                )
                               ) : (
-                                <Badge className="bg-gold text-gold-foreground gap-1"><Clock className="h-3 w-3" /> {lang === "ar" ? "قيد المراجعة" : "Pending"}</Badge>
-                              )
-                            ) : (
-                              <Badge variant="outline" className="gap-1"><BookOpen className="h-3 w-3" /> {lang === "ar" ? "بانتظار المراجعة" : "Awaiting review"}</Badge>
+                                <Badge variant="outline" className="gap-1"><BookOpen className="h-3 w-3" /> {lang === "ar" ? "بانتظار المراجعة" : "Awaiting review"}</Badge>
+                              )}
+                            </div>
+                            {itMatch?.notes && itMatch.notes.trim() && (
+                              <div className={`flex gap-2 text-xs bg-primary/5 p-2 rounded ${dir === "rtl" ? "border-r-2" : "border-l-2"} border-primary`}>
+                                <MessageSquare className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                                <div className="flex-1">
+                                  <div className="text-[11px] text-muted-foreground font-heading mb-0.5">
+                                    {lang === "ar" ? "ملاحظة المرشد:" : "Advisor note:"}
+                                  </div>
+                                  <div className="text-foreground whitespace-pre-wrap">{itMatch.notes}</div>
+                                </div>
+                              </div>
                             )}
                           </div>
                         );
