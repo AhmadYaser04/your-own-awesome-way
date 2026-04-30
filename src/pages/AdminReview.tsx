@@ -552,9 +552,17 @@ export default function AdminReview() {
             <div className="flex items-center gap-4">
               <div className="bg-primary-foreground/15 backdrop-blur-md p-3 rounded-2xl"><ShieldCheck className="h-8 w-8" /></div>
               <div>
-                <Badge className="bg-gold text-gold-foreground border-0 mb-1">
-                  {lang === "ar" ? "مراجعة لجنة المعادلات" : "Equivalency Committee Review"}
-                </Badge>
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <Badge className="bg-gold text-gold-foreground border-0">
+                    {lang === "ar" ? "مراجعة لجنة المعادلات" : "Equivalency Committee Review"}
+                  </Badge>
+                  {(req.status === "approved" || req.status === "rejected") && (
+                    <Badge className="bg-success text-white border-0 gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {lang === "ar" ? "تمت المراجعة كاملة" : "Review complete"}
+                    </Badge>
+                  )}
+                </div>
                 <h1 className="font-heading text-xl md:text-2xl font-bold">{req.student_full_name || (lang === "ar" ? "بدون اسم" : "Unnamed")}</h1>
                 <p className="text-primary-foreground/85 text-xs md:text-sm mt-1">
                   {(req.previous_university || req.previous_diploma_source || "—")} · {(req.transfer_type || req.student_type) === "same_major" ? (lang === "ar" ? "نفس التخصص" : "Same major") : (lang === "ar" ? "تخصص مختلف" : "Different major")}
