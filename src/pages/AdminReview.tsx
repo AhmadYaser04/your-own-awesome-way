@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Loader2, ArrowLeft, ShieldCheck, GraduationCap, Search, Link2, Unlink,
   CheckCircle2, XCircle, Clock, AlertTriangle, Printer, FileCheck,
@@ -91,7 +91,6 @@ interface MatchRow {
 export default function AdminReview() {
   const { id } = useParams<{ id: string }>();
   const nav = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { lang, dir } = useLang();
 
