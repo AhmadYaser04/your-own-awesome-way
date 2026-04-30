@@ -614,140 +614,184 @@ export default function AdminReview() {
 
         </Card>
 
-        {/* MAIN: Unified matching table (professional layout) */}
-        <Card className="p-5">
-          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <h2 className="font-heading font-bold text-foreground flex items-center gap-2">
-              <Layers className="h-5 w-5 text-primary" />
-              {lang === "ar" ? "جدول مطابقة المواد" : "Course matching table"}
-            </h2>
-            <div className="flex gap-2">
-              <Badge variant="outline" className="gap-1">
-                <GraduationCap className="h-3 w-3" /> {items.length} {lang === "ar" ? "مادة طالب" : "student"}
-              </Badge>
-              <Badge variant="outline" className="gap-1">
-                <Sparkles className="h-3 w-3" /> {autCourses.length} {lang === "ar" ? "مادة AUT" : "AUT"}
-              </Badge>
+        {/* MAIN: Two-column matching (Student courses ↔ AUT courses) */}
+        <div className="grid lg:grid-cols-2 gap-4">
+          {/* Student courses column */}
+          <Card className="p-5">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <h2 className="font-heading font-bold text-foreground flex items-center gap-2">
+                <GraduationCap className="h-5 w-5 text-primary" />
+                {lang === "ar" ? "مواد الطالب" : "Student courses"}
+              </h2>
+              <Badge variant="outline">{items.length}</Badge>
             </div>
-          </div>
-          <p className="text-xs text-muted-foreground mb-3">
-            {lang === "ar"
-              ? "حدّد مادة (أو عدة مواد لدمج N→1) ثم اختر مادة AUT المعادِلة من القائمة المنسدلة في نفس الصف ثم اضغط ربط."
-              : "Tick one or more student courses, pick an AUT match from the dropdown in the same row, then Link."}
-          </p>
-
-          <div className="overflow-x-auto rounded-lg border-2 border-primary/30">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-primary text-primary-foreground">
-                  <th className="p-2 text-start font-heading font-bold border-b-2 border-gold w-10"></th>
-                  <th className="p-2 text-start font-heading font-bold border-b-2 border-gold">#</th>
-                  <th className="p-2 text-start font-heading font-bold border-b-2 border-gold">
-                    {lang === "ar" ? "اسم المادة (الطالب)" : "Student course"}
-                  </th>
-                  <th className="p-2 text-start font-heading font-bold border-b-2 border-gold w-24">
-                    {lang === "ar" ? "الساعات" : "Credits"}
-                  </th>
-                  <th className="p-2 text-start font-heading font-bold border-b-2 border-gold">
-                    {lang === "ar" ? "مادة AUT المعادِلة" : "AUT equivalent"}
-                  </th>
-                  <th className="p-2 text-start font-heading font-bold border-b-2 border-gold w-28">
-                    {lang === "ar" ? "الحالة" : "Status"}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="p-6 text-center text-muted-foreground">
-                      {lang === "ar" ? "لا توجد مواد." : "No items."}
-                    </td>
+            <p className="text-xs text-muted-foreground mb-3">
+              {lang === "ar"
+                ? "حدّد مادة (أو حتى 3 مواد لدمج N→1) ثم اختر مادة AUT المعادِلة من العمود المقابل."
+                : "Tick one (or up to 3 for N→1 merge) then pick an AUT course on the right."}
+            </p>
+            <div className="overflow-x-auto rounded-lg border-2 border-primary/30">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-primary text-primary-foreground">
+                    <th className="p-2 text-start font-heading font-bold border-b-2 border-gold w-10"></th>
+                    <th className="p-2 text-start font-heading font-bold border-b-2 border-gold w-10">#</th>
+                    <th className="p-2 text-start font-heading font-bold border-b-2 border-gold">
+                      {lang === "ar" ? "اسم المادة" : "Course"}
+                    </th>
+                    <th className="p-2 text-start font-heading font-bold border-b-2 border-gold w-24">
+                      {lang === "ar" ? "الساعات" : "Credits"}
+                    </th>
+                    <th className="p-2 text-start font-heading font-bold border-b-2 border-gold w-24">
+                      {lang === "ar" ? "الحالة" : "Status"}
+                    </th>
                   </tr>
-                ) : items.map((it, idx) => {
-                  const linked = linkedItemIds.has(it.id);
-                  const checked = selectedItemIds.has(it.id);
-                  const rowBg = linked
-                    ? "bg-success/5"
-                    : checked
-                      ? "bg-secondary/10"
-                      : idx % 2 === 0 ? "bg-card" : "bg-muted/30";
-                  return (
-                    <tr key={it.id} className={`border-b border-primary/10 ${rowBg} hover:bg-primary/5 transition-colors`}>
-                      <td className="p-2 align-middle">
-                        <Checkbox
-                          checked={checked}
-                          disabled={linked}
-                          onCheckedChange={() => toggleItem(it.id)}
-                        />
-                      </td>
-                      <td className="p-2 align-middle font-bold text-primary">{idx + 1}</td>
-                      <td className="p-2 align-middle">
-                        <div className="font-bold text-foreground">{it.source_course_name}</div>
-                        {it.source_course_code && (
-                          <div className="text-[11px] text-muted-foreground font-mono">{it.source_course_code}</div>
-                        )}
-                      </td>
-                      <td className="p-2 align-middle">
-                        <Badge variant="outline">{it.source_credits} {lang === "ar" ? "س" : "h"}</Badge>
-                      </td>
-                      <td className="p-2 align-middle min-w-[260px]">
-                        {linked ? (
-                          <Badge className="bg-success text-white gap-1">
-                            <Link2 className="h-3 w-3" />
-                            {lang === "ar" ? "مربوطة (انظر جدول المعادلات)" : "Linked (see matches table)"}
-                          </Badge>
-                        ) : checked && selectedItemIds.size === 1 ? (
-                          <Select
-                            value={selectedAutId ?? ""}
-                            onValueChange={(v) => setSelectedAutId(v || null)}
-                          >
-                            <SelectTrigger className="h-9 text-sm">
-                              <SelectValue placeholder={lang === "ar" ? "اختر مادة AUT..." : "Pick AUT course..."} />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-72">
-                              {filteredAut.map((c) => (
-                                <SelectItem key={c.id} value={c.id}>
-                                  <span className="font-mono text-[10px] text-muted-foreground me-2">{c.course_code}</span>
-                                  {c.course_name_ar} <span className="text-muted-foreground">({c.credits}س)</span>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">
-                            {lang === "ar" ? "حدّد المادة لاختيار المعادِلة" : "Tick to choose"}
-                          </span>
-                        )}
-                      </td>
-                      <td className="p-2 align-middle">
-                        {linked ? (
-                          <Badge className="bg-success text-white text-[10px]">{lang === "ar" ? "مربوطة" : "linked"}</Badge>
-                        ) : checked ? (
-                          <Badge className="bg-secondary text-primary-foreground text-[10px]">{lang === "ar" ? "محددة" : "selected"}</Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-[10px]">{lang === "ar" ? "بانتظار" : "pending"}</Badge>
-                        )}
+                </thead>
+                <tbody>
+                  {items.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                        {lang === "ar" ? "لا توجد مواد." : "No items."}
                       </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                  ) : items.map((it, idx) => {
+                    const linked = linkedItemIds.has(it.id);
+                    const checked = selectedItemIds.has(it.id);
+                    const rowBg = linked
+                      ? "bg-success/5"
+                      : checked
+                        ? "bg-secondary/10"
+                        : idx % 2 === 0 ? "bg-card" : "bg-muted/30";
+                    return (
+                      <tr
+                        key={it.id}
+                        className={`border-b border-primary/10 ${rowBg} hover:bg-primary/5 transition-colors cursor-pointer`}
+                        onClick={() => toggleItem(it.id)}
+                      >
+                        <td className="p-2 align-middle" onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={checked}
+                            disabled={linked}
+                            onCheckedChange={() => toggleItem(it.id)}
+                          />
+                        </td>
+                        <td className="p-2 align-middle font-bold text-primary">{idx + 1}</td>
+                        <td className="p-2 align-middle">
+                          <div className="font-bold text-foreground">{it.source_course_name}</div>
+                          {it.source_course_code && (
+                            <div className="text-[11px] text-muted-foreground font-mono">{it.source_course_code}</div>
+                          )}
+                        </td>
+                        <td className="p-2 align-middle">
+                          <Badge variant="outline">{it.source_credits} {lang === "ar" ? "س" : "h"}</Badge>
+                        </td>
+                        <td className="p-2 align-middle">
+                          {linked ? (
+                            <Badge className="bg-success text-white text-[10px] gap-1">
+                              <Link2 className="h-3 w-3" />
+                              {lang === "ar" ? "مربوطة" : "linked"}
+                            </Badge>
+                          ) : checked ? (
+                            <Badge className="bg-secondary text-primary-foreground text-[10px]">
+                              {lang === "ar" ? "محددة" : "selected"}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[10px]">
+                              {lang === "ar" ? "بانتظار" : "pending"}
+                            </Badge>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
 
-          {/* AUT search helper for the dropdown */}
-          {selectedItemIds.size === 1 && (
-            <div className="relative mt-3">
+          {/* AUT courses column */}
+          <Card className="p-5">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <h2 className="font-heading font-bold text-foreground flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-secondary" />
+                {lang === "ar" ? "مواد AUT" : "AUT courses"}
+              </h2>
+              <Badge variant="outline">{autCourses.length}</Badge>
+            </div>
+            <div className="relative mb-3">
               <Search className="h-4 w-4 absolute top-2.5 start-2.5 text-muted-foreground" />
               <Input
                 value={autSearch}
                 onChange={(e) => setAutSearch(e.target.value)}
-                placeholder={lang === "ar" ? "تصفية مواد AUT بالكود أو الاسم..." : "Filter AUT courses..."}
+                placeholder={lang === "ar" ? "تصفية بالكود أو الاسم..." : "Filter by code or name..."}
                 className="ps-8"
               />
             </div>
-          )}
-        </Card>
+            <div className="rounded-lg border-2 border-primary/30 max-h-[480px] overflow-y-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead className="sticky top-0 z-10">
+                  <tr className="bg-primary text-primary-foreground">
+                    <th className="p-2 text-start font-heading font-bold border-b-2 border-gold w-10"></th>
+                    <th className="p-2 text-start font-heading font-bold border-b-2 border-gold">
+                      {lang === "ar" ? "الكود" : "Code"}
+                    </th>
+                    <th className="p-2 text-start font-heading font-bold border-b-2 border-gold">
+                      {lang === "ar" ? "اسم المادة" : "Course name"}
+                    </th>
+                    <th className="p-2 text-start font-heading font-bold border-b-2 border-gold w-20">
+                      {lang === "ar" ? "س" : "Cr"}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredAut.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="p-6 text-center text-muted-foreground">
+                        {lang === "ar" ? "لا توجد نتائج." : "No results."}
+                      </td>
+                    </tr>
+                  ) : filteredAut.map((c, idx) => {
+                    const isSel = selectedAutId === c.id;
+                    const rowBg = isSel
+                      ? "bg-gold/20"
+                      : idx % 2 === 0 ? "bg-card" : "bg-muted/30";
+                    return (
+                      <tr
+                        key={c.id}
+                        className={`border-b border-primary/10 ${rowBg} hover:bg-primary/5 transition-colors cursor-pointer`}
+                        onClick={() => setSelectedAutId(isSel ? null : c.id)}
+                      >
+                        <td className="p-2 align-middle" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="radio"
+                            name="aut-pick"
+                            checked={isSel}
+                            onChange={() => setSelectedAutId(c.id)}
+                            className="h-4 w-4 accent-primary"
+                          />
+                        </td>
+                        <td className="p-2 align-middle">
+                          <span className="font-mono text-[11px] bg-gold/20 border border-gold rounded px-1.5 py-0.5 text-gold-foreground">
+                            {c.course_code}
+                          </span>
+                        </td>
+                        <td className="p-2 align-middle">
+                          <div className="font-bold text-foreground">{c.course_name_ar}</div>
+                          {c.course_name_en && (
+                            <div className="text-[11px] text-muted-foreground">{c.course_name_en}</div>
+                          )}
+                        </td>
+                        <td className="p-2 align-middle">
+                          <Badge variant="outline">{c.credits}</Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
 
         {/* LINK BAR */}
         <Card className="p-4 border-2 border-primary/30 bg-primary/5">
