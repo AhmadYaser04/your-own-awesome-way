@@ -805,7 +805,8 @@ export default function AdminReview() {
               {selectedItemIds.size > 0 && (
                 <span>
                   <span className="font-bold">{selectedItemIds.size}</span> {lang === "ar" ? "مادة طالب محدَّدة" : "student course(s) selected"}
-                  {selectedItemIds.size > 1 && <span className="text-secondary font-bold"> · {lang === "ar" ? "سيتم الدمج N→1 — اختر مادة AUT من القائمة أدناه" : "will merge N→1"}</span>}
+                  {selectedItemIds.size > 1 && <span className="text-secondary font-bold"> · {lang === "ar" ? "سيتم الدمج N→1" : "will merge N→1"}</span>}
+                  {selectedAutId && <span className="text-success font-bold"> · {lang === "ar" ? "مادة AUT مختارة" : "AUT picked"}</span>}
                 </span>
               )}
             </div>
