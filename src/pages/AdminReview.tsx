@@ -384,10 +384,30 @@ export default function AdminReview() {
     }
     toast({
       title: status === "approved"
-        ? (lang === "ar" ? "تم اعتماد الطلب" : "Request approved")
+        ? (lang === "ar" ? "تم اعتماد الطلب وإرساله للطالب" : "Request approved")
         : status === "rejected"
-        ? (lang === "ar" ? "تم رفض الطلب" : "Request rejected")
+        ? (lang === "ar" ? "تم رفض الطلب وإرساله للطالب" : "Request rejected")
         : (lang === "ar" ? "تم تعليق الطلب وإرسال السبب للطالب" : "Request put on hold — reason sent to student"),
+    });
+    // عند إصدار النتيجة النهائية (اعتماد/رفض): ارجع للوحة الأدمن تلقائياً
+    if (status === "approved" || status === "rejected") {
+      setTimeout(() => nav("/admin"), 600);
+      return;
+    }
+    loadAll({ preserveInputs: true });
+  };
+
+  // حفظ ملاحظة لمادة بعينها بدون تغيير القرار (تصل للطالب في صفحة طلباته)
+  const saveMatchNote = async (matchId: string) => {
+    setBusy(true);
+    const { error } = await supabase
+      .from("equivalency_matches")
+      .update({ notes: matchNotes[matchId] || null })
+      .eq("id", matchId);
+    setBusy(false);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    toast({
+      title: lang === "ar" ? "تم حفظ الملاحظة وإرسالها للطالب" : "Note saved & sent to student",
     });
     loadAll({ preserveInputs: true });
   };
@@ -532,9 +552,17 @@ export default function AdminReview() {
             <div className="flex items-center gap-4">
               <div className="bg-primary-foreground/15 backdrop-blur-md p-3 rounded-2xl"><ShieldCheck className="h-8 w-8" /></div>
               <div>
-                <Badge className="bg-gold text-gold-foreground border-0 mb-1">
-                  {lang === "ar" ? "مراجعة لجنة المعادلات" : "Equivalency Committee Review"}
-                </Badge>
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <Badge className="bg-gold text-gold-foreground border-0">
+                    {lang === "ar" ? "مراجعة لجنة المعادلات" : "Equivalency Committee Review"}
+                  </Badge>
+                  {(req.status === "approved" || req.status === "rejected") && (
+                    <Badge className="bg-success text-white border-0 gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {lang === "ar" ? "تمت المراجعة كاملة" : "Review complete"}
+                    </Badge>
+                  )}
+                </div>
                 <h1 className="font-heading text-xl md:text-2xl font-bold">{req.student_full_name || (lang === "ar" ? "بدون اسم" : "Unnamed")}</h1>
                 <p className="text-primary-foreground/85 text-xs md:text-sm mt-1">
                   {(req.previous_university || req.previous_diploma_source || "—")} · {(req.transfer_type || req.student_type) === "same_major" ? (lang === "ar" ? "نفس التخصص" : "Same major") : (lang === "ar" ? "تخصص مختلف" : "Different major")}
@@ -938,13 +966,23 @@ export default function AdminReview() {
                             </div>
                           )}
                         </td>
-                        <td className="p-3 align-top min-w-[200px]">
+                        <td className="p-3 align-top min-w-[220px]">
                           <Textarea
                             value={matchNotes[m.id] ?? ""}
                             onChange={(e) => setMatchNotes((prev) => ({ ...prev, [m.id]: e.target.value }))}
-                            placeholder={lang === "ar" ? "أضف ملاحظتك..." : "Add notes..."}
+                            placeholder={lang === "ar" ? "اكتب ملاحظتك للطالب على هذه المادة..." : "Add note for student..."}
                             className="min-h-[60px] text-sm text-foreground bg-card border-primary/30 focus-visible:ring-primary"
                           />
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => saveMatchNote(m.id)}
+                            disabled={busy || (matchNotes[m.id] ?? "") === (m.notes ?? "")}
+                            className="mt-2 gap-1 h-7 text-xs w-full border-primary/40 text-primary hover:bg-primary/10"
+                          >
+                            <Save className="h-3 w-3" />
+                            {lang === "ar" ? "حفظ الملاحظة وإرسالها للطالب" : "Save & send note"}
+                          </Button>
                         </td>
                         <td className="p-3 align-top">{verdictBadge(m.verdict)}</td>
                         <td className="p-3 align-top">
