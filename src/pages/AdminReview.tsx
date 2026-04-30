@@ -612,17 +612,6 @@ export default function AdminReview() {
             </div>
           </div>
 
-          {req.uploaded_file_url && (
-            <div className="mt-3 text-xs">
-              <a
-                href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/authenticated/equivalency-uploads/${req.uploaded_file_url}`}
-                target="_blank" rel="noreferrer"
-                className="text-primary hover:underline inline-flex items-center gap-1"
-              >
-                <FileText className="h-3 w-3" /> {lang === "ar" ? "عرض كشف العلامات المرفوع" : "View uploaded transcript"}
-              </a>
-            </div>
-          )}
         </Card>
 
         {/* MAIN: Two columns */}
