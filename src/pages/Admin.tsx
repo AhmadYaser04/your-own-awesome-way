@@ -4,7 +4,7 @@ import {
   Loader2, ShieldCheck, CheckCircle2, XCircle, Clock, Search, Filter, FileText,
   User as UserIcon, Building2, BookOpen, Calendar, Eye, MessageSquare,
   RefreshCw, Download, TrendingUp, Award, Hash, Sparkles, ChevronDown, ChevronUp,
-  Copy, Trash2, Printer, ArrowUpDown, Activity, BarChart3, GraduationCap, FileCheck,
+  Copy, Trash2, Printer, ArrowUpDown, Activity, BarChart3, GraduationCap,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as ReTooltip, Cell,
@@ -637,22 +637,6 @@ export default function Admin() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                    {(r.status === "approved" || r.status === "rejected") && (
-                      <>
-                        <Button asChild size="sm" variant="outline" className="gap-1 border-success/40 text-success hover:bg-success/10">
-                          <Link to={`/admin/review/${r.id}?print=approved`}>
-                            <FileCheck className="h-4 w-4" />
-                            {lang === "ar" ? "نموذج المواد المعادَلة" : "Approved courses form"}
-                          </Link>
-                        </Button>
-                        <Button asChild size="sm" className="gap-1 bg-gold text-gold-foreground hover:bg-gold/90">
-                          <Link to={`/admin/review/${r.id}?print=full`}>
-                            <Printer className="h-4 w-4" />
-                            {lang === "ar" ? "النموذج الكامل" : "Full form"}
-                          </Link>
-                        </Button>
-                      </>
-                    )}
                     <Button asChild size="sm" className="gap-1 bg-primary">
                       <Link to={`/admin/review/${r.id}`}>
                         <ShieldCheck className="h-4 w-4" /> {lang === "ar" ? "مراجعة كاملة" : "Full review"}

@@ -187,25 +187,6 @@ export default function AdminReview() {
 
   useEffect(() => { loadAll(); }, [id]);
 
-  // Auto-print when navigated with ?print=full|approved (from Admin dashboard)
-  const [autoPrinted, setAutoPrinted] = useState(false);
-  useEffect(() => {
-    const printMode = searchParams.get("print");
-    if (!printMode || autoPrinted || loading || !req) return;
-    if (printMode === "full" || printMode === "approved" || printMode === "rejected") {
-      setAutoPrinted(true);
-      // Run after render so data is fully ready
-      setTimeout(() => {
-        handlePrint(printMode as PrintMode);
-        // Remove the param and return to admin dashboard
-        const next = new URLSearchParams(searchParams);
-        next.delete("print");
-        setSearchParams(next, { replace: true });
-        nav("/admin");
-      }, 300);
-    }
-  }, [searchParams, loading, req, autoPrinted]);
-
   // Items already linked to any match (cannot be re-linked unless unlinked)
   const linkedItemIds = useMemo(() => {
     const s = new Set<string>();
@@ -1062,6 +1043,24 @@ export default function AdminReview() {
             <Button onClick={() => finalizeRequest("approved")} disabled={busy} className="gap-1 bg-success text-white hover:bg-success/90">
               <Save className="h-4 w-4" /> {lang === "ar" ? "اعتماد الطلب" : "Approve request"}
             </Button>
+          </div>
+
+          {/* Print buttons */}
+          <div className="border-t pt-4 mt-2">
+            <h3 className="font-heading font-bold text-sm text-foreground mb-3 flex items-center gap-2">
+              <Printer className="h-4 w-4 text-primary" />
+              {lang === "ar" ? "طباعة النموذج الرسمي" : "Print official form"}
+            </h3>
+            <div className="grid sm:grid-cols-2 gap-2">
+              <Button variant="outline" onClick={() => handlePrint("approved")} className="gap-2 border-success/40 text-success hover:bg-success/10">
+                <FileCheck className="h-4 w-4" />
+                {lang === "ar" ? "نموذج المواد المعادَلة" : "Approved courses form"}
+              </Button>
+              <Button onClick={() => handlePrint("full")} className="gap-2 bg-primary">
+                <Printer className="h-4 w-4" />
+                {lang === "ar" ? "النموذج الكامل" : "Full form"}
+              </Button>
+            </div>
           </div>
 
         </Card>
