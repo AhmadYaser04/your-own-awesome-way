@@ -19,6 +19,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LanguageProvider";
 import { useAuth } from "@/hooks/useAuth";
+import { isLocalAiBackendEnabled, extractCoursesLocal } from "@/lib/aiBackend";
 
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
 const BUCKET = "equivalency-uploads";
@@ -136,25 +137,39 @@ export default function Equivalency() {
     setError(null);
 
     try {
-      // 1) ارفع الملف إلى Storage
-      const ext = file.name.split(".").pop() || "bin";
-      const path = `${user.id}/extract-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from(BUCKET)
-        .upload(path, file, { upsert: false, contentType: file.type });
-      if (upErr) throw upErr;
+      let data: any;
 
-      // 2) أنشئ رابط موقّع لمدة ساعة
-      const { data: signed, error: signErr } = await supabase.storage
-        .from(BUCKET)
-        .createSignedUrl(path, 60 * 60);
-      if (signErr || !signed?.signedUrl) throw signErr || new Error("فشل إنشاء الرابط");
+      // ====== المسار 1: نموذج OCR المحلي (ai-backend) — استقلال كامل عن لوفابل ======
+      if (isLocalAiBackendEnabled()) {
+        const local = await extractCoursesLocal(file);
+        data = {
+          courses: local.courses,
+          rawText: local.rawText,
+          count: local.count,
+        };
+      } else {
+        // ====== المسار 2 (fallback): Edge Function على لوفابل كلاود ======
+        // 1) ارفع الملف إلى Storage
+        const ext = file.name.split(".").pop() || "bin";
+        const path = `${user.id}/extract-${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from(BUCKET)
+          .upload(path, file, { upsert: false, contentType: file.type });
+        if (upErr) throw upErr;
 
-      // 3) استدعِ Edge Function
-      const { data, error: fnErr } = await supabase.functions.invoke("extract-courses", {
-        body: { fileUrl: signed.signedUrl },
-      });
-      if (fnErr) throw fnErr;
+        // 2) أنشئ رابط موقّع لمدة ساعة
+        const { data: signed, error: signErr } = await supabase.storage
+          .from(BUCKET)
+          .createSignedUrl(path, 60 * 60);
+        if (signErr || !signed?.signedUrl) throw signErr || new Error("فشل إنشاء الرابط");
+
+        // 3) استدعِ Edge Function
+        const fnRes = await supabase.functions.invoke("extract-courses", {
+          body: { fileUrl: signed.signedUrl },
+        });
+        if (fnRes.error) throw fnRes.error;
+        data = fnRes.data;
+      }
       if (data?.error) {
         if (isManualFallbackError(data)) {
           setError(isAr
