@@ -557,29 +557,10 @@ export default function AdminReview() {
                     {lang === "ar" ? "مراجعة لجنة المعادلات" : "Equivalency Committee Review"}
                   </Badge>
                   {(req.status === "approved" || req.status === "rejected") && (
-                    <>
-                      <Badge className="bg-success text-white border-0 gap-1">
-                        <CheckCircle2 className="h-3 w-3" />
-                        {lang === "ar" ? "تمت المراجعة كاملة" : "Review complete"}
-                      </Badge>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handlePrint("approved")}
-                        className="h-7 gap-1 bg-white/10 border-white/30 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground"
-                      >
-                        <FileCheck className="h-3.5 w-3.5" />
-                        {lang === "ar" ? "نموذج المواد المعادَلة" : "Approved courses form"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => handlePrint("full")}
-                        className="h-7 gap-1 bg-gold text-gold-foreground hover:bg-gold/90"
-                      >
-                        <Printer className="h-3.5 w-3.5" />
-                        {lang === "ar" ? "النموذج الكامل" : "Full form"}
-                      </Button>
-                    </>
+                    <Badge className="bg-success text-white border-0 gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {lang === "ar" ? "تمت المراجعة كاملة" : "Review complete"}
+                    </Badge>
                   )}
                 </div>
                 <h1 className="font-heading text-xl md:text-2xl font-bold">{req.student_full_name || (lang === "ar" ? "بدون اسم" : "Unnamed")}</h1>
