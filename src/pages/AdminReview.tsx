@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Loader2, ArrowLeft, ShieldCheck, GraduationCap, Search, Link2, Unlink,
-  CheckCircle2, XCircle, Clock, AlertTriangle, Printer, FileCheck, FileText,
+  CheckCircle2, XCircle, Clock, AlertTriangle, Printer, FileCheck,
   Trash2, Save, Sparkles, Layers,
 } from "lucide-react";
 import SiteLayout from "@/components/SiteLayout";
