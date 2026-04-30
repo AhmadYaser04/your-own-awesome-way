@@ -966,13 +966,23 @@ export default function AdminReview() {
                             </div>
                           )}
                         </td>
-                        <td className="p-3 align-top min-w-[200px]">
+                        <td className="p-3 align-top min-w-[220px]">
                           <Textarea
                             value={matchNotes[m.id] ?? ""}
                             onChange={(e) => setMatchNotes((prev) => ({ ...prev, [m.id]: e.target.value }))}
-                            placeholder={lang === "ar" ? "أضف ملاحظتك..." : "Add notes..."}
+                            placeholder={lang === "ar" ? "اكتب ملاحظتك للطالب على هذه المادة..." : "Add note for student..."}
                             className="min-h-[60px] text-sm text-foreground bg-card border-primary/30 focus-visible:ring-primary"
                           />
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => saveMatchNote(m.id)}
+                            disabled={busy || (matchNotes[m.id] ?? "") === (m.notes ?? "")}
+                            className="mt-2 gap-1 h-7 text-xs w-full border-primary/40 text-primary hover:bg-primary/10"
+                          >
+                            <Save className="h-3 w-3" />
+                            {lang === "ar" ? "حفظ الملاحظة وإرسالها للطالب" : "Save & send note"}
+                          </Button>
                         </td>
                         <td className="p-3 align-top">{verdictBadge(m.verdict)}</td>
                         <td className="p-3 align-top">
