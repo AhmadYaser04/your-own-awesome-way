@@ -28,7 +28,7 @@ DROP TABLE IF EXISTS public.users                     CASCADE;
 -- If it does not exist yet, create it:
 CREATE TABLE IF NOT EXISTS public.aut_courses (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  course_code     TEXT NOT NULL,
+  course_code     TEXT NOT NULL UNIQUE,
   course_name_ar  TEXT NOT NULL,
   course_name_en  TEXT,
   credits         INTEGER NOT NULL DEFAULT 3,
