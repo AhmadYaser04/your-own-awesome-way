@@ -18,6 +18,7 @@ from services.ocr_service import extract_text_from_image
 from services.pdf_extractor import extract_text_from_pdf
 from services.table_parser import parse_courses_from_text
 from services.matcher import match_courses, suggest_merges
+from app.routers import auth as auth_router
 
 app = FastAPI(
     title="AUT Equivalency AI Backend",
@@ -32,6 +33,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Auth router (register / login / me)
+app.include_router(auth_router.router)
 
 # ---------- Schemas ----------
 
