@@ -616,17 +616,15 @@ export default function Admin() {
                             : (lang === "ar" ? "إدخال يدوي" : "Manual entry")}
                         </Badge>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => copyId(r.id)}
-                        className="text-sm font-heading font-bold text-foreground flex items-center gap-1.5 hover:text-primary transition-colors"
-                        title={t("admin.copyId")}
+                      <div
+                        className="text-sm font-heading font-bold text-foreground flex items-center gap-1.5"
                       >
-                        <Hash className="h-4 w-4 text-primary" />
-                        <span>{lang === "ar" ? "رقم العملية:" : "Request ID:"}</span>
-                        <span className="font-mono text-primary">{r.id.slice(0, 8)}</span>
-                        <Copy className="h-3 w-3 text-muted-foreground" />
-                      </button>
+                        <GraduationCap className="h-4 w-4 text-primary" />
+                        <span>{lang === "ar" ? "الكلية/الجامعة:" : "College/University:"}</span>
+                        <span className="text-primary truncate">
+                          {r.profile?.saudi_university?.trim() || (lang === "ar" ? "—" : "—")}
+                        </span>
+                      </div>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
