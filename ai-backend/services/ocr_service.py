@@ -1,47 +1,53 @@
-"""OCR for transcript images using PaddleOCR (Arabic + English)."""
-from typing import Optional
+"""OCR for transcript images using EasyOCR (Arabic + English).
+
+EasyOCR أسهل في التثبيت على Windows من PaddleOCR ولا يحتاج C++ build tools.
+يدعم العربية والإنجليزية بنفس الدقة تقريباً.
+"""
+from typing import List
 import io
 from PIL import Image
 import numpy as np
 
 import config
 
-_ocr_instances = {}
+_reader = None
 
-def _get_ocr(lang: str = "arabic"):
-    """Lazy-load PaddleOCR for a given language."""
-    global _ocr_instances
-    if lang not in _ocr_instances:
-        from paddleocr import PaddleOCR
-        _ocr_instances[lang] = PaddleOCR(use_angle_cls=True, lang=lang, show_log=False)
-    return _ocr_instances[lang]
+
+def _get_reader():
+    """Lazy-load EasyOCR reader once (heavy: downloads models on first run)."""
+    global _reader
+    if _reader is None:
+        import easyocr
+        # EasyOCR languages: 'ar' للعربية، 'en' للإنجليزية
+        langs: List[str] = []
+        for l in config.OCR_LANGS:
+            l = l.strip().lower()
+            if l in ("arabic", "ar"):
+                langs.append("ar")
+            elif l in ("english", "en"):
+                langs.append("en")
+        if not langs:
+            langs = ["ar", "en"]
+        # gpu=False — يعمل على CPU بدون CUDA
+        _reader = easyocr.Reader(langs, gpu=False, verbose=False)
+    return _reader
 
 
 def extract_text_from_image(image_bytes: bytes) -> str:
-    """Run OCR over the image with all configured languages and merge results."""
+    """Run EasyOCR over the image and return text line-by-line."""
     img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     arr = np.array(img)
 
-    pieces = []
-    for lang in config.OCR_LANGS:
-        try:
-            ocr = _get_ocr(lang)
-            result = ocr.ocr(arr, cls=True)
-            if not result:
-                continue
-            # PaddleOCR returns list[list[ [bbox, (text, conf)] ]]
-            for page in result:
-                if not page:
-                    continue
-                for line in page:
-                    try:
-                        text = line[1][0]
-                        if text and text.strip():
-                            pieces.append(text.strip())
-                    except (IndexError, TypeError):
-                        continue
-        except Exception as e:
-            print(f"[OCR:{lang}] failed: {e}")
+    reader = _get_reader()
+    try:
+        # detail=0 يرجع نصوص فقط (بدون bounding boxes)
+        # paragraph=False للحفاظ على كل سطر منفصل (مهم لجداول كشوف العلامات)
+        results = reader.readtext(arr, detail=0, paragraph=False)
+    except Exception as e:
+        print(f"[EasyOCR] failed: {e}")
+        return ""
+
+    pieces = [str(t).strip() for t in results if t and str(t).strip()]
 
     # De-duplicate while preserving order
     seen = set()
